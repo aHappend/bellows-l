@@ -8,7 +8,7 @@ module bellows_l1_history (
     input  wire [15:0] read_addr,
     output reg  [7:0]  read_data
 );
-    reg [7:0] memory [0:65535];
+    (* nomem2reg *) reg [7:0] memory [0:65535];
 
     // The array is deliberately not reset, allowing block-memory inference.
     always @(posedge clk) begin
