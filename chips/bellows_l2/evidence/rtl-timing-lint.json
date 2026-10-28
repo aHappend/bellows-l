@@ -1,0 +1,27 @@
+{
+  "gate": "rtl-timing-lint",
+  "timestamp_utc": "2026-10-28T05:15:15.558140+00:00",
+  "root": "/data/sufeng/bellows-l2-line/workspace/project",
+  "status": "passed",
+  "max_comb_div_width": 0,
+  "rtl_files_checked": 8,
+  "auto_sanitized_nomem2reg_files": [],
+  "source_sha256": {
+    "rtl/bellows_l1_history.sv": "331986adb15c820df57979f3b741b64286dd409c5cc801712c609706e908c4ad",
+    "rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+    "rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+    "rtl/bellows_l2_compressor.sv": "b41fb612530f996bac1a8801e3c9e3b59b89b68c2e6597bd210e8b0bb8997307",
+    "rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+    "rtl/bellows_l2_hash_match.sv": "bc6617078c86ef01cce99cd027673e9df1a3d595c2ae84b58585504426b34b42",
+    "rtl/bellows_l2_literal_buffer.sv": "7ad22eb12de1bd2c934e9c5374efaffc7ff1cab0b018fdcab7bc4fa89cafa59f",
+    "rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b"
+  },
+  "netlist_sha256": {},
+  "rtl_div_mod_hazards": [],
+  "netlist_div_mod_hazards": [],
+  "mixed_assign_hazards": [],
+  "lut_clock_gate_hazards": [],
+  "ast_unroll_loop_hazards": [],
+  "detail": "Zero combinational divider/modulo, LUT clock-gate, AST loop-unroll, or mixed-assignment hazards detected.",
+  "applicable": true
+}
