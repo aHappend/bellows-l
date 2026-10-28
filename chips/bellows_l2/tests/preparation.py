@@ -45,6 +45,9 @@ proves that files remain available after the audit's own process settles.
 Artifact diagnostics distinguish missing, changed and unbound files, including
 compiler intermediates. Classification never excludes files from the audit or
 identifies the mechanism responsible for a missing file.
+Artifact audits repeat the inventory and re-read initially matching files before
+returning; disappearance or mutation during the audit fails explicitly. This
+bounded stability observation cannot establish persistence after process settlement.
 The HIL input inspection reads only fpga/board_hil.json, never invokes commands
 from it, and never builds, programs or contacts hardware. Exit zero establishes
 only that a nonempty command is configured without enabled native configuration
@@ -121,6 +124,7 @@ def source_binding_errors(sources):
 def audit_artifacts(bundle, bindings):
     """Validate an optional manifest without repairing or creating any files."""
     report = dict(present=bindings is not None, checked_files=0, expected_files=0,
+                  rechecked_files=0, inventory_stable=False,
                   missing_files=[], mismatched_files=[], unbound_files=[], errors=[])
     if bindings is None:
         return report
@@ -129,10 +133,16 @@ def audit_artifacts(bundle, bindings):
         return report
     report["expected_files"] = len(bindings)
     base = ROOT / bundle
+    initially_checked = []
+    actual = None
+
+    def inventory():
+        return {path.relative_to(ROOT).as_posix()
+                for path in base.rglob("*") if path.is_file()
+                and path != base / "receipt.json"}
+
     try:
-        actual = {path.relative_to(ROOT).as_posix()
-                  for path in base.rglob("*") if path.is_file()
-                  and path != base / "receipt.json"}
+        actual = inventory()
         report["unbound_files"] = sorted(actual - set(bindings))
         for name in report["unbound_files"]:
             report["errors"].append(f"Unbound retained artifact: {name}")
@@ -158,11 +168,30 @@ def audit_artifacts(bundle, bindings):
                 report["mismatched_files"].append(name)
                 raise ValueError(f"Artifact integrity mismatch: {name}")
             report["checked_files"] += 1
+            initially_checked.append(name)
         except FileNotFoundError as error:
             report["missing_files"].append(name)
             report["errors"].append(str(error))
         except (OSError, ValueError) as error:
             report["errors"].append(str(error))
+    try:
+        final_inventory = inventory()
+        report["inventory_stable"] = actual is not None and final_inventory == actual
+        if not report["inventory_stable"]:
+            report["errors"].append("Artifact inventory changed during audit")
+        for name in initially_checked:
+            try:
+                if file_integrity(ROOT / name) != bindings[name]:
+                    report["mismatched_files"].append(name)
+                    raise ValueError(f"Artifact changed during audit: {name}")
+                report["rechecked_files"] += 1
+            except FileNotFoundError as error:
+                report["missing_files"].append(name)
+                report["errors"].append(f"Artifact disappeared during audit: {error}")
+            except (OSError, ValueError) as error:
+                report["errors"].append(str(error))
+    except OSError as error:
+        report["errors"].append(f"Cannot re-inventory retained artifacts: {error}")
     return report
 
 
