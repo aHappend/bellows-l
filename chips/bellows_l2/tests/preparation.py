@@ -87,6 +87,10 @@ runs with complete raw streams and no contradictory recorded token failures.
 Optional token-result fields, when present, must be empty lists; legacy receipts
 without them remain diagnosable. Even three such runs establish no product traffic
 or image provenance; the diagnostic never upgrades native outcomes to acceptance.
+If requested_runs is recorded, it must be a positive integer matching the retained
+run count and ordered indices 1..requested_runs. Missing or extra requested runs
+cannot be hidden by a successful three-run subsequence. Legacy receipts without
+the field remain diagnosable but do not establish completeness of a requested set.
 This diagnostic does not define a new hardware transport or acceptance schema.
 HIL input inspection includes a Coordinator handoff for the shared-runtime
 platform owner. Its requested protocol and image-provenance inputs are prerequisites
@@ -573,6 +577,17 @@ def diagnose_hil_record(record):
         errors.append("Failed or invalid aggregate HIL status")
     if record.get("deterministic_across_runs") is not True:
         errors.append("Failed or invalid aggregate HIL deterministic_across_runs")
+    if "requested_runs" in record:
+        requested = record["requested_runs"]
+        if type(requested) is not int or requested <= 0:
+            errors.append("Failed or invalid aggregate HIL requested_runs")
+        elif requested != len(runs):
+            errors.append("Retained HIL run count differs from requested_runs")
+        elif any(not isinstance(run, dict)
+                 or type(run.get("run_index")) is not int
+                 or run["run_index"] != ordinal
+                 for ordinal, run in enumerate(runs, 1)):
+            errors.append("Retained HIL run indices do not cover requested_runs in order")
     for ordinal, run in enumerate(runs, 1):
         if not isinstance(run, dict):
             errors.append(f"Invalid HIL run {ordinal}")

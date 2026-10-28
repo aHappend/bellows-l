@@ -255,6 +255,40 @@ class HilDiagnosticTests(unittest.TestCase):
                 self.assertFalse(result["authorizes_resumption"])
                 self.assertFalse(result["hardware_executed"])
 
+    def test_cli_requested_run_inventory_must_be_complete(self):
+        for requested in (0, -1, True, None, "3", 2, 4):
+            with self.subTest(requested=requested):
+                record = copy.deepcopy(self.record)
+                record["requested_runs"] = requested
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                self.assertTrue(any("requested_runs" in error
+                                    for error in result["errors"]))
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_requested_run_indices_cannot_be_shifted_or_reordered(self):
+        for indices in ((2, 3, 4), (3, 2, 1), (1, 3, 2)):
+            with self.subTest(indices=indices):
+                record = copy.deepcopy(self.record)
+                record["requested_runs"] = 3
+                for run, index in zip(record["runs"], indices):
+                    run["run_index"] = index
+                result = diagnose_hil_record(record)
+                self.assertTrue(any("requested_runs" in error
+                                    for error in result["errors"]))
+                self.assertFalse(result["physical_acceptance_established"])
+
+    def test_complete_requested_inventory_remains_diagnostic_only(self):
+        self.record["requested_runs"] = 3
+        result = diagnose_hil_record(self.record)
+        self.assertEqual(result["errors"], [])
+        self.assertTrue(result["three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
