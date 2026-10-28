@@ -11,6 +11,7 @@ import io
 import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -200,6 +201,43 @@ class HilDiagnosticTests(unittest.TestCase):
                 output="evidence/synthetic-occupied.json")
         self.assertFalse(result["output_contract"]["fresh"])
         self.assertTrue(any("occupied" in error for error in result["errors"]))
+
+    def test_output_beneath_file_or_dangling_symlink_is_not_fresh(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "fpga").mkdir()
+            (root / "fpga/board_hil.json").write_text(json.dumps(dict(
+                remote_test_cmd="synthetic-never-execute")))
+            (root / "evidence").mkdir()
+            blocked = root / "evidence/blocked"
+            for kind in ("file", "dangling-symlink"):
+                with self.subTest(kind=kind):
+                    if kind == "file":
+                        blocked.write_bytes(b"preserve")
+                    else:
+                        blocked.symlink_to("missing-target")
+                    result = inspect_hil_inputs(
+                        root=root, output="evidence/blocked/new/result.json")
+                    self.assertFalse(result["output_contract"]["fresh"])
+                    self.assertTrue(any("ancestor" in error
+                                        for error in result["errors"]))
+                    self.assertFalse(result["hardware_executed"])
+                    self.assertTrue(blocked.is_symlink() if kind == "dangling-symlink"
+                                    else blocked.read_bytes() == b"preserve")
+                    blocked.unlink()
+
+    def test_output_beneath_missing_directories_is_only_preflight_fresh(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "fpga").mkdir()
+            (root / "fpga/board_hil.json").write_text(json.dumps(dict(
+                remote_test_cmd="synthetic-never-execute")))
+            result = inspect_hil_inputs(
+                root=root, output="evidence/new/subdirectory/result.json")
+            self.assertTrue(result["output_contract"]["fresh"])
+            self.assertEqual(result["errors"], [])
+            self.assertFalse((root / "evidence").exists())
+            self.assertFalse(result["authorizes_resumption"])
 
     def test_three_native_successes_do_not_certify_product(self):
         result = diagnose_hil_record(self.record)
@@ -425,6 +463,31 @@ class HilDiagnosticTests(unittest.TestCase):
 
     def test_clean_aggregate_execution_metadata_remains_diagnostic_only(self):
         self.record.update(timed_out=False, launch_error=None)
+        result = diagnose_hil_record(self.record)
+        self.assertEqual(result["errors"], [])
+        self.assertTrue(result["three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+
+    def test_aggregate_exit_failure_cannot_be_hidden_by_clean_runs(self):
+        for value in (1, -9, None, False, 0.0, "0"):
+            with self.subTest(exit_code=value):
+                record = copy.deepcopy(self.record)
+                record["exit_code"] = value
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                diagnostic = result["native_execution_diagnostic"]
+                self.assertTrue(any("aggregate HIL exit_code" in error
+                                    for error in diagnostic["errors"]))
+                self.assertEqual(diagnostic["longest_consecutive_native_successes"], 3)
+                self.assertFalse(diagnostic["three_consecutive_native_successes"])
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_clean_aggregate_exit_remains_diagnostic_only(self):
+        self.record["exit_code"] = 0
         result = diagnose_hil_record(self.record)
         self.assertEqual(result["errors"], [])
         self.assertTrue(result["three_consecutive_native_successes"])
