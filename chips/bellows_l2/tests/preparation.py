@@ -76,6 +76,9 @@ sufficient. Staging is preparation, not current portable or physical acceptance.
 HIL receipt inspection diagnoses retained register-only runs without executing
 hardware. A claimed native pass is reported separately from product acceptance.
 Unrecognized output remains unestablished, never inferred to be byte comparisons.
+The longest consecutive sequence counts only explicitly indexed, successful native
+runs with complete raw streams. Even three such runs establish no product traffic
+or image provenance; the diagnostic never upgrades native outcomes to acceptance.
 This diagnostic does not define a new hardware transport or acceptance schema.
 HIL input inspection includes a Coordinator handoff for the shared-runtime
 platform owner. Its requested protocol and image-provenance inputs are prerequisites
@@ -545,6 +548,52 @@ def inspect_hil_inputs(root=ROOT, output=None):
     return report
 
 
+def diagnose_hil_record(record):
+    """Separate native execution consistency from unestablished product evidence."""
+    if not isinstance(record, dict) or record.get("gate") != "board-hil":
+        raise ValueError("Expected a native board-hil receipt object")
+    runs = record.get("runs")
+    if not isinstance(runs, list) or not runs:
+        raise ValueError("Missing retained HIL runs")
+    consecutive = longest = 0
+    previous = None
+    indices = set()
+    errors = []
+    for ordinal, run in enumerate(runs, 1):
+        if not isinstance(run, dict):
+            errors.append(f"Invalid HIL run {ordinal}")
+            consecutive = 0
+            previous = None
+            continue
+        index = run.get("run_index")
+        indexed = type(index) is int and index > 0 and index not in indices
+        if not indexed:
+            errors.append(f"Invalid or duplicate HIL run index at ordinal {ordinal}")
+        else:
+            indices.add(index)
+        succeeded = (
+            indexed and type(run.get("exit_code")) is int
+            and run["exit_code"] == 0 and run.get("passed") is True
+            and isinstance(run.get("stdout"), str)
+            and isinstance(run.get("stderr"), str))
+        if succeeded:
+            consecutive = consecutive + 1 if previous == index - 1 else 1
+            longest = max(longest, consecutive)
+            previous = index
+        else:
+            consecutive = 0
+            previous = None
+    return dict(
+        recorded_run_count=len(runs),
+        longest_consecutive_native_successes=longest,
+        three_consecutive_native_successes=longest >= 3,
+        recorded_deterministic_across_runs=record.get("deterministic_across_runs"),
+        product_traffic_comparisons="unestablished",
+        programmed_image_source_binding="unestablished",
+        physical_acceptance_established=False,
+        errors=errors)
+
+
 def inspect_hil_receipt(name):
     """Identify a known insufficient HIL result, never certify unknown traffic."""
     report = dict(kind="read-only-hil-receipt-diagnostic",
@@ -563,12 +612,10 @@ def inspect_hil_receipt(name):
         report["receipt_integrity"] = dict(
             bytes=len(payload), sha256=hashlib.sha256(payload).hexdigest())
         record = json.loads(payload)
-        if not isinstance(record, dict) or record.get("gate") != "board-hil":
-            raise ValueError("Expected a native board-hil receipt object")
+        report["native_execution_diagnostic"] = diagnose_hil_record(record)
+        report["errors"].extend(report["native_execution_diagnostic"]["errors"])
         report["recorded_status"] = record.get("status")
         runs = record.get("runs")
-        if not isinstance(runs, list) or not runs:
-            raise ValueError("Missing retained HIL runs")
         for index, run in enumerate(runs, 1):
             if not isinstance(run, dict):
                 raise ValueError(f"Invalid HIL run {index}")
