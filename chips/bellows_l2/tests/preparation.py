@@ -91,6 +91,9 @@ If requested_runs is recorded, it must be a positive integer matching the retain
 run count and ordered indices 1..requested_runs. Missing or extra requested runs
 cannot be hidden by a successful three-run subsequence. Legacy receipts without
 the field remain diagnosable but do not establish completeness of a requested set.
+The longest successful subsequence remains a historical count even when another
+run or aggregate field fails. The three-run success flag requires an error-free
+receipt as well as that count; it cannot conceal failures elsewhere in the set.
 This diagnostic does not define a new hardware transport or acceptance schema.
 Optional run execution metadata must not contradict a successful result: a
 recorded timed_out must be exactly false and launch_error must be null. Absent
@@ -639,7 +642,7 @@ def diagnose_hil_record(record):
     return dict(
         recorded_run_count=len(runs),
         longest_consecutive_native_successes=longest,
-        three_consecutive_native_successes=longest >= 3,
+        three_consecutive_native_successes=longest >= 3 and not errors,
         recorded_deterministic_across_runs=record.get("deterministic_across_runs"),
         product_traffic_comparisons="unestablished",
         programmed_image_source_binding="unestablished",

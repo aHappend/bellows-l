@@ -289,6 +289,30 @@ class HilDiagnosticTests(unittest.TestCase):
         self.assertTrue(result["three_consecutive_native_successes"])
         self.assertFalse(result["physical_acceptance_established"])
 
+    def test_inconsistent_receipt_cannot_report_successful_three_run_set(self):
+        for field, value in (("requested_runs", 4), ("requested_runs", 2),
+                             ("status", "failed"),
+                             ("deterministic_across_runs", False)):
+            with self.subTest(field=field, value=value):
+                record = copy.deepcopy(self.record)
+                record[field] = value
+                result = diagnose_hil_record(record)
+                self.assertEqual(result["longest_consecutive_native_successes"], 3)
+                self.assertTrue(result["errors"])
+                self.assertFalse(result["three_consecutive_native_successes"])
+                self.assertFalse(result["physical_acceptance_established"])
+
+    def test_failed_extra_run_cannot_be_hidden_by_successful_subsequence(self):
+        record = copy.deepcopy(self.record)
+        record["requested_runs"] = 4
+        record["runs"].append(dict(
+            run_index=4, exit_code=1, passed=False, stdout="", stderr="Synthetic failure"))
+        result = diagnose_hil_record(record)
+        self.assertEqual(result["longest_consecutive_native_successes"], 3)
+        self.assertTrue(result["errors"])
+        self.assertFalse(result["three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+
     def test_cli_timeout_cannot_be_hidden_by_successful_exit(self):
         for value in (True, None, 0, "false"):
             with self.subTest(timed_out=value):
