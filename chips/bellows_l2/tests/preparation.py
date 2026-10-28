@@ -59,6 +59,8 @@ project-relative execution root with the current sources and checks both
 mandatory portable destinations for occupation, including dangling symlinks.
 Source identity uses direct byte comparisons; hashes are retained for provenance,
 not used as a substitute for reading and comparing the copied contents.
+Per-file comparisons identify the first differing byte, and both source inventories
+are rechecked before reporting success so changes during inspection fail explicitly.
 It neither stages a root nor executes checks. A successful preflight establishes
 only source identity and fresh destinations, not maintenance admission, tool
 availability, functional results, hardware readiness or permission to resume.
@@ -545,6 +547,7 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                   root_mapping=dict(source_root=".", execution_root=str(name)),
                   current_sources_match=False, portable_preflight_passed=False,
                   source_comparison="direct-bytes", source_files_compared=0,
+                  source_comparisons=[], source_inventory_stable=False,
                   source_sha256={}, outputs=[], errors=[])
     errors = report["errors"]
     try:
@@ -574,8 +577,27 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                 errors.append(f"Unexpected declared source: {source}")
             else:
                 report["source_files_compared"] += 1
-                if (reference / source).read_bytes() != (root / source).read_bytes():
+                original = (reference / source).read_bytes()
+                copied = (root / source).read_bytes()
+                equal = original == copied
+                first_difference = None
+                if not equal:
+                    first_difference = next(
+                        (index for index, (left, right) in enumerate(zip(original, copied))
+                         if left != right), min(len(original), len(copied)))
+                report["source_comparisons"].append(dict(
+                    path=source, direct_bytes_equal=equal,
+                    current_bytes=len(original), staged_bytes=len(copied),
+                    first_differing_byte=first_difference))
+                if (hashlib.sha256(original).hexdigest() != current[source]
+                        or hashlib.sha256(copied).hexdigest() != staged[source]):
+                    errors.append(f"Declared source changed during comparison: {source}")
+                if not equal:
                     errors.append(f"Declared source differs from current input: {source}")
+        report["source_inventory_stable"] = (
+            inputs(reference) == current and inputs(root) == staged)
+        if not report["source_inventory_stable"]:
+            errors.append("Declared source inventory changed during inspection")
         report["current_sources_match"] = not errors
         for destination in ("evidence/l1", "evidence/l1-post-settlement-bundle-audit"):
             path = root / destination
