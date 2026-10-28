@@ -1,329 +1,333 @@
 {
-  "gate": "quartus-sta",
-  "timestamp_utc": "2026-10-28T06:04:33.006169+00:00",
-  "project_dir": "/data/sufeng/bellows-l2-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work",
-  "revision": "top",
+  "applicable": true,
   "clock_filter": "clk_main",
-  "min_setup_slack_ns": 0.0,
-  "min_hold_slack_ns": 0.0,
-  "status": "passed",
+  "clock_period_ns": 10.0,
+  "clock_port": "clk",
+  "critical_path_delay_ns": 6.595,
+  "detail": "Timing closed: Setup WNS = 3.405 ns",
+  "fmax_mhz": 151.63,
+  "gate": "quartus-sta",
   "map_summary": {
-    "exists": true,
-    "path": "/data/sufeng/bellows-l2-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work/top.map.rpt",
     "error_count": 0,
     "errors": [],
+    "exists": true,
     "lpm_divide_error_count": 0,
     "lpm_divide_errors": [],
-    "warning_10268_count": 0,
-    "warning_10268": []
+    "path": "/data/sufeng/bellows-l2-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work/top.map.rpt",
+    "warning_10268": [],
+    "warning_10268_count": 0
   },
+  "min_hold_slack_ns": 0.0,
+  "min_setup_slack_ns": 0.0,
+  "parameters": {},
+  "project_dir": "/data/sufeng/bellows-l2-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work",
+  "revision": "top",
+  "source_sha256": "d945b058ff54d427f2a33721fd9581a604db721b0832ffd32f9f38652399466c",
   "sta_summary": {
-    "exit_code": 0,
-    "netlist_mode": "post_fit",
     "clocks": [
       {
         "name": "clk_main",
         "period_ns": 10.0
       }
     ],
-    "wns_setup_ns": 3.405,
-    "wns_hold_ns": 0.05,
-    "failing_setup_count": 0,
+    "exit_code": 0,
     "failing_hold_count": 0,
-    "setup_paths": [
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[9]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[7]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[6]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[5]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[16]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[15]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[14]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[13]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[12]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[11]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[1]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[3]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[2]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[4]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[0]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[8]"
-      },
-      {
-        "slack_ns": 3.405,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[10]"
-      },
-      {
-        "slack_ns": 3.507,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|candidate_end[15]"
-      },
-      {
-        "slack_ns": 3.507,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|candidate_end[14]"
-      },
-      {
-        "slack_ns": 3.507,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l2_compressor:compressor",
-        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|candidate_end[13]"
-      }
-    ],
+    "failing_setup_count": 0,
     "hold_paths": [
       {
-        "slack_ns": 0.05,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l1_top:decompressor",
+        "slack_ns": 0.05,
+        "to_clock": "clk_main",
         "to_node": "bellows_l1_history:history|memory~0|bellows_l1_top:decompressor|bellows_l1_history:history|memory~0"
       },
       {
-        "slack_ns": 0.058,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.058,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.LITERAL_EXT|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.LITERAL_EXT"
       },
       {
-        "slack_ns": 0.058,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.058,
+        "to_clock": "clk_main",
         "to_node": "state.FALLBACK_EMIT|bellows_l2_compressor:compressor|state.FALLBACK_EMIT"
       },
       {
-        "slack_ns": 0.06,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.06,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.OFFSET_LOW|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.OFFSET_LOW"
       },
       {
-        "slack_ns": 0.06,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.06,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.OFFSET_HIGH|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.OFFSET_HIGH"
       },
       {
-        "slack_ns": 0.06,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.06,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.MATCH_EXT|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.MATCH_EXT"
       },
       {
-        "slack_ns": 0.06,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.06,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.IDLE|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.IDLE"
       },
       {
-        "slack_ns": 0.061,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.061,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[218]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[218]"
       },
       {
-        "slack_ns": 0.061,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.061,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[24]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[24]"
       },
       {
-        "slack_ns": 0.062,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.062,
+        "to_clock": "clk_main",
         "to_node": "state.MATCH_EMIT|bellows_l2_compressor:compressor|state.MATCH_EMIT"
       },
       {
-        "slack_ns": 0.062,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.062,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[22]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[22]"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.TOKEN|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.TOKEN"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|state.LITERAL_BYTE|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.LITERAL_BYTE"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_emitter:emitter|presented_valid|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|presented_valid"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l1_top:decompressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l1_output:output_stage|presented_last|bellows_l1_top:decompressor|bellows_l1_output:output_stage|presented_last"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[246]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[246]"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[234]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[234]"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[248]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[248]"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[194]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[194]"
       },
       {
-        "slack_ns": 0.063,
         "from_clock": "clk_main",
-        "to_clock": "clk_main",
         "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 0.063,
+        "to_clock": "clk_main",
         "to_node": "bellows_l2_hash_match:hash_match|table_valid[200]|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|table_valid[200]"
       }
     ],
-    "stderr_tail": []
+    "netlist_mode": "post_fit",
+    "raw_stdout": "UNCONSTRAINED_SETUP_PATHS:0\n",
+    "setup_paths": [
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[9]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[7]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[6]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[5]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[16]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[15]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[14]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[13]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[12]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[11]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[1]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[3]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[2]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[4]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[0]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[8]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.405,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|length[10]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.507,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|candidate_end[15]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.507,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|candidate_end[14]"
+      },
+      {
+        "from_clock": "clk_main",
+        "from_node": "bellows_l2_compressor:compressor",
+        "slack_ns": 3.507,
+        "to_clock": "clk_main",
+        "to_node": "bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a0~reg0|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|candidate_end[13]"
+      }
+    ],
+    "stderr_tail": [],
+    "unapproved_timing_exceptions": 0,
+    "unconstrained_functional_endpoints": 0,
+    "unconstrained_setup_paths": 0,
+    "wns_hold_ns": 0.05,
+    "wns_setup_ns": 3.405
   },
-  "detail": "Timing closed: Setup WNS = 3.405 ns",
-  "top_module": "bellows_l2_top",
-  "clock_port": "clk",
-  "clock_period_ns": 10.0,
+  "status": "passed",
   "target_frequency_mhz": 100.0,
-  "fmax_mhz": 151.63,
-  "critical_path_delay_ns": 6.595,
-  "parameters": {},
-  "source_sha256": "d945b058ff54d427f2a33721fd9581a604db721b0832ffd32f9f38652399466c",
-  "applicable": true
+  "timestamp_utc": "2026-10-28T06:04:33.006169+00:00",
+  "top_module": "bellows_l2_top"
 }
