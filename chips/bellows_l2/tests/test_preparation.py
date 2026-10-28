@@ -218,6 +218,43 @@ class HilDiagnosticTests(unittest.TestCase):
         self.assertFalse(result["physical_acceptance_established"])
         self.assertFalse(result["hardware_executed"])
 
+    def test_cli_failed_native_run_is_an_error_not_inventory_success(self):
+        for field, value in (("exit_code", 1), ("exit_code", None),
+                             ("exit_code", False), ("passed", False),
+                             ("passed", None)):
+            with self.subTest(field=field, value=value):
+                record = copy.deepcopy(self.record)
+                record["runs"][1][field] = value
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                diagnostic = result["native_execution_diagnostic"]
+                self.assertTrue(any(field in error for error in diagnostic["errors"]))
+                self.assertFalse(diagnostic["three_consecutive_native_successes"])
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_cli_failed_aggregate_cannot_be_hidden_by_successful_runs(self):
+        for field, value in (("status", "failed"), ("status", None),
+                             ("status", True),
+                             ("deterministic_across_runs", False),
+                             ("deterministic_across_runs", None),
+                             ("deterministic_across_runs", 1)):
+            with self.subTest(field=field, value=value):
+                record = copy.deepcopy(self.record)
+                record[field] = value
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                self.assertTrue(any(field in error for error in result["errors"]))
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["authorizes_resumption"])
+                self.assertFalse(result["hardware_executed"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

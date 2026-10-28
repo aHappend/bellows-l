@@ -54,6 +54,12 @@ only that a nonempty command is configured without enabled native configuration
 actions that build, copy RTL or flash hardware, including force_flash. It does not inspect the command's
 own side effects or establish transport correctness,
 programmed-image provenance, independent admission or hardware acceptance.
+HIL receipt inspection fails for nonzero or invalid run exits, missing/false
+run success, invalid raw streams and contradictory token checks. Failed or invalid
+aggregate status and missing/non-true determinism also fail the diagnostic, even
+when every individual run reports success. A readable
+failed execution is not a successful native-execution diagnostic. Even three
+consistent successful runs never establish product traffic or image provenance.
 With --hil-output, also reject an occupied or non-project evidence destination.
 This only inventories the admitted output contract; it never creates, removes
 or renames that destination, and cannot authorize a different invocation.
@@ -563,6 +569,10 @@ def diagnose_hil_record(record):
     previous = None
     indices = set()
     errors = []
+    if record.get("status") != "passed":
+        errors.append("Failed or invalid aggregate HIL status")
+    if record.get("deterministic_across_runs") is not True:
+        errors.append("Failed or invalid aggregate HIL deterministic_across_runs")
     for ordinal, run in enumerate(runs, 1):
         if not isinstance(run, dict):
             errors.append(f"Invalid HIL run {ordinal}")
@@ -582,11 +592,18 @@ def diagnose_hil_record(record):
                 errors.append(
                     f"Failed or invalid {field} for HIL run at ordinal {ordinal}")
                 token_checks_clean = False
-        succeeded = (
-            indexed and token_checks_clean and type(run.get("exit_code")) is int
-            and run["exit_code"] == 0 and run.get("passed") is True
-            and isinstance(run.get("stdout"), str)
-            and isinstance(run.get("stderr"), str))
+        execution_clean = True
+        for field, valid in (
+                ("exit_code", type(run.get("exit_code")) is int
+                 and run["exit_code"] == 0),
+                ("passed", run.get("passed") is True),
+                ("stdout", isinstance(run.get("stdout"), str)),
+                ("stderr", isinstance(run.get("stderr"), str))):
+            if not valid:
+                errors.append(
+                    f"Failed or invalid {field} for HIL run at ordinal {ordinal}")
+                execution_clean = False
+        succeeded = indexed and token_checks_clean and execution_clean
         if succeeded:
             consecutive = consecutive + 1 if previous == index - 1 else 1
             longest = max(longest, consecutive)
@@ -854,7 +871,7 @@ def main():
         report = inspect_hil_receipt(args.inspect_hil_receipt)
         json.dump(report, sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
-        # Exit zero means the diagnostic is readable, not physical acceptance.
+        # Exit zero means consistent native run records, not physical acceptance.
         return 0 if not report["errors"] else 1
     if args.stage_portable_root is not None:
         if args.repair_of:
