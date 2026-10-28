@@ -57,6 +57,8 @@ or renames that destination, and cannot authorize a different invocation.
 Portable-input inspection compares readable declared files in a nominated
 project-relative execution root with the current sources and checks both
 mandatory portable destinations for occupation, including dangling symlinks.
+Source identity uses direct byte comparisons; hashes are retained for provenance,
+not used as a substitute for reading and comparing the copied contents.
 It neither stages a root nor executes checks. A successful preflight establishes
 only source identity and fresh destinations, not maintenance admission, tool
 availability, functional results, hardware readiness or permission to resume.
@@ -542,6 +544,7 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                   acceptance_evidence=False, authorizes_resumption=False,
                   root_mapping=dict(source_root=".", execution_root=str(name)),
                   current_sources_match=False, portable_preflight_passed=False,
+                  source_comparison="direct-bytes", source_files_compared=0,
                   source_sha256={}, outputs=[], errors=[])
     errors = report["errors"]
     try:
@@ -569,8 +572,10 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                 errors.append(f"Missing declared source: {source}")
             elif source not in current:
                 errors.append(f"Unexpected declared source: {source}")
-            elif current[source] != staged[source]:
-                errors.append(f"Declared source differs from current input: {source}")
+            else:
+                report["source_files_compared"] += 1
+                if (reference / source).read_bytes() != (root / source).read_bytes():
+                    errors.append(f"Declared source differs from current input: {source}")
         report["current_sources_match"] = not errors
         for destination in ("evidence/l1", "evidence/l1-post-settlement-bundle-audit"):
             path = root / destination
