@@ -92,6 +92,9 @@ run count and ordered indices 1..requested_runs. Missing or extra requested runs
 cannot be hidden by a successful three-run subsequence. Legacy receipts without
 the field remain diagnosable but do not establish completeness of a requested set.
 This diagnostic does not define a new hardware transport or acceptance schema.
+Optional run execution metadata must not contradict a successful result: a
+recorded timed_out must be exactly false and launch_error must be null. Absent
+legacy fields remain diagnosable, not proof that timeout metadata was retained.
 HIL input inspection includes a Coordinator handoff for the shared-runtime
 platform owner. Its requested protocol and image-provenance inputs are prerequisites
 for independent admission, not a transport implementation or permission to run it.
@@ -608,6 +611,13 @@ def diagnose_hil_record(record):
                     f"Failed or invalid {field} for HIL run at ordinal {ordinal}")
                 token_checks_clean = False
         execution_clean = True
+        for field, valid in (
+                ("timed_out", "timed_out" not in run or run["timed_out"] is False),
+                ("launch_error", run.get("launch_error") is None)):
+            if not valid:
+                errors.append(
+                    f"Failed or invalid {field} for HIL run at ordinal {ordinal}")
+                execution_clean = False
         for field, valid in (
                 ("exit_code", type(run.get("exit_code")) is int
                  and run["exit_code"] == 0),

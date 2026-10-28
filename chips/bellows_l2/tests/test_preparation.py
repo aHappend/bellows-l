@@ -289,6 +289,50 @@ class HilDiagnosticTests(unittest.TestCase):
         self.assertTrue(result["three_consecutive_native_successes"])
         self.assertFalse(result["physical_acceptance_established"])
 
+    def test_cli_timeout_cannot_be_hidden_by_successful_exit(self):
+        for value in (True, None, 0, "false"):
+            with self.subTest(timed_out=value):
+                record = copy.deepcopy(self.record)
+                record["runs"][1]["timed_out"] = value
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                diagnostic = result["native_execution_diagnostic"]
+                self.assertTrue(any("timed_out" in error
+                                    for error in diagnostic["errors"]))
+                self.assertEqual(diagnostic["longest_consecutive_native_successes"], 1)
+                self.assertFalse(diagnostic["three_consecutive_native_successes"])
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_cli_launch_error_cannot_be_hidden_by_successful_exit(self):
+        for value in ("Synthetic tool unavailable", "", False, 0, {}):
+            with self.subTest(launch_error=value):
+                record = copy.deepcopy(self.record)
+                record["runs"][1]["launch_error"] = value
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                diagnostic = result["native_execution_diagnostic"]
+                self.assertTrue(any("launch_error" in error
+                                    for error in diagnostic["errors"]))
+                self.assertEqual(diagnostic["longest_consecutive_native_successes"], 1)
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_explicit_clean_execution_metadata_remains_diagnostic_only(self):
+        for run in self.record["runs"]:
+            run["timed_out"] = False
+            run["launch_error"] = None
+        result = diagnose_hil_record(self.record)
+        self.assertEqual(result["errors"], [])
+        self.assertTrue(result["three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
