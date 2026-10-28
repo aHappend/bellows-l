@@ -77,7 +77,9 @@ HIL receipt inspection diagnoses retained register-only runs without executing
 hardware. A claimed native pass is reported separately from product acceptance.
 Unrecognized output remains unestablished, never inferred to be byte comparisons.
 The longest consecutive sequence counts only explicitly indexed, successful native
-runs with complete raw streams. Even three such runs establish no product traffic
+runs with complete raw streams and no contradictory recorded token failures.
+Optional token-result fields, when present, must be empty lists; legacy receipts
+without them remain diagnosable. Even three such runs establish no product traffic
 or image provenance; the diagnostic never upgrades native outcomes to acceptance.
 This diagnostic does not define a new hardware transport or acceptance schema.
 HIL input inspection includes a Coordinator handoff for the shared-runtime
@@ -573,8 +575,15 @@ def diagnose_hil_record(record):
             errors.append(f"Invalid or duplicate HIL run index at ordinal {ordinal}")
         else:
             indices.add(index)
+        token_checks_clean = True
+        for field in ("missing_expected_tokens", "forbidden_tokens_found"):
+            if field in run and (
+                    not isinstance(run[field], list) or run[field]):
+                errors.append(
+                    f"Failed or invalid {field} for HIL run at ordinal {ordinal}")
+                token_checks_clean = False
         succeeded = (
-            indexed and type(run.get("exit_code")) is int
+            indexed and token_checks_clean and type(run.get("exit_code")) is int
             and run["exit_code"] == 0 and run.get("passed") is True
             and isinstance(run.get("stdout"), str)
             and isinstance(run.get("stderr"), str))

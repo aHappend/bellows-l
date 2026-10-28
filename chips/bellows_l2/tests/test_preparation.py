@@ -183,6 +183,41 @@ class HilDiagnosticTests(unittest.TestCase):
                 self.assertFalse(result["three_consecutive_native_successes"])
                 self.assertFalse(result["physical_acceptance_established"])
 
+    def test_recorded_token_failures_override_claimed_run_success(self):
+        for field in ("missing_expected_tokens", "forbidden_tokens_found"):
+            for value in (["synthetic-token"], None, "", False, {}):
+                with self.subTest(field=field, value=value):
+                    record = copy.deepcopy(self.record)
+                    record["runs"][1][field] = value
+                    result = diagnose_hil_record(record)
+                    self.assertEqual(
+                        result["longest_consecutive_native_successes"], 1)
+                    self.assertFalse(result["three_consecutive_native_successes"])
+                    self.assertTrue(any(field in error for error in result["errors"]))
+                    self.assertFalse(result["physical_acceptance_established"])
+
+    def test_empty_token_results_preserve_legacy_native_diagnostic(self):
+        for run in self.record["runs"]:
+            run["missing_expected_tokens"] = []
+            run["forbidden_tokens_found"] = []
+        result = diagnose_hil_record(self.record)
+        self.assertTrue(result["three_consecutive_native_successes"])
+        self.assertEqual(result["errors"], [])
+        self.assertFalse(result["physical_acceptance_established"])
+
+    def test_cli_contradictory_token_result_fails_without_executing_commands(self):
+        self.record["runs"][1]["forbidden_tokens_found"] = ["synthetic-token"]
+        with patch.object(Path, "read_bytes",
+                          return_value=json.dumps(self.record).encode()):
+            code, result = self.invoke_cli(
+                "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+        self.assertEqual(code, 1)
+        self.assertTrue(result["errors"])
+        self.assertFalse(result["native_execution_diagnostic"][
+            "three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+        self.assertFalse(result["hardware_executed"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
