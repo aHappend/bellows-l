@@ -41,6 +41,9 @@ New bundle receipts bind all retained artifacts, not just sources and raw stream
 The audit checks their exact file inventory, sizes and hashes; legacy bundles
 are explicitly reported as lacking these bindings. Neither kind of receipt
 proves that files remain available after the audit's own process settles.
+Artifact diagnostics distinguish missing, changed and unbound files, including
+compiler intermediates. Classification never excludes files from the audit or
+identifies the mechanism responsible for a missing file.
 The HIL input inspection reads only fpga/board_hil.json, never invokes commands
 from it, and never builds, programs or contacts hardware. Exit zero establishes
 only that a nonempty command is configured without enabled native configuration
@@ -108,18 +111,21 @@ def source_binding_errors(sources):
 
 def audit_artifacts(bundle, bindings):
     """Validate an optional manifest without repairing or creating any files."""
-    report = dict(present=bindings is not None, checked_files=0, errors=[])
+    report = dict(present=bindings is not None, checked_files=0, expected_files=0,
+                  missing_files=[], mismatched_files=[], unbound_files=[], errors=[])
     if bindings is None:
         return report
     if not isinstance(bindings, dict) or not bindings:
         report["errors"].append("Invalid or empty artifact integrity manifest")
         return report
+    report["expected_files"] = len(bindings)
     base = ROOT / bundle
     try:
         actual = {path.relative_to(ROOT).as_posix()
                   for path in base.rglob("*") if path.is_file()
                   and path != base / "receipt.json"}
-        for name in sorted(actual - set(bindings)):
+        report["unbound_files"] = sorted(actual - set(bindings))
+        for name in report["unbound_files"]:
             report["errors"].append(f"Unbound retained artifact: {name}")
     except OSError as error:
         report["errors"].append(f"Cannot inventory retained artifacts: {error}")
@@ -140,8 +146,12 @@ def audit_artifacts(bundle, bindings):
                     or re.fullmatch(r"[0-9a-f]{64}", binding["sha256"]) is None):
                 raise ValueError(f"Invalid artifact integrity binding: {name}")
             if file_integrity(ROOT / path) != binding:
+                report["mismatched_files"].append(name)
                 raise ValueError(f"Artifact integrity mismatch: {name}")
             report["checked_files"] += 1
+        except FileNotFoundError as error:
+            report["missing_files"].append(name)
+            report["errors"].append(str(error))
         except (OSError, ValueError) as error:
             report["errors"].append(str(error))
     return report
@@ -207,6 +217,7 @@ def audit_bundle(name, source_diff=False):
         if receipt.get("kind") != "portable-verifier":
             raise ValueError(f"Not a portable-verifier bundle: {name}")
         artifacts = audit_artifacts(bundle, receipt.get("artifact_integrity"))
+        report["artifact_integrity"] = artifacts
         report["artifact_integrity_present"] = artifacts["present"]
         report["bound_artifacts"] = artifacts["checked_files"]
         errors.extend(artifacts["errors"])
