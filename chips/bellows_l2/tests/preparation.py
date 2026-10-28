@@ -11,6 +11,7 @@
     python3 tests/preparation.py --inspect-hil-inputs --hil-output evidence/native-board-hil-recovery-0120.json
     python3 tests/preparation.py --inspect-portable-inputs
     python3 tests/preparation.py --inspect-portable-inputs evidence/maintenance-root
+    python3 tests/preparation.py --stage-portable-root evidence/fresh-portable/project
 
 Repair links require predecessor metadata and both raw streams before launch.
 This local check does not establish historical authenticity or authorize resumption.
@@ -41,7 +42,9 @@ are explicitly reported as lacking these bindings. Neither kind of receipt
 proves that files remain available after the audit's own process settles.
 The HIL input inspection reads only fpga/board_hil.json, never invokes commands
 from it, and never builds, programs or contacts hardware. Exit zero establishes
-only that a nonempty product command is configured, not transport correctness,
+only that a nonempty command is configured without enabled native configuration
+actions that build, copy RTL or flash hardware. It does not inspect the command's
+own side effects or establish transport correctness,
 programmed-image provenance, independent admission or hardware acceptance.
 With --hil-output, also reject an occupied or non-project evidence destination.
 This only inventories the admitted output contract; it never creates, removes
@@ -52,6 +55,12 @@ mandatory portable destinations for occupation, including dangling symlinks.
 It neither stages a root nor executes checks. A successful preflight establishes
 only source identity and fresh destinations, not maintenance admission, tool
 availability, functional results, hardware readiness or permission to resume.
+Fresh-root staging copies only the current declared inputs, never historical
+outputs or runtime metadata, and retains a source inventory and root mapping.
+It refuses an occupied root and never launches checks or hardware commands.
+The shared runtime must execute both unchanged mandatory commands in that actual
+source root, in order; a launch-directory change without source copies is not
+sufficient. Staging is preparation, not current portable or physical acceptance.
 """
 
 import argparse
@@ -388,7 +397,8 @@ def inspect_hil_inputs(root=ROOT, output=None):
     report = dict(kind="read-only-hil-input-inventory",
                   path="fpga/board_hil.json", acceptance_evidence=False,
                   authorizes_resumption=False, hardware_executed=False,
-                  product_command_configured=False, errors=[])
+                  product_command_configured=False,
+                  configuration_actions=[], errors=[])
     if output is not None:
         destination = Path(output)
         contract = dict(path=str(output), fresh=False)
@@ -423,6 +433,19 @@ def inspect_hil_inputs(root=ROOT, output=None):
             key for key in ("bedrock_project_dir", "remote_rpd_win_path",
                             "sync_rtl_to_dir", "local_build_and_flash_cmd",
                             "force_flash") if config.get(key))
+        if config.get("bedrock_project_dir"):
+            report["configuration_actions"].append("bedrock_build")
+            if config.get("remote_rpd_win_path"):
+                report["configuration_actions"].append("transfer_and_flash")
+        else:
+            if config.get("sync_rtl_to_dir"):
+                report["configuration_actions"].append("copy_rtl")
+            if config.get("local_build_and_flash_cmd"):
+                report["configuration_actions"].append("local_build_and_flash")
+        if report["configuration_actions"]:
+            report["errors"].append(
+                "Configured native HIL actions conflict with the no-deployment "
+                "work order: " + ", ".join(report["configuration_actions"]))
     except (OSError, ValueError) as error:
         report["errors"].append(f"Cannot establish product-command input: {error}")
     report["unverified_requirements"] = [
@@ -430,7 +453,7 @@ def inspect_hil_inputs(root=ROOT, output=None):
         "Readable programmed-image binding to accepted sources",
         "Fresh shared-runtime prerequisite evidence",
         "Independent admission of adapter ownership, invocation and fresh outputs",
-        "Three consecutive byte-exact physical compression, decompression and internal-round-trip passes",
+        "Three consecutive byte-exact physical compression, decompression, simultaneous-duplex and internal-round-trip passes",
     ]
     return report
 
@@ -486,6 +509,94 @@ def inspect_portable_inputs(name=".", reference=ROOT):
     return report
 
 
+def stage_portable_root(name, reference=ROOT):
+    """Create an append-only declared-input copy for shared-runtime execution."""
+    relative_root = Path(name)
+    if (relative_root.is_absolute() or ".." in relative_root.parts
+            or not relative_root.is_relative_to("evidence")
+            or relative_root == Path("evidence")
+            or any(part in (".vulcan", ".git", ".tooling", "VULCAN")
+                   for part in relative_root.parts)):
+        raise ValueError("Staging root must be a non-runtime path inside evidence/")
+    root = reference / relative_root
+    if not root.resolve().is_relative_to(reference.resolve()):
+        raise ValueError("Staging root resolves outside the project")
+    for candidate in (root, *root.parents):
+        if candidate == reference:
+            break
+        if candidate.is_symlink():
+            raise ValueError("Staging root must not depend on symlinks")
+    if os.path.lexists(root):
+        raise ValueError("Occupied staging root; preserve it and select a fresh root")
+    sources = inputs(reference)
+    for name in sources:
+        source = reference / name
+        for candidate in (source, *source.parents):
+            if candidate == reference:
+                break
+            if candidate.is_symlink():
+                raise ValueError(f"Declared source depends on a symlink: {name}")
+    root.mkdir(parents=True, exist_ok=False)
+    record = dict(
+        kind="declared-input-root-staging", acceptance_evidence=False,
+        argv=["python3", "tests/preparation.py", "--stage-portable-root",
+              relative_root.as_posix()],
+        cwd=".", root_mapping=dict(source_root=".",
+                                  execution_root=relative_root.as_posix()),
+        source_sha256=sources, staged_source_sha256={},
+        start_time=datetime.now(timezone.utc).isoformat(),
+        tool_versions={"python3": sys.version}, timeout_s=None,
+        timed_out=False, exit_code=None, children=[],
+        checks_executed=False, hardware_executed=False,
+        mandatory_commands=[
+            ["python3", "tests/verify.py", "--output", "evidence/l1"],
+            ["sh", "-c", "mkdir evidence/l1-post-settlement-bundle-audit && "
+             "python3 tests/preparation.py --audit-bundles evidence/l1 > "
+             "evidence/l1-post-settlement-bundle-audit/stdout.json 2> "
+             "evidence/l1-post-settlement-bundle-audit/stderr.log"],
+        ],
+        stdout=(relative_root / "staging.stdout.log").as_posix(),
+        stderr=(relative_root / "staging.stderr.log").as_posix(),
+    )
+    error = None
+    try:
+        for name, digest in sources.items():
+            payload = (reference / name).read_bytes()
+            if hashlib.sha256(payload).hexdigest() != digest:
+                raise ValueError(f"Source changed before copy: {name}")
+            destination = root / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with destination.open("xb") as handle:
+                handle.write(payload)
+        record["staged_source_sha256"] = inputs(root)
+        if record["staged_source_sha256"] != sources or inputs(reference) != sources:
+            raise ValueError("Sources changed during staging")
+        record["preflight"] = inspect_portable_inputs(
+            relative_root.as_posix(), reference=reference)
+        if not record["preflight"]["portable_preflight_passed"]:
+            raise ValueError("Staged portable-input preflight failed")
+        record["exit_code"] = 0
+    except (OSError, ValueError, AssertionError) as failure:
+        error = f"{type(failure).__name__}: {failure}"
+        record.update(exit_code=1, error=error)
+    record["end_time"] = datetime.now(timezone.utc).isoformat()
+    for channel, text in (("stdout", "Declared inputs staged; no checks executed.\n"
+                          if error is None else ""),
+                          ("stderr", error + "\n" if error else "")):
+        path = root / f"staging.{channel}.log"
+        with path.open("x") as handle:
+            handle.write(text)
+    record["stream_integrity"] = {
+        channel: file_integrity(root / f"staging.{channel}.log")
+        for channel in ("stdout", "stderr")
+    }
+    json_write(root / "staging-receipt.json", record)
+    if error is not None:
+        raise ValueError(
+            f"{error}; retained {relative_root.as_posix()}/staging-receipt.json")
+    return record
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     operation = parser.add_mutually_exclusive_group(required=True)
@@ -498,6 +609,7 @@ def main():
     operation.add_argument("--inspect-hil-inputs", action="store_true")
     operation.add_argument("--inspect-portable-inputs", nargs="?", const=".",
                            metavar="PROJECT_RELATIVE_ROOT")
+    operation.add_argument("--stage-portable-root", metavar="PROJECT_RELATIVE_ROOT")
     parser.add_argument("--hil-output", metavar="PROJECT_RELATIVE_PATH",
                         help="read-only fresh-output inspection with --inspect-hil-inputs")
     parser.add_argument("--source-diff", action="store_true",
@@ -509,6 +621,16 @@ def main():
     if args.source_diff and not args.audit_bundles:
         parser.error("--source-diff applies only to --audit-bundles")
     os.chdir(ROOT)
+    if args.stage_portable_root is not None:
+        if args.repair_of:
+            parser.error("--repair-of applies only to --subset")
+        try:
+            report = stage_portable_root(args.stage_portable_root)
+        except (OSError, ValueError, AssertionError) as error:
+            parser.exit(1, f"{error}\n")
+        json.dump(report, sys.stdout, indent=2, sort_keys=True)
+        sys.stdout.write("\n")
+        return 0
     if args.inspect_portable_inputs is not None:
         if args.repair_of:
             parser.error("--repair-of applies only to --subset")
