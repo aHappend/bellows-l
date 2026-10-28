@@ -35,8 +35,10 @@ The advisory --subset output-focused runs only output-path rejection checks
 and tool-version queries; it establishes no RTL behavior or matrix coverage.
 
 Final receipts bind every retained artifact, including compared data and synthesis
-outputs. This detects partial retention; it cannot restore a missing bundle or
-authorize replay of a paused check.
+outputs. Before publishing a final receipt, all artifact files and their directory
+entries are fsynced and rechecked against the manifest. Synchronization errors
+fail explicitly. This improves crash durability, not protection against external
+deletion; it cannot restore a missing bundle or authorize replay of a paused check.
 Final stdout also identifies the receipt and results by size and SHA-256, with
 source bindings and matrix outcomes. This diagnostic is not a replacement for
 the raw bundle or proof of its availability after process settlement.
@@ -97,6 +99,43 @@ def json_write(path, value):
         handle.write("\n")
         handle.flush()
         os.fsync(handle.fileno())
+    sync_directory(path.parent)
+
+
+def sync_directory(path):
+    descriptor = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def persist_artifacts(output):
+    """Synchronize a completed bundle before publishing its integrity bindings."""
+    paths = sorted(output.rglob("*"))
+    if output.is_symlink() or any(path.is_symlink() for path in paths):
+        raise AssertionError("Evidence artifacts must not depend on symlinks")
+    files = [path for path in paths if path.is_file()]
+    artifacts = {}
+    for path in files:
+        binding = file_integrity(path)
+        with path.open("rb") as handle:
+            os.fsync(handle.fileno())
+        artifacts[relative(path)] = binding
+    directories = [output, *(path for path in paths if path.is_dir())]
+    for directory in sorted(directories, key=lambda path: len(path.parts), reverse=True):
+        sync_directory(directory)
+    # Persist newly created ancestors as well, without touching unrelated files.
+    for directory in output.resolve().parents:
+        if not directory.is_relative_to(ROOT):
+            break
+        sync_directory(directory)
+    if sorted(output.rglob("*")) != paths:
+        raise AssertionError("Evidence inventory changed during synchronization")
+    for path in files:
+        if file_integrity(path) != artifacts[relative(path)]:
+            raise AssertionError(f"Evidence changed during synchronization: {relative(path)}")
+    return artifacts
 
 
 def inputs(root=ROOT):
@@ -225,8 +264,7 @@ class Execution:
                         coverage=dict(self.coverage), mandatory_matrix=[
                             dict(capacity=c, seed=s, outcome=self.matrix_status[(c, s)])
                             for c in CAPACITIES for s in SEEDS]))
-        artifacts = {relative(path): file_integrity(path)
-                     for path in sorted(self.output.rglob("*")) if path.is_file()}
+        artifacts = persist_artifacts(self.output)
         json_write(self.output / "receipt.json",
                    dict(kind="portable-verifier", start_time=self.started, end_time=now(),
                         cwd=".", argv=["python3", *sys.argv], source_sha256=self.source_hashes,
