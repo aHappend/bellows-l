@@ -9,6 +9,7 @@
     python3 tests/preparation.py --audit-bundles evidence/l1 [<bundle> ...]
     python3 tests/preparation.py --audit-bundles evidence/l1 --source-diff
     python3 tests/preparation.py --inspect-hil-inputs
+    python3 tests/preparation.py --inspect-hil-receipt evidence/retained-hil.json
     python3 tests/preparation.py --inspect-hil-inputs --hil-output evidence/native-board-hil-recovery-0120.json
     python3 tests/preparation.py --inspect-portable-inputs
     python3 tests/preparation.py --inspect-portable-inputs evidence/maintenance-root
@@ -65,6 +66,10 @@ It refuses an occupied root and never launches checks or hardware commands.
 The shared runtime must execute both unchanged mandatory commands in that actual
 source root, in order; a launch-directory change without source copies is not
 sufficient. Staging is preparation, not current portable or physical acceptance.
+HIL receipt inspection diagnoses retained register-only runs without executing
+hardware. A claimed native pass is reported separately from product acceptance.
+Unrecognized output remains unestablished, never inferred to be byte comparisons.
+This diagnostic does not define a new hardware transport or acceptance schema.
 """
 
 import argparse
@@ -471,6 +476,64 @@ def inspect_hil_inputs(root=ROOT, output=None):
     return report
 
 
+def inspect_hil_receipt(name):
+    """Identify a known insufficient HIL result, never certify unknown traffic."""
+    report = dict(kind="read-only-hil-receipt-diagnostic",
+                  path=name, acceptance_evidence=False,
+                  authorizes_resumption=False, hardware_executed=False,
+                  physical_acceptance_established=False,
+                  recorded_status=None, runs=[], errors=[])
+    try:
+        path = Path(name)
+        if (path.is_absolute() or ".." in path.parts
+                or not path.is_relative_to("evidence")
+                or not (ROOT / path).resolve().is_relative_to(
+                    (ROOT / "evidence").resolve())):
+            raise ValueError("HIL receipt must remain inside project evidence/")
+        payload = (ROOT / path).read_bytes()
+        report["receipt_integrity"] = dict(
+            bytes=len(payload), sha256=hashlib.sha256(payload).hexdigest())
+        record = json.loads(payload)
+        if not isinstance(record, dict) or record.get("gate") != "board-hil":
+            raise ValueError("Expected a native board-hil receipt object")
+        report["recorded_status"] = record.get("status")
+        runs = record.get("runs")
+        if not isinstance(runs, list) or not runs:
+            raise ValueError("Missing retained HIL runs")
+        for index, run in enumerate(runs, 1):
+            if not isinstance(run, dict):
+                raise ValueError(f"Invalid HIL run {index}")
+            stdout = run.get("stdout")
+            stderr = run.get("stderr")
+            if not isinstance(stdout, str) or not isinstance(stderr, str):
+                raise ValueError(f"Missing raw HIL streams for run {index}")
+            lines = [line.strip() for line in stdout.splitlines() if line.strip()]
+            register_reads = sum(bool(re.fullmatch(
+                r"Read register \d+ \(0x[0-9a-fA-F]+\): \d+ \(0x[0-9a-fA-F]+\)",
+                line)) for line in lines)
+            register_only = register_reads > 0 and all(
+                re.fullmatch(
+                    r"Read register \d+ \(0x[0-9a-fA-F]+\): \d+ \(0x[0-9a-fA-F]+\)",
+                    line)
+                or re.fullmatch(r"FPGA diagnostics total time: [0-9.]+ seconds", line)
+                for line in lines)
+            report["runs"].append(dict(
+                ordinal=index, recorded_index=run.get("run_index"),
+                exit_code=run.get("exit_code"), recorded_passed=run.get("passed"),
+                register_reads=register_reads, register_only=register_only,
+                stdout_bytes=len(stdout.encode()), stderr_bytes=len(stderr.encode()),
+                traffic_comparisons="unestablished"))
+        report["register_only_runs"] = sum(
+            run["register_only"] for run in report["runs"])
+        report["diagnosis"] = (
+            "Register responsiveness is not BELLOWS traffic verification"
+            if report["register_only_runs"] else
+            "Retained output requires independent product-traffic review")
+    except (OSError, ValueError) as error:
+        report["errors"].append(str(error))
+    return report
+
+
 def inspect_portable_inputs(name=".", reference=ROOT):
     """Check a maintenance-staged root without copying inputs or running checks."""
     report = dict(kind="read-only-portable-input-inventory",
@@ -620,6 +683,7 @@ def main():
     operation.add_argument("--audit-receipts", nargs="+", metavar="RECEIPT")
     operation.add_argument("--audit-bundles", nargs="+", metavar="BUNDLE")
     operation.add_argument("--inspect-hil-inputs", action="store_true")
+    operation.add_argument("--inspect-hil-receipt", metavar="PROJECT_RELATIVE_RECEIPT")
     operation.add_argument("--inspect-portable-inputs", nargs="?", const=".",
                            metavar="PROJECT_RELATIVE_ROOT")
     operation.add_argument("--stage-portable-root", metavar="PROJECT_RELATIVE_ROOT")
@@ -634,6 +698,14 @@ def main():
     if args.source_diff and not args.audit_bundles:
         parser.error("--source-diff applies only to --audit-bundles")
     os.chdir(ROOT)
+    if args.inspect_hil_receipt is not None:
+        if args.repair_of:
+            parser.error("--repair-of applies only to --subset")
+        report = inspect_hil_receipt(args.inspect_hil_receipt)
+        json.dump(report, sys.stdout, indent=2, sort_keys=True)
+        sys.stdout.write("\n")
+        # Exit zero means the diagnostic is readable, not physical acceptance.
+        return 0 if not report["errors"] else 1
     if args.stage_portable_root is not None:
         if args.repair_of:
             parser.error("--repair-of applies only to --subset")
