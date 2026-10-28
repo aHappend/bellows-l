@@ -77,6 +77,11 @@ HIL receipt inspection diagnoses retained register-only runs without executing
 hardware. A claimed native pass is reported separately from product acceptance.
 Unrecognized output remains unestablished, never inferred to be byte comparisons.
 This diagnostic does not define a new hardware transport or acceptance schema.
+HIL input inspection includes a Coordinator handoff for the shared-runtime
+platform owner. Its requested protocol and image-provenance inputs are prerequisites
+for independent admission, not a transport implementation or permission to run it.
+Even a configured command leaves these obligations unverified. Missing physical
+inputs must not trigger an unchanged portable rerun or a Designer repair request.
 """
 
 import argparse
@@ -503,11 +508,40 @@ def inspect_hil_inputs(root=ROOT, output=None):
         report["errors"].append(f"Cannot establish product-command input: {error}")
     report["unverified_requirements"] = [
         "Supported physical BELLOWS traffic transport",
+        "Documented stream/status protocol for compression, decompression, duplex and internal round-trip",
         "Readable programmed-image binding to accepted sources",
         "Fresh shared-runtime prerequisite evidence",
         "Independent admission of adapter ownership, invocation and fresh outputs",
         "Three consecutive byte-exact physical compression, decompression, simultaneous-duplex and internal-round-trip passes",
     ]
+    report["coordinator_handoff"] = dict(
+        recipient="Coordinator",
+        prerequisite_owner="shared-runtime platform owner",
+        required_inputs=[
+            dict(name="nondeploying_invocation",
+                 request="Supported product-traffic argv, working directory and "
+                         "prerequisites; no build, programming or RTL-copy actions"),
+            dict(name="stream_status_protocol",
+                 request="Document ingress/egress byte and block framing, empty-block "
+                         "keep, ready/valid stalls, completion/error association and "
+                         "mode selection for both lanes and internal round-trip"),
+            dict(name="programmed_image_binding",
+                 request="Readable provenance connecting the currently programmed "
+                         "image, its build inputs and the delivered RTL; register "
+                         "responsiveness or an unassociated source hash is insufficient"),
+            dict(name="independent_admission",
+                 request="Independently admit configuration, adapter ownership, "
+                         "invocation and fresh evidence outputs before implementation "
+                         "or physical execution"),
+        ],
+        required_physical_result="Three consecutive deterministic passes comparing "
+                                 "complete bytes and block/status associations for "
+                                 "compression, decompression, concurrent duplex and "
+                                 "internal round-trip",
+        portable_rerun_resolves_gap=False,
+        designer_repair_justified=False,
+        authorizes_adapter_implementation=False,
+        authorizes_hardware_execution=False)
     return report
 
 
