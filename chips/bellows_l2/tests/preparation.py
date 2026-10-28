@@ -85,6 +85,8 @@ platform owner. Its requested protocol and image-provenance inputs are prerequis
 for independent admission, not a transport implementation or permission to run it.
 Even a configured command leaves these obligations unverified. Missing physical
 inputs must not trigger an unchanged portable rerun or a Designer repair request.
+Run python3 -B tests/test_preparation.py for synthetic regressions of this safety
+boundary. These tests never launch transport commands or certify hardware traffic.
 """
 
 import argparse
