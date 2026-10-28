@@ -6,6 +6,8 @@ No transport commands are executed and no hardware acceptance is established.
 """
 
 import copy
+from contextlib import redirect_stderr, redirect_stdout
+import io
 import json
 from pathlib import Path
 import sys
@@ -14,7 +16,7 @@ from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from preparation import diagnose_hil_record, inspect_hil_inputs
+from preparation import diagnose_hil_record, inspect_hil_inputs, main
 
 
 class HilDiagnosticTests(unittest.TestCase):
@@ -33,6 +35,80 @@ class HilDiagnosticTests(unittest.TestCase):
         with patch.object(Path, "read_bytes",
                           return_value=json.dumps(config).encode()):
             return inspect_hil_inputs(**kwargs)
+
+    def invoke_cli(self, *arguments):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with patch.object(sys, "argv", ["tests/preparation.py", *arguments]), \
+                patch("preparation.os.chdir"), \
+                redirect_stdout(stdout), redirect_stderr(stderr):
+            code = main()
+        self.assertEqual(stderr.getvalue(), "")
+        return code, json.loads(stdout.getvalue())
+
+    def test_cli_missing_configuration_fails_without_executing_commands(self):
+        with patch.object(Path, "read_bytes", side_effect=FileNotFoundError(
+                "Synthetic missing fpga/board_hil.json")):
+            code, result = self.invoke_cli("--inspect-hil-inputs")
+        self.assertEqual(code, 1)
+        self.assertFalse(result["product_command_configured"])
+        self.assertFalse(result["authorizes_resumption"])
+        self.assertTrue(result["errors"])
+
+    def test_cli_configured_command_is_only_an_inventory_success(self):
+        with patch.object(Path, "read_bytes", return_value=json.dumps(dict(
+                remote_test_cmd="synthetic-never-execute")).encode()):
+            code, result = self.invoke_cli("--inspect-hil-inputs")
+        self.assertEqual(code, 0)
+        self.assertTrue(result["product_command_configured"])
+        self.assertFalse(result["hardware_executed"])
+        self.assertFalse(result["acceptance_evidence"])
+        self.assertFalse(result["authorizes_resumption"])
+
+    def test_cli_invalid_configuration_reports_failure(self):
+        for payload in (b"{", b"[]", b'{"remote_test_cmd": ""}'):
+            with self.subTest(payload=payload), \
+                    patch.object(Path, "read_bytes", return_value=payload):
+                code, result = self.invoke_cli("--inspect-hil-inputs")
+                self.assertEqual(code, 1)
+                self.assertTrue(result["errors"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_cli_register_only_receipt_never_grants_acceptance(self):
+        with patch.object(Path, "read_bytes",
+                          return_value=json.dumps(self.record).encode()):
+            code, result = self.invoke_cli(
+                "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+        self.assertEqual(code, 0)
+        self.assertEqual(result["register_only_runs"], 3)
+        self.assertTrue(result["native_execution_diagnostic"][
+            "three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+        self.assertFalse(result["authorizes_resumption"])
+
+    def test_cli_unknown_output_is_not_inferred_to_be_product_comparisons(self):
+        record = copy.deepcopy(self.record)
+        for run in record["runs"]:
+            run["stdout"] = "PASS complete BELLOWS traffic\n"
+        with patch.object(Path, "read_bytes",
+                          return_value=json.dumps(record).encode()):
+            code, result = self.invoke_cli(
+                "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+        self.assertEqual(code, 0)
+        self.assertEqual(result["register_only_runs"], 0)
+        self.assertTrue(all(run["traffic_comparisons"] == "unestablished"
+                            for run in result["runs"]))
+        self.assertFalse(result["physical_acceptance_established"])
+
+    def test_cli_missing_raw_receipt_stream_is_an_error(self):
+        record = copy.deepcopy(self.record)
+        del record["runs"][1]["stderr"]
+        with patch.object(Path, "read_bytes",
+                          return_value=json.dumps(record).encode()):
+            code, result = self.invoke_cli(
+                "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+        self.assertEqual(code, 1)
+        self.assertTrue(result["errors"])
+        self.assertFalse(result["physical_acceptance_established"])
 
     def test_missing_configuration_preserves_prerequisite_handoff(self):
         with patch.object(Path, "read_bytes", side_effect=FileNotFoundError(
