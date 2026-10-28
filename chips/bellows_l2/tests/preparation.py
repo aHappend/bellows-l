@@ -48,7 +48,7 @@ identifies the mechanism responsible for a missing file.
 The HIL input inspection reads only fpga/board_hil.json, never invokes commands
 from it, and never builds, programs or contacts hardware. Exit zero establishes
 only that a nonempty command is configured without enabled native configuration
-actions that build, copy RTL or flash hardware. It does not inspect the command's
+actions that build, copy RTL or flash hardware, including force_flash. It does not inspect the command's
 own side effects or establish transport correctness,
 programmed-image provenance, independent admission or hardware acceptance.
 With --hil-output, also reject an occupied or non-project evidence destination.
@@ -460,6 +460,8 @@ def inspect_hil_inputs(root=ROOT, output=None):
                 report["configuration_actions"].append("copy_rtl")
             if config.get("local_build_and_flash_cmd"):
                 report["configuration_actions"].append("local_build_and_flash")
+        if config.get("force_flash"):
+            report["configuration_actions"].append("force_flash")
         if report["configuration_actions"]:
             report["errors"].append(
                 "Configured native HIL actions conflict with the no-deployment "
