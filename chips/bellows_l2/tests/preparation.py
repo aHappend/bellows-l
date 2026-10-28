@@ -23,6 +23,8 @@ an audit is not a replacement receipt or permission to resume paused verificatio
 Receipt-audit exit zero means metadata and logs are available, not that the
 recorded commands passed. Each readable receipt separately reports its recorded
 execution outcome; unknown or unsettled outcomes are never labeled successful.
+An optional launch_error must be null/absent for success, or a nonempty string
+for a launch failure; false-valued malformed fields are invalid, not success.
 Receipt audits also report source currency separately from historical execution:
 a successful prerequisite from an older source set is not a current passing check.
 Bundle audits separately report readability and binding to current declared inputs;
@@ -450,8 +452,10 @@ def audit_receipt(name):
         outcome = "timed-out"
     elif timed_out is not False or (code is not None and type(code) is not int):
         outcome = "invalid-result"
-    elif record.get("launch_error"):
-        outcome = "launch-failed"
+    elif record.get("launch_error") is not None:
+        launch_error = record["launch_error"]
+        outcome = ("launch-failed" if isinstance(launch_error, str)
+                   and launch_error.strip() else "invalid-result")
     elif code is None:
         outcome = "unsettled"
     elif code == 0:

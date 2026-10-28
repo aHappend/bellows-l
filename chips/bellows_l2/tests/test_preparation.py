@@ -16,7 +16,52 @@ from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from preparation import diagnose_hil_record, inspect_hil_inputs, main
+from preparation import audit_receipt, diagnose_hil_record, inspect_hil_inputs, main
+
+
+class ReceiptOutcomeTests(unittest.TestCase):
+    def audit(self, **metadata):
+        record = dict(argv=["synthetic-never-execute"], cwd=".",
+                      exit_code=0, timed_out=False, source_sha256={},
+                      tool_versions={}, stdout="evidence/synthetic/stdout.log",
+                      stderr="evidence/synthetic/stderr.log")
+        record.update(metadata)
+        with patch("preparation.repair_receipt", return_value="synthetic-digest"), \
+                patch("preparation.source_binding_errors", return_value=[]), \
+                patch.object(Path, "read_bytes",
+                             return_value=json.dumps(record).encode()), \
+                patch("subprocess.Popen", side_effect=AssertionError(
+                    "Receipt diagnosis must not launch commands")):
+            return audit_receipt("evidence/synthetic/receipt.json")
+
+    def test_false_valued_launch_errors_are_invalid_not_success(self):
+        for value in ("", False, 0, [], {}):
+            with self.subTest(launch_error=value):
+                result = self.audit(launch_error=value)
+                self.assertTrue(result["available"])
+                self.assertEqual(result["recorded_execution"]["outcome"],
+                                 "invalid-result")
+
+    def test_nonempty_launch_error_is_failed_not_success(self):
+        result = self.audit(launch_error="Synthetic executable unavailable")
+        self.assertEqual(result["recorded_execution"]["outcome"], "launch-failed")
+
+    def test_absent_or_null_launch_error_preserves_success(self):
+        for metadata in ({}, dict(launch_error=None)):
+            with self.subTest(metadata=metadata):
+                result = self.audit(**metadata)
+                self.assertEqual(result["recorded_execution"]["outcome"], "succeeded")
+
+    def test_timeout_and_exit_outcomes_remain_distinct(self):
+        for metadata, expected in (
+                (dict(timed_out=True), "timed-out"),
+                (dict(timed_out=0), "invalid-result"),
+                (dict(exit_code=False), "invalid-result"),
+                (dict(exit_code=None), "unsettled"),
+                (dict(exit_code=1), "failed")):
+            with self.subTest(metadata=metadata):
+                result = self.audit(**metadata)
+                self.assertEqual(result["recorded_execution"]["outcome"], expected)
 
 
 class HilDiagnosticTests(unittest.TestCase):
