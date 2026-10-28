@@ -100,6 +100,8 @@ This diagnostic does not define a new hardware transport or acceptance schema.
 Optional run execution metadata must not contradict a successful result: a
 recorded timed_out must be exactly false and launch_error must be null. Absent
 legacy fields remain diagnosable, not proof that timeout metadata was retained.
+The same checks apply to optional aggregate execution metadata; clean individual
+runs cannot conceal a timeout or launch failure of the enclosing execution.
 HIL input inspection includes a Coordinator handoff for the shared-runtime
 platform owner. Its requested protocol and image-provenance inputs are prerequisites
 for independent admission, not a transport implementation or permission to run it.
@@ -587,6 +589,11 @@ def diagnose_hil_record(record):
         errors.append("Failed or invalid aggregate HIL status")
     if record.get("deterministic_across_runs") is not True:
         errors.append("Failed or invalid aggregate HIL deterministic_across_runs")
+    for field, valid in (
+            ("timed_out", "timed_out" not in record or record["timed_out"] is False),
+            ("launch_error", record.get("launch_error") is None)):
+        if not valid:
+            errors.append(f"Failed or invalid aggregate HIL {field}")
     if "requested_runs" in record:
         requested = record["requested_runs"]
         if type(requested) is not int or requested <= 0:

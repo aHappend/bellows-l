@@ -402,6 +402,34 @@ class HilDiagnosticTests(unittest.TestCase):
         self.assertTrue(result["three_consecutive_native_successes"])
         self.assertFalse(result["physical_acceptance_established"])
 
+    def test_aggregate_execution_failure_cannot_be_hidden_by_clean_runs(self):
+        for field, value in (("timed_out", True), ("timed_out", None),
+                             ("timed_out", 0), ("timed_out", "false"),
+                             ("launch_error", "Synthetic launch failure"),
+                             ("launch_error", ""), ("launch_error", False),
+                             ("launch_error", 0), ("launch_error", {})):
+            with self.subTest(field=field, value=value):
+                record = copy.deepcopy(self.record)
+                record[field] = value
+                with patch.object(Path, "read_bytes",
+                                  return_value=json.dumps(record).encode()):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt", "evidence/synthetic-hil.json")
+                self.assertEqual(code, 1)
+                diagnostic = result["native_execution_diagnostic"]
+                self.assertTrue(any(field in error for error in diagnostic["errors"]))
+                self.assertEqual(diagnostic["longest_consecutive_native_successes"], 3)
+                self.assertFalse(diagnostic["three_consecutive_native_successes"])
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertFalse(result["hardware_executed"])
+
+    def test_clean_aggregate_execution_metadata_remains_diagnostic_only(self):
+        self.record.update(timed_out=False, launch_error=None)
+        result = diagnose_hil_record(self.record)
+        self.assertEqual(result["errors"], [])
+        self.assertTrue(result["three_consecutive_native_successes"])
+        self.assertFalse(result["physical_acceptance_established"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
