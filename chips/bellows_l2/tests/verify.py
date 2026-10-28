@@ -28,6 +28,11 @@ Executable requirement mapping:
   retained RAM/control/hierarchy/zero latches and a fresh declared-input copy.
 * simulator_equivalence: compact duplex/round-trip/fallback traffic compared
   independently on both simulators, then exact public-trace agreement.
+* occupied_destination: occupied directories/files, dangling output symlinks
+  and symlinked parents are rejected without changing their targets.
+
+The advisory --subset output-focused runs only output-path rejection checks
+and tool-version queries; it establishes no RTL behavior or matrix coverage.
 
 Final receipts bind every retained artifact, including compared data and synthesis
 outputs. This detects partial retention; it cannot restore a missing bundle or
@@ -104,6 +109,24 @@ def inputs(root=ROOT):
 
 def relative(path):
     return (ROOT / path).resolve().relative_to(ROOT).as_posix()
+
+
+def validate_output(output, root=ROOT):
+    """Reject occupied or redirected paths before any evidence is created."""
+    if output.is_absolute() or ".." in output.parts or not output.parts:
+        raise ValueError("--output must be a nonempty project-relative path")
+    if any(part in (".vulcan", ".git", ".tooling", "VULCAN") for part in output.parts):
+        raise ValueError("runtime-owned output destination prohibited")
+    destination = root / output
+    if os.path.lexists(destination):
+        raise ValueError(f"Refusing occupied output destination: {output.as_posix()}")
+    for parent in destination.parents:
+        if parent == root:
+            break
+        if parent.is_symlink():
+            raise ValueError(f"Refusing symlinked output parent: {parent.relative_to(root)}")
+    if not destination.resolve().is_relative_to(root.resolve()):
+        raise ValueError("Output destination resolves outside the project")
 
 
 class Execution:
@@ -815,6 +838,36 @@ def occupied_destination(execution):
         expected=(1,))
     assert "occupied output destination" in stderr
     assert list(directory.iterdir()) == [marker] and sha(marker) == digest
+    record, stdout, stderr = execution.run(
+        "occupied-file-rejection", ["python3", "tests/verify.py", "--output",
+                                    relative(marker), "--subset", "reproduce"],
+        expected=(1,))
+    assert "occupied output destination" in stderr and sha(marker) == digest
+    missing = directory / "must-not-be-created"
+    link = directory / "dangling"
+    link.symlink_to(missing.name)
+    parent_link = directory / "parent-link"
+    parent_link.symlink_to(".", target_is_directory=True)
+    for label, destination, diagnostic in (
+            ("dangling-output", link, "occupied output destination"),
+            ("symlink-parent", parent_link / missing.name, "symlinked output parent")):
+        record, stdout, stderr = execution.run(
+            f"{label}-rejection", ["python3", "tests/verify.py", "--output",
+                                   destination.relative_to(ROOT).as_posix(),
+                                   "--subset", "reproduce"], expected=(1,))
+        assert diagnostic in stderr, f"Wrong rejection reason: {stderr}"
+        assert not os.path.lexists(missing), "Rejected output created its target"
+        assert link.is_symlink() and os.readlink(link) == missing.name
+        assert parent_link.is_symlink() and os.readlink(parent_link) == "."
+        assert sha(marker) == digest
+    link.unlink()
+    parent_link.unlink()
+    assert list(directory.iterdir()) == [marker] and sha(marker) == digest
+    execution.results.append(dict(
+        kind="output-destination-rejections", outcome="passed",
+        compared_cases=["occupied-directory", "occupied-file",
+                        "dangling-symlink", "symlinked-parent"],
+        sentinel_sha256=digest, rejected_targets_created=0))
 
 
 def simulator_equivalence(execution):
@@ -879,17 +932,15 @@ def main():
     parser.add_argument("--subset", choices=("all", "reproduce", "ratio-focused", "targeted",
                                             "boundary-focused", "extreme-focused",
                                             "final-focused", "overflow-focused",
-                                            "backend-focused"),
+                                            "backend-focused", "output-focused"),
                         default="all")
     args = parser.parse_args()
     os.chdir(ROOT)
     output = args.output
-    if output.is_absolute() or ".." in output.parts or not output.parts:
-        parser.error("--output must be a nonempty project-relative path")
-    if any(part in (".vulcan", ".git", ".tooling", "VULCAN") for part in output.parts):
-        parser.error("runtime-owned output destination prohibited")
-    if output.exists():
-        print(f"Refusing occupied output destination: {output.as_posix()}", file=sys.stderr)
+    try:
+        validate_output(output)
+    except ValueError as error:
+        print(str(error), file=sys.stderr)
         return 1
     output.mkdir(parents=True)
     execution = Execution(ROOT / output)
@@ -899,6 +950,8 @@ def main():
         source_contract(execution)
         if args.subset == "all":
             full(execution)
+        elif args.subset == "output-focused":
+            occupied_destination(execution)
         elif args.subset == "backend-focused":
             unit_pipeline(execution)
             simulator_equivalence(execution)

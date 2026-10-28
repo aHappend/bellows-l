@@ -3,6 +3,7 @@
 
     python3 tests/preparation.py --subset targeted
     python3 tests/preparation.py --subset backend-focused
+    python3 tests/preparation.py --subset output-focused
     python3 tests/preparation.py --subset ratio-focused --repair-of <receipt>
     python3 tests/preparation.py --audit-receipts <receipt> [<receipt> ...]
     python3 tests/preparation.py --audit-bundles evidence/l1 [<bundle> ...]
@@ -79,7 +80,8 @@ import uuid
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from verify import CAPACITIES, DECLARED, ROOT, SEEDS, file_integrity, inputs, json_write
+from verify import (CAPACITIES, DECLARED, ROOT, SEEDS, file_integrity, inputs,
+                    json_write, validate_output)
 
 
 def source_binding_errors(sources):
@@ -499,10 +501,10 @@ def inspect_portable_inputs(name=".", reference=ROOT):
             occupied = os.path.lexists(path)
             output = dict(path=destination, fresh=not occupied)
             report["outputs"].append(output)
-            if occupied:
-                errors.append(f"Mandatory output is occupied; preserve it: {destination}")
-            if not path.resolve().is_relative_to(root.resolve()):
-                errors.append(f"Mandatory output resolves outside execution root: {destination}")
+            try:
+                validate_output(Path(destination), root=root)
+            except ValueError as error:
+                errors.append(f"Mandatory output rejected; preserve it: {error}")
         report["portable_preflight_passed"] = not errors
     except (OSError, ValueError, AssertionError) as error:
         errors.append(str(error))
@@ -603,7 +605,7 @@ def main():
     operation.add_argument("--subset",
                         choices=("targeted", "ratio-focused", "reproduce", "boundary-focused",
                                  "extreme-focused", "final-focused", "overflow-focused",
-                                 "backend-focused"))
+                                 "backend-focused", "output-focused"))
     operation.add_argument("--audit-receipts", nargs="+", metavar="RECEIPT")
     operation.add_argument("--audit-bundles", nargs="+", metavar="BUNDLE")
     operation.add_argument("--inspect-hil-inputs", action="store_true")
