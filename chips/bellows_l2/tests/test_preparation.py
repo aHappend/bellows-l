@@ -65,6 +65,37 @@ class PortableRecoveryTests(unittest.TestCase):
                 self.assertEqual(path.read_bytes(), b"historical output; preserve verbatim")
                 path.unlink()
 
+    def test_missing_execution_root_reports_no_usable_outputs(self):
+        report = inspect_portable_inputs("evidence/absent/project", reference=self.root)
+        self.assertFalse(report["portable_preflight_passed"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertEqual([entry["path"] for entry in report["outputs"]],
+                         list(self.outputs))
+        self.assertTrue(all(not entry["fresh"] and not entry["usable"]
+                            for entry in report["outputs"]))
+        self.assertFalse((self.root / "evidence").exists())
+
+    def test_source_inventory_failure_does_not_hide_occupied_outputs(self):
+        source = self.root / "rtl/example.sv"
+        source.unlink()
+        for destination in self.outputs:
+            path = self.root / destination
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"preserve historical evidence")
+        report = inspect_portable_inputs(reference=self.root)
+        self.assertFalse(report["portable_preflight_passed"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertTrue(any("Unmatched declared input" in error
+                            for error in report["errors"]))
+        self.assertEqual([entry["path"] for entry in report["outputs"]],
+                         list(self.outputs))
+        for entry in report["outputs"]:
+            self.assertFalse(entry["fresh"])
+            self.assertFalse(entry["usable"])
+            self.assertIn("Refusing occupied output destination", entry["error"])
+            self.assertEqual((self.root / entry["path"]).read_bytes(),
+                             b"preserve historical evidence")
+
     def test_non_directory_output_ancestor_is_preserved_and_rejected(self):
         ancestor = self.root / "evidence"
         ancestor.write_bytes(b"historical file; not an output directory")
@@ -225,6 +256,35 @@ class ArtifactRetentionTests(unittest.TestCase):
             report = audit_bundle(self.bundle.as_posix())
         self.assertTrue(report["retained_files_readable"], report["errors"])
         self.assertTrue(report["receipt_stable"])
+        self.assertEqual(receipt.read_bytes(), original)
+
+    def test_source_change_during_bundle_audit_rejects_current_acceptance(self):
+        receipt, sources = self.complete_bundle()
+        original = receipt.read_bytes()
+        changed = {"rtl/example.sv": "0" * 64}
+        with chdir(self.root), patch(
+                "preparation.inputs", side_effect=[sources, sources, changed]):
+            report = audit_bundle(self.bundle.as_posix())
+        self.assertTrue(report["retained_files_readable"], report["errors"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertFalse(report["current_source_inventory_stable"])
+        self.assertIn("Current declared inputs changed during bundle audit",
+                      report["source_binding_errors"])
+        self.assertFalse(report["retention_handoff"]["current_sources_match"])
+        self.assertEqual(receipt.read_bytes(), original)
+
+    def test_source_disappearance_during_bundle_audit_is_not_historical_loss(self):
+        receipt, sources = self.complete_bundle()
+        original = receipt.read_bytes()
+        with chdir(self.root), patch(
+                "preparation.inputs", side_effect=[
+                    sources, sources, OSError("synthetic current source disappeared")]):
+            report = audit_bundle(self.bundle.as_posix())
+        self.assertTrue(report["retained_files_readable"], report["errors"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertFalse(report["current_source_inventory_stable"])
+        self.assertTrue(any("synthetic current source disappeared" in error
+                            for error in report["source_binding_errors"]))
         self.assertEqual(receipt.read_bytes(), original)
 
     def test_receipt_must_remain_identical_through_artifact_audit(self):

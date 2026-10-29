@@ -29,6 +29,8 @@ Receipt audits also report source currency separately from historical execution:
 a successful prerequisite from an older source set is not a current passing check.
 Bundle audits separately report readability and binding to current declared inputs;
 a readable historical bundle is not necessarily evidence for the current sources.
+Current input bindings are rechecked after child inspection; a changed or unavailable
+source inventory invalidates currency without relabeling historical files as lost.
 Optional --source-diff includes readable unified source changes from hash-checked
 snapshots. It never rebases a receipt, excuses a changed binding or grants reuse.
 The component inventory runs even when the top-level receipt is missing, so a
@@ -89,6 +91,8 @@ Source identity uses direct byte comparisons; hashes are retained for provenance
 not used as a substitute for reading and comparing the copied contents.
 Per-file comparisons identify the first differing byte, and both source inventories
 are rechecked before reporting success so changes during inspection fail explicitly.
+All mandatory output destinations are reported even when source inspection fails;
+an unavailable or rejected execution root never makes a destination look usable.
 It neither stages a root nor executes checks. A successful preflight establishes
 only source identity and fresh destinations, not maintenance admission, tool
 availability, functional results, hardware readiness or permission to resume.
@@ -296,12 +300,14 @@ def audit_bundle(name, source_diff=False):
                   bound_raw_streams=0, unbound_raw_streams=0,
                   artifact_integrity_present=False, bound_artifacts=0,
                   receipt_stable=False,
+                  current_source_inventory_stable=False,
                   current_sources_match=None, source_binding_errors=[],
                   components=[], missing_components=[],
                   matrix_required=len(CAPACITIES) * len(SEEDS))
     errors = report["errors"]
     receipt_path = None
     receipt_payload = None
+    current = None
 
     def local(value):
         if not isinstance(value, str) or not value:
@@ -375,9 +381,9 @@ def audit_bundle(name, source_diff=False):
         sources = receipt["source_sha256"]
         if not isinstance(sources, dict) or not sources:
             raise ValueError("Missing source snapshot bindings")
+        current = inputs()
         report["source_binding_errors"] = source_binding_errors(sources)
         report["current_sources_match"] = not report["source_binding_errors"]
-        current = inputs()
         if source_diff:
             report["source_deltas"] = []
 
@@ -461,6 +467,18 @@ def audit_bundle(name, source_diff=False):
             report["receipt_stable"] = True
         except (OSError, ValueError) as error:
             errors.append(f"Cannot recheck bundle receipt: {error}")
+    if current is not None:
+        try:
+            report["current_source_inventory_stable"] = inputs() == current
+            if not report["current_source_inventory_stable"]:
+                report["source_binding_errors"].append(
+                    "Current declared inputs changed during bundle audit")
+        except (OSError, AssertionError) as error:
+            report["source_binding_errors"].append(
+                f"Cannot recheck current declared inputs: {error}")
+        report["current_sources_match"] = (
+            report["current_source_inventory_stable"]
+            and not report["source_binding_errors"])
     report["retained_files_readable"] = not errors
     artifacts = report.get("artifact_integrity", {})
     report["retention_handoff"] = dict(
@@ -843,6 +861,7 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                   source_comparisons=[], source_inventory_stable=False,
                   source_sha256={}, outputs=[], errors=[])
     errors = report["errors"]
+    inspection_root = None
     try:
         relative_root = Path(name)
         if (relative_root.is_absolute() or ".." in relative_root.parts
@@ -854,6 +873,7 @@ def inspect_portable_inputs(name=".", reference=ROOT):
             raise ValueError("Execution root resolves outside the project")
         if not root.is_dir():
             raise ValueError("Execution root is not an existing readable directory")
+        inspection_root = root
         current = inputs(reference)
         paths = {path for pattern in DECLARED for path in root.glob(pattern)}
         for path in paths:
@@ -892,18 +912,22 @@ def inspect_portable_inputs(name=".", reference=ROOT):
         if not report["source_inventory_stable"]:
             errors.append("Declared source inventory changed during inspection")
         report["current_sources_match"] = not errors
-        for destination in PORTABLE_OUTPUTS:
-            path = root / destination
-            occupied = os.path.lexists(path)
-            output = dict(path=destination, fresh=not occupied)
-            report["outputs"].append(output)
-            try:
-                validate_output(Path(destination), root=root)
-            except ValueError as error:
-                errors.append(f"Mandatory output rejected; preserve it: {error}")
-        report["portable_preflight_passed"] = not errors
     except (OSError, ValueError, AssertionError) as error:
         errors.append(str(error))
+    for destination in PORTABLE_OUTPUTS:
+        output = dict(path=destination, fresh=False, usable=False)
+        report["outputs"].append(output)
+        if inspection_root is None:
+            output["error"] = "Execution root unavailable or rejected"
+            continue
+        try:
+            output["fresh"] = not os.path.lexists(inspection_root / destination)
+            validate_output(Path(destination), root=inspection_root)
+            output["usable"] = True
+        except (OSError, ValueError) as error:
+            output["error"] = str(error)
+            errors.append(f"Mandatory output rejected; preserve it: {error}")
+    report["portable_preflight_passed"] = not errors
     return report
 
 
