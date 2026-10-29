@@ -83,6 +83,9 @@ module tb;
   integer max_rd_stall=0, max_wr_stall=0, max_st_stall=0;
   integer switches=0, previous_read=-1, four_active=0, response_gaps=0;
   integer source_cross[0:1], dest_cross[0:1], single_segments=0, depth16=0;
+  integer reset_probes=0, reset_collect=0, reset_processing=0, reset_status=0;
+  integer total_commands=0, total_status=0, total_aborted=0;
+  reg record_enabled=1;
   reg prev_rd_stalled=0, prev_wr_stalled=0, prev_status_stalled=0;
   reg [65:0] held_rd;
   reg [73:0] held_wr;
@@ -137,6 +140,7 @@ module tb;
         if (active[cmd_channel]) $fatal(1,"COMMAND_BUSY");
         active[cmd_channel]=1;
         cmd_cycle[cmd_channel]=cycle;
+        total_commands=total_commands+1;
       end
       if (sg_valid && sg_ready) begin
         if (cycle<=cmd_cycle[sg_channel]) $fatal(1,"DESCRIPTOR_BYPASS");
@@ -222,13 +226,16 @@ module tb;
           $fatal(1,"COMPLETION_COUNTS ch=%0d src=%0d/%0d dst=%0d/%0d",
                  status_channel,status_src_bytes,consumed_reads[status_channel],
                  status_dst_bytes,acknowledged_writes[status_channel]);
-        $fwrite(outp,"FRAME %0d %0d %0d %0d %0d %0d %08h ",
+        if (record_enabled) begin
+          $fwrite(outp,"FRAME %0d %0d %0d %0d %0d %0d %08h ",
                 batch,status_channel,status_id,status_error,status_src_bytes,
                 status_dst_bytes,status_checksum);
-        for (integer q=0;q<acknowledged_writes[status_channel];q=q+1)
-          $fwrite(outp,"%02h",captured[status_channel][q]);
-        $fwrite(outp,"\n");
+          for (integer q=0;q<acknowledged_writes[status_channel];q=q+1)
+            $fwrite(outp,"%02h",captured[status_channel][q]);
+          $fwrite(outp,"\n");
+        end
         active[status_channel]=0; completed[status_channel]=1;
+        total_status=total_status+1;
         completions=completions+1;
       end
       if (cycle-batch_start>@CYCLES@) $fatal(1,"CYCLE_BOUND batch=%0d",batch);
@@ -275,6 +282,56 @@ module tb;
     @(negedge clk); sg_valid=0;
   endtask
 
+  task automatic issue_batch;
+    for (integer lane=0;lane<4;lane=lane+1) send_command(lane);
+    for (integer seg=0;seg<16;seg=seg+1)
+      for (integer lane=0;lane<4;lane=lane+1)
+        if (!reject_command[lane]) begin
+          if (seg<ns[lane]) send_segment(lane,0,seg);
+          if (seg<nd[lane]) send_segment(lane,1,seg);
+        end
+  endtask
+
+  task automatic clear_environment;
+    for (integer lane=0;lane<4;lane=lane+1) begin
+      ri[lane]=0; ro[lane]=0; wi[lane]=0; wo[lane]=0;
+      requested_reads[lane]=0; consumed_reads[lane]=0;
+      requested_writes[lane]=0; acknowledged_writes[lane]=0;
+      active[lane]=0; completed[lane]=0; cmd_cycle[lane]=0;
+      desc_cycle[lane]=0; ack_cycle[lane]=0;
+      for (integer address=0;address<STORE;address=address+1)
+        destination[lane][address]=8'ha5;
+    end
+    completions=0;
+  endtask
+
+  task automatic reset_epoch(input integer stage);
+    @(negedge clk);
+    if (stage==1) begin
+      if (!active[0] || requested_reads[0]!=0) $fatal(1,"RESET_COLLECTION_PRECONDITION");
+      reset_collect=reset_collect+1;
+    end
+    if (stage==2) begin
+      if (!rbusy && !wbusy) $fatal(1,"RESET_PROCESSING_PRECONDITION");
+      reset_processing=reset_processing+1;
+    end
+    if (stage==3) begin
+      if (!status_valid || status_ready) $fatal(1,"RESET_STATUS_PRECONDITION");
+      reset_status=reset_status+1;
+    end
+    for (integer lane=0;lane<4;lane=lane+1)
+      if (active[lane]) total_aborted=total_aborted+1;
+    #1;
+    rst_n=0; cmd_valid=0; sg_valid=0; rd_rsp_valid=0; wr_rsp_valid=0;
+    rd_req_ready=0; wr_req_ready=0; status_ready=0;
+    rbusy=0; wbusy=0; prev_rd_stalled=0; prev_wr_stalled=0; prev_status_stalled=0;
+    rd_window=-1; wr_window=-1; st_window=-1;
+    clear_environment();
+    #1; check_reset();
+    repeat(3) @(negedge clk);
+    #1; rst_n=1;
+  endtask
+
   initial begin
     rst_n=0;
 `ifdef VERILATOR
@@ -285,6 +342,7 @@ module tb;
     check_reset();
     if (!$value$plusargs("case=%s",case_path)) $fatal(1,"HARNESS missing case");
     if (!$value$plusargs("result=%s",result_path)) $fatal(1,"HARNESS missing result");
+    result=$value$plusargs("resets=%d",reset_probes);
     inp=$fopen(case_path,"r"); outp=$fopen(result_path,"w");
     if (!inp || !outp) $fatal(1,"HARNESS file open");
     result=$fscanf(inp,"%d %d",batches,seed); checked_scan(2);
@@ -322,13 +380,20 @@ module tb;
         active[ch]=0; completed[ch]=0; cmd_cycle[ch]=0; desc_cycle[ch]=0;
         ack_cycle[ch]=0;
       end
-      for (ch=0;ch<4;ch=ch+1) send_command(ch);
-      for (k=0;k<16;k=k+1)
-        for (ch=0;ch<4;ch=ch+1)
-          if (!reject_command[ch]) begin
-            if (k<ns[ch]) send_segment(ch,0,k);
-            if (k<nd[ch]) send_segment(ch,1,k);
-          end
+      if (batch==0 && reset_probes) begin
+        record_enabled=0;
+        for (ch=0;ch<4;ch=ch+1) send_command(ch);
+        send_segment(0,1,0);
+        reset_epoch(1);
+        issue_batch();
+        wait(rbusy || wbusy);
+        reset_epoch(2);
+        issue_batch();
+        wait(status_valid && !status_ready);
+        reset_epoch(3);
+        record_enabled=1;
+      end
+      issue_batch();
       wait(completions==4);
       @(negedge clk);
       for (ch=0;ch<4;ch=ch+1) begin
@@ -343,10 +408,11 @@ module tb;
       end
     end
     repeat(8) @(negedge clk);
-    $fwrite(outp,"COVER %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d\n",
+    if (total_commands!=total_status+total_aborted) $fatal(1,"COMMAND_CONSERVATION");
+    $fwrite(outp,"COVER %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d\n",
             four_active,switches,max_rd_stall,max_wr_stall,max_st_stall,response_gaps,
             source_cross[0],source_cross[1],dest_cross[0],dest_cross[1],
-            single_segments,depth16);
+            single_segments,depth16,reset_collect,reset_processing,reset_status);
     $fclose(inp); $fclose(outp);
     $display("SIMULATION_COMPLETE batches=%0d cycles=%0d",batches,cycle);
     $finish;

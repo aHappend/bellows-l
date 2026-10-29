@@ -19,7 +19,11 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import oracle
+import parent
+import protocols
+import mutations
 import scenarios
+import synthesis
 from retention import Run, write_json
 from transactor import bench
 
@@ -113,12 +117,12 @@ def write_cases(path, batches, sg, seed):
     write_json(path.with_suffix(".json"), manifest)
 
 
-def compile_bus(run, block, sg, simulator):
-    directory = run.path / f"bus-{simulator}-{block}-{sg}"
+def compile_bus(run, block, sg, simulator, rtl_dir=None, tag=""):
+    directory = run.path / f"bus-{simulator}-{block}-{sg}{'-' + tag if tag else ''}"
     directory.mkdir()
     tb = directory / "tb.sv"
     tb.write_text(bench(block, sg, compact=simulator == "icarus"))
-    rtl = [run.relative(p) for p in sorted(run.root.glob("rtl/*.sv"))]
+    rtl = [run.relative(p) for p in sorted((rtl_dir or run.root / "rtl").glob("*.sv"))]
     executable = directory / "simv"
     if simulator == "icarus":
         run.command(["iverilog", "-g2012", "-Wall", "-s", "tb", "-o",
@@ -187,7 +191,8 @@ def compare_results(path, batches):
                                  "write_stall", "status_stall", "response_gaps",
                                  "compress_source_cross", "decode_source_cross",
                                  "compress_dest_cross", "decode_dest_cross",
-                                 "single_segments", "depth16"),
+                                 "single_segments", "depth16", "reset_collect",
+                                 "reset_processing", "reset_status"),
                                 (int(x) for x in parts[1:]), strict=True))
         else:
             raise AssertionError(f"unrecognized result: {line[:128]}")
@@ -200,18 +205,21 @@ def compare_results(path, batches):
     return records, coverage
 
 
-def simulate(run, build, batches, sg, seed, label):
+def simulate(run, build, batches, sg, seed, label, resets=False):
     directory, executable = build
     case_path = directory / f"{label}.cases"
     result_path = directory / f"{label}.results"
     write_cases(case_path, batches, sg, seed)
     command = [run.relative(executable), "+case=" + run.relative(case_path),
-               "+result=" + run.relative(result_path)]
+               "+result=" + run.relative(result_path), f"+resets={int(resets)}"]
     if "icarus" in directory.name:
         command.insert(0, "vvp")
     stdout, _ = run.command(command, label)
     assert "SIMULATION_COMPLETE" in stdout, "missing simulator completion marker"
     records, coverage = compare_results(result_path, batches)
+    if resets:
+        for stage in ("reset_collect", "reset_processing", "reset_status"):
+            assert coverage[stage] > 0, (stage, coverage)
     write_json(directory / f"{label}.compared.json",
                {"frames": [dict(batch=b, channel=c, **record)
                            for (b, c), record in records.items()],
@@ -233,13 +241,33 @@ def compact_batches(block=33):
 
 def prepare(run, kind):
     """Bounded development probe; not a mandatory check/acceptance substitute."""
-    for tool in (("iverilog", "vvp") if kind == "compact" else
-                 ("verilator", "g++", "make")):
+    for tool in (("iverilog", "vvp") if kind in ("compact", "parent", "protocol") else
+                 ("yosys",) if kind in ("synthesis", "default-synthesis")
+                 else ("verilator", "g++", "make")):
         run.tool(tool)
     oracle.selftest()
-    if kind == "compact":
+    if kind == "protocol":
+        protocols.execute(run)
+    elif kind == "full-parent":
+        parent.execute(run, "verilator", full=True, l1=True)
+    elif kind == "parent":
+        parent.execute(run)
+    elif kind == "compact":
         build = compile_bus(run, 33, 3, "icarus")
-        simulate(run, build, compact_batches(), 3, 17, "compact-dma-probe")
+        simulate(run, build, compact_batches(), 3, 17, "compact-dma-probe", resets=True)
+    elif kind in ("synthesis", "default-synthesis"):
+        synthesis.structural_rules(run.root)
+        synthesis.synthesize(run, "bellows_l3_top",
+                             65536 if kind == "default-synthesis" else 1,
+                             16 if kind == "default-synthesis" else 1)
+    elif kind == "endpoint":
+        build = compile_bus(run, 65536, 16, "verilator")
+        batches = [[make_frame(6000 + c, content, bool(c & 1), c % 3, block=encoded)
+                    for c, (content, encoded) in enumerate((
+                        (b"Q" * 65536, None),
+                        (b"Z" * 65536, oracle.periodic_block(b"Z" * 65536)),
+                        (b"123456789", None), (b"", None)))]]
+        simulate(run, build, batches, 16, 17, "maximum-endpoint")
     else:
         build = compile_bus(run, 255, 16, "verilator")
         batches = (scenarios.boundaries(make_frame) +
@@ -257,7 +285,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", choices=("smoke", "matrix", "synthesis",
                                           "mutations", "reproduce"))
-    parser.add_argument("--prepare", nargs="?", const="compact", choices=("compact", "errors"),
+    parser.add_argument("--prepare", nargs="?", const="compact",
+                        choices=("compact", "errors", "synthesis", "parent",
+                                 "protocol", "full-parent", "endpoint", "default-synthesis"),
                         help="bounded development probe, not acceptance")
     parser.add_argument("--out-root", required=True)
     parser.add_argument("--repair-of")
