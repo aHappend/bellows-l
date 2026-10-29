@@ -20,8 +20,43 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
-                         stage_portable_root)
+                         repair_receipt, stage_portable_root)
 from verify import file_integrity, json_write
+
+
+class PreparationStreamTests(unittest.TestCase):
+    def test_probe_binds_both_raw_streams_and_rejects_later_corruption(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_bindings = {"tests/example.py": "0" * 64}
+
+            def launch(argv, **kwargs):
+                kwargs["stdout"].write(b"synthetic child stdout\n")
+                kwargs["stderr"].write(b"synthetic child stderr\n")
+                process = unittest.mock.Mock()
+                process.wait.return_value = 0
+                return process
+
+            with chdir(root), patch("preparation.ROOT", root), patch(
+                    "preparation.inputs", return_value=source_bindings), patch(
+                    "preparation.subprocess.Popen", side_effect=launch), patch(
+                    "sys.argv", ["preparation.py", "--subset", "harness-focused"]), \
+                    redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(main(), 0)
+                receipts = list(root.glob("evidence/preparation/*/receipt.json"))
+                self.assertEqual(len(receipts), 1)
+                receipt = receipts[0]
+                record = json.loads(receipt.read_bytes())
+                for channel in ("stdout", "stderr"):
+                    stream = root / record[channel]
+                    self.assertIn("stream_integrity", record)
+                    self.assertEqual(record["stream_integrity"][channel],
+                                     file_integrity(stream))
+                name = receipt.relative_to(root).as_posix()
+                repair_receipt(name)
+                (root / record["stdout"]).write_bytes(b"truncated")
+                with self.assertRaisesRegex(ValueError, "stream integrity mismatch"):
+                    repair_receipt(name)
 
 
 class PortableRecoveryTests(unittest.TestCase):

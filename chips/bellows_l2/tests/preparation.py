@@ -41,6 +41,8 @@ receipt validation. These observations identify restored material, not its
 historical authenticity, completeness or authorization to resume verification.
 New child receipts also bind the byte counts and hashes of both raw streams;
 legacy receipts remain readable but are reported as lacking stream bindings.
+The outer bounded-probe receipt also binds both synchronized raw streams,
+including failed children; changed logs cannot serve as repair predecessors.
 Repair-predecessor audits validate any recorded stream bindings as well: a
 present but truncated or changed log is not an available repair predecessor.
 New bundle receipts bind all retained artifacts, not just sources and raw streams.
@@ -1179,6 +1181,13 @@ def main():
                     os.killpg(process.pid, signal.SIGKILL)
                     process.wait()
                 record["exit_code"] = process.returncode
+        for stream in (stdout, stderr):
+            stream.flush()
+            os.fsync(stream.fileno())
+    record["stream_integrity"] = {
+        channel: file_integrity(out / f"{channel}.log")
+        for channel in ("stdout", "stderr")
+    }
     record["end_time"] = datetime.now(timezone.utc).isoformat()
     record["duration_s"] = time.monotonic() - start
     record["source_unchanged"] = inputs() == record["source_sha256"]
