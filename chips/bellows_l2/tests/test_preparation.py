@@ -3,6 +3,8 @@
 
 Run: python3 -B tests/test_preparation.py
 No transport commands are executed and no hardware acceptance is established.
+Producer-to-auditor checks distinguish successful synchronization from later loss;
+they do not diagnose the mechanism or establish a platform retention remedy.
 """
 
 import copy
@@ -73,6 +75,48 @@ class ArtifactProducerTests(unittest.TestCase):
                 bindings = persist_artifacts(output)
             self.assertEqual(bindings, {
                 "evidence/bundle/data.bin": file_integrity(artifact)})
+
+    def test_loss_after_successful_synchronization_is_rejected_without_repair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bundle = Path("evidence/bundle")
+            output = root / bundle
+            artifacts = {
+                "obj/model.o": b"synthetic compiler intermediate",
+                "stdout.log": b"synthetic successful execution\n",
+                "synthesis/netlist.json": b"synthetic synthesis artifact\n",
+            }
+            for name, payload in artifacts.items():
+                path = output / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(payload)
+            with patch("verify.ROOT", root), patch("preparation.ROOT", root), \
+                    patch("subprocess.Popen", side_effect=AssertionError(
+                        "A retention audit must not regenerate missing artifacts")):
+                bindings = persist_artifacts(output)
+                receipt = output / "receipt.json"
+                json_write(receipt, dict(exit_code=0, artifact_integrity=bindings))
+                original = receipt.read_bytes()
+                before = audit_artifacts(bundle, bindings)
+                self.assertEqual(before["errors"], [])
+                self.assertEqual(before["rechecked_files"], len(artifacts))
+
+                missing = output / "obj/model.o"
+                missing.unlink()
+                after = audit_artifacts(bundle, bindings)
+
+            name = missing.relative_to(root).as_posix()
+            self.assertTrue(after["errors"])
+            self.assertEqual(after["missing_files"], [name])
+            self.assertEqual(after["missing_artifact_bindings"], {
+                name: bindings[name]})
+            self.assertEqual(after["missing_bytes"], len(artifacts["obj/model.o"]))
+            self.assertEqual(after["rechecked_files"], len(artifacts) - 1)
+            self.assertEqual(receipt.read_bytes(), original)
+            self.assertEqual(json.loads(original)["exit_code"], 0)
+            self.assertFalse(missing.exists())
+            for retained in ("stdout.log", "synthesis/netlist.json"):
+                self.assertEqual((output / retained).read_bytes(), artifacts[retained])
 
 
 class PreparationStreamTests(unittest.TestCase):
