@@ -866,6 +866,39 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertTrue(any("symlink" in error.lower()
                             for error in report["errors"]), report)
 
+    def test_bundle_audit_rejects_redirects_before_reading_them(self):
+        for component in ("bundle", "receipt.json", "results.json",
+                          "commands/001/stdout.log", "source/rtl/example.sv"):
+            with self.subTest(component=component):
+                receipt, sources = self.complete_bundle()
+                path = self.base if component == "bundle" else self.base / component
+                target = self.root / "evidence/redirect-target"
+                path.rename(target)
+                path.symlink_to(target, target_is_directory=target.is_dir())
+                original_read = Path.read_bytes
+                redirected_reads = []
+
+                def read_without_redirect(candidate):
+                    absolute = candidate if candidate.is_absolute() else self.root / candidate
+                    if absolute == path or path in absolute.parents:
+                        redirected_reads.append(candidate)
+                        raise AssertionError(f"Read redirected audit path: {candidate}")
+                    return original_read(candidate)
+
+                try:
+                    with chdir(self.root), patch("preparation.inputs",
+                                                return_value=sources), \
+                            patch.object(Path, "read_bytes", read_without_redirect):
+                        report = audit_bundle(self.bundle.as_posix())
+                    self.assertFalse(report["retained_files_readable"])
+                    self.assertTrue(any("symlink" in error.lower()
+                                        for error in report["errors"]), report)
+                    self.assertEqual(redirected_reads, [])
+                    self.assertFalse(report["retention_handoff"]["authorizes_resumption"])
+                finally:
+                    path.unlink()
+                    target.rename(path)
+
     def test_symlink_introduced_after_initial_hash_fails_recheck(self):
         name, binding = self.artifact("trace.log")
         target_name, target_binding = self.artifact("original.log")

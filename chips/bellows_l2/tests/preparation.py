@@ -73,6 +73,8 @@ The artifact sweep follows child, snapshot and current-source inspection, so
 loss of an otherwise-unvisited synthesis artifact during those reads is detected.
 The top-level receipt is separately re-read byte-for-byte before the audit returns;
 its removal, replacement or symlink redirection invalidates the observation too.
+Bundle, component, child-stream and snapshot paths are also checked for symlinks
+before reading, rather than following a redirect and rejecting it only afterward.
 Symlinked artifacts, directories and bundle ancestors are rejected, including
 same-byte substitutions and redirects introduced between the two observations.
 This matches the producer's no-symlink retention contract; it does not identify
@@ -348,8 +350,13 @@ def audit_bundle(name, source_diff=False):
             raise ValueError("Expected a nonempty project-relative path")
         path = Path(value)
         if (path.is_absolute() or ".." in path.parts
-                or not path.resolve().is_relative_to(ROOT / "evidence")):
+                or not path.parts or path.parts[0] != "evidence"):
             raise ValueError(f"Audit path must remain inside evidence/: {value}")
+        current_path = ROOT
+        for part in path.parts:
+            current_path = current_path / part
+            if current_path.is_symlink():
+                raise ValueError(f"Symlink in bundle audit path: {current_path.relative_to(ROOT)}")
         return path
 
     def read_record(path):
