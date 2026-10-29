@@ -596,6 +596,38 @@ class ArtifactRetentionTests(unittest.TestCase):
                 self.assertEqual(report["missing_artifact_bindings"], {})
                 self.assertEqual(report["missing_bytes"], 0)
                 self.assertEqual(report["missing_by_directory"], {})
+                self.assertEqual(report["artifacts_by_suffix"], {})
+
+    def test_suffix_inventory_distinguishes_selective_loss_without_exemptions(self):
+        missing = dict([
+            self.artifact("first/obj/model.o", b"object"),
+            self.artifact("second/obj/model.o", b"other object"),
+            self.artifact("first/obj/model.d", b""),
+            self.artifact("first/obj/model.gch", b"precompiled header")])
+        retained = dict([
+            self.artifact("third/obj/model.o", b"kept"),
+            self.artifact("raw/output.log", b"raw"),
+            self.artifact("raw/no_suffix", b"")])
+        for name in missing:
+            (self.root / name).unlink()
+        report = audit_artifacts(self.bundle, {**missing, **retained})
+        self.assertEqual(report["artifacts_by_suffix"], {
+            ".o": dict(expected_files=3, expected_bytes=22,
+                       missing_files=2, missing_bytes=18),
+            ".d": dict(expected_files=1, expected_bytes=0,
+                       missing_files=1, missing_bytes=0),
+            ".gch": dict(expected_files=1, expected_bytes=18,
+                         missing_files=1, missing_bytes=18),
+            ".log": dict(expected_files=1, expected_bytes=3,
+                         missing_files=0, missing_bytes=0),
+            "": dict(expected_files=1, expected_bytes=0,
+                     missing_files=0, missing_bytes=0)})
+        self.assertEqual(report["missing_artifact_bindings"], missing)
+        self.assertEqual(report["checked_files"], len(retained))
+        self.assertEqual(len(report["errors"]), len(missing))
+        self.assertTrue(all(not (self.root / name).exists() for name in missing))
+        for name, binding in retained.items():
+            self.assertEqual(file_integrity(self.root / name), binding)
 
     def test_same_size_corruption_and_unbound_files_both_fail(self):
         name, binding = self.artifact("trace.log", b"original")
@@ -622,6 +654,9 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertEqual(report["missing_files"], [name])
         self.assertEqual(report["missing_artifact_bindings"], {name: binding})
         self.assertEqual(report["missing_bytes"], binding["bytes"])
+        self.assertEqual(report["artifacts_by_suffix"][".log"], dict(
+            expected_files=1, expected_bytes=binding["bytes"],
+            missing_files=1, missing_bytes=binding["bytes"]))
         self.assertTrue(report["errors"])
 
     def test_same_bytes_symlink_substitution_is_not_retained_original(self):

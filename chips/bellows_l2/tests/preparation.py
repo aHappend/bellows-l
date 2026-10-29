@@ -57,6 +57,9 @@ identifies the mechanism responsible for a missing file.
 Missing artifacts include their validated original sizes and hashes, total byte
 count and bundle-relative directory groups for an authentic-archive recovery
 request. This inventory does not restore files or authorize regeneration.
+Suffix groups compare validated manifest counts/bytes with missing counts/bytes
+to expose selective loss, including compiler intermediates. Suffixes are descriptive,
+not exemptions or evidence of which process removed a file.
 Bundle diagnostics include a platform-owner handoff even if the receipt is
 absent. It separates artifact availability, source currency and unestablished
 post-settlement retention; a readable bundle never certifies a platform remedy.
@@ -208,6 +211,7 @@ def audit_artifacts(bundle, bindings):
                   rechecked_files=0, inventory_stable=False,
                   missing_files=[], missing_artifact_bindings={},
                   missing_bytes=0, missing_by_directory={},
+                  artifacts_by_suffix={},
                   mismatched_files=[], unbound_files=[], errors=[])
     if bindings is None:
         return report
@@ -264,6 +268,12 @@ def audit_artifacts(bundle, bindings):
                     or re.fullmatch(r"[0-9a-f]{64}", binding["sha256"]) is None):
                 raise ValueError(f"Invalid artifact integrity binding: {name}")
             validated_bindings[name] = dict(binding)
+            suffix = Path(name).suffix
+            group = report["artifacts_by_suffix"].setdefault(
+                suffix, dict(expected_files=0, expected_bytes=0,
+                             missing_files=0, missing_bytes=0))
+            group["expected_files"] += 1
+            group["expected_bytes"] += binding["bytes"]
             if file_integrity(ROOT / path) != binding:
                 report["mismatched_files"].append(name)
                 raise ValueError(f"Artifact integrity mismatch: {name}")
@@ -299,6 +309,9 @@ def audit_artifacts(bundle, bindings):
             continue
         report["missing_artifact_bindings"][name] = binding
         report["missing_bytes"] += binding["bytes"]
+        group = report["artifacts_by_suffix"][Path(name).suffix]
+        group["missing_files"] += 1
+        group["missing_bytes"] += binding["bytes"]
         directory = Path(name).parent.relative_to(bundle).as_posix()
         group = report["missing_by_directory"].setdefault(
             directory, dict(files=0, bytes=0))
@@ -515,6 +528,7 @@ def audit_bundle(name, source_diff=False):
             "complete_at_observation"),
         missing_artifact_bindings=artifacts.get("missing_artifact_bindings", {}),
         missing_bytes=artifacts.get("missing_bytes"),
+        artifacts_by_suffix=artifacts.get("artifacts_by_suffix", {}),
         current_sources_match=report["current_sources_match"],
         platform_retention_remedy_established=False,
         post_settlement_retention_established=False,
