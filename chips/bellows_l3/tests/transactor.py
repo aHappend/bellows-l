@@ -85,6 +85,7 @@ module tb;
   integer switches=0, previous_read=-1, four_active=0, response_gaps=0;
   integer source_cross[0:1], dest_cross[0:1], single_segments=0, depth16=0;
   integer reset_probes=0, reset_collect=0, reset_processing=0, reset_status=0;
+  integer reset_phase=0;
   integer total_commands=0, total_status=0, total_aborted=0;
   reg record_enabled=1;
   reg prev_rd_stalled=0, prev_wr_stalled=0, prev_status_stalled=0;
@@ -172,9 +173,10 @@ module tb;
           $fatal(1,"READ_BEYOND_SOURCE");
         if (rd_req_addr !== sa[rd_req_channel][ri[rd_req_channel]]+
                             ro[rd_req_channel])
-          $fatal(1,"READ_ADDRESS ch=%0d index=%0d got=%h expected=%h",
+          $fatal(1,"READ_ADDRESS ch=%0d index=%0d got=%h expected=%h response_counts=%0d,%0d,%0d,%0d",
                  rd_req_channel,requested_reads[rd_req_channel],rd_req_addr,
-                 sa[rd_req_channel][ri[rd_req_channel]]+ro[rd_req_channel]);
+                 sa[rd_req_channel][ri[rd_req_channel]]+ro[rd_req_channel],
+                 consumed_reads[0],consumed_reads[1],consumed_reads[2],consumed_reads[3]);
         if (previous_read>=0 && previous_read!=rd_req_channel &&
             (integer'(active[0])+integer'(active[1])+integer'(active[2])+integer'(active[3]))>=2)
           switches=switches+1;
@@ -260,7 +262,17 @@ module tb;
         total_status=total_status+1;
         completions=completions+1;
       end
-      if (cycle-batch_start>@CYCLES@) $fatal(1,"CYCLE_BOUND batch=%0d",batch);
+      if (cycle-batch_start>@CYCLES@) begin
+        $display("TIMEOUT_PUBLIC batch=%0d reset_phase=%0d completions=%0d rbusy=%0d wbusy=%0d cmd=%0d/%0d sg=%0d/%0d status=%0d/%0d",
+                 batch,reset_phase,completions,rbusy,wbusy,cmd_valid,cmd_ready,
+                 sg_valid,sg_ready,status_valid,status_ready);
+        for (integer lane=0;lane<4;lane=lane+1)
+          $display("TIMEOUT_LANE ch=%0d active=%0d completed=%0d descriptors=%0d/%0d,%0d/%0d reads=%0d/%0d writes=%0d/%0d",
+                   lane,active[lane],completed[lane],seen_source[lane],declared_ns[lane],
+                   seen_dest[lane],declared_nd[lane],consumed_reads[lane],
+                   requested_reads[lane],acknowledged_writes[lane],requested_writes[lane]);
+        $fatal(1,"CYCLE_BOUND batch=%0d",batch);
+      end
       @COMPACT_BOUND@
     end
   end
@@ -275,7 +287,9 @@ module tb;
       if (st_window==-1 && status_valid) st_window=cycle+17;
       rd_req_ready=(rd_window>=0 && cycle>=rd_window && (cycle+seed)%11!=0);
       wr_req_ready=(wr_window>=0 && cycle>=wr_window && (cycle+seed)%13!=0);
-      status_ready=(st_window>=0 && cycle>=st_window && (cycle+seed)%7!=0);
+      // Reserve a stalled completion until the reset probe has finished issuing SG lists.
+      status_ready=(reset_phase!=3 && st_window>=0 &&
+                    cycle>=st_window && (cycle+seed)%7!=0);
       rd_rsp_valid=rbusy && cycle>=r_due;
       rd_rsp_data=rbusy ? source[r_owner][r_index] : 0;
       rd_rsp_error=rbusy && r_error;
@@ -415,16 +429,20 @@ module tb;
         ack_cycle[ch]=0;
       end
       if (batch==0 && reset_probes) begin
+        reset_phase=1;
         record_enabled=0;
         for (ch=0;ch<4;ch=ch+1) send_command(ch);
         send_segment(0,1,0);
         reset_epoch(1);
+        reset_phase=2;
         issue_batch();
         wait(rbusy || wbusy);
         reset_epoch(2);
+        reset_phase=3;
         issue_batch();
         wait(status_valid && !status_ready);
         reset_epoch(3);
+        reset_phase=4;
         record_enabled=1;
       end
       issue_batch();

@@ -2,6 +2,8 @@
 
 import difflib
 import hashlib
+import json
+import re
 import shutil
 
 import oracle
@@ -15,7 +17,7 @@ DEFECTS = (
     ("checksum-arithmetic", "bellows_l3_checksum.sv",
      "P5=32'h165667b1", "P5=32'h165667b0", "status_checksum"),
     ("channel-ownership", "bellows_l3_sg_dma.sv",
-     "read_owner<=read_channel;", "read_owner<=read_channel+2'd1;", "channel_transfer_bytes"),
+     "read_owner<=read_channel;", "read_owner<=read_channel+2'd1;", "READ_ADDRESS"),
     ("sg-boundary", "bellows_l3_context.sv",
      "read_address<=source_address[source_index+1'b1];",
      "read_address<=source_address[source_index+1'b1]+64'd1;", "READ_ADDRESS"),
@@ -96,6 +98,24 @@ def execute(run, compile_bus, write_cases, compare_results, make_frame, only=Non
             assert "CYCLE_BOUND" not in stdout + stderr, ("mutant only timed out", label)
             diagnosis = next(line for line in (stdout + stderr).splitlines()
                              if observable in line)
+            if label == "channel-ownership":
+                # Misrouted responses can advance a lane before its first public read.
+                mismatch = re.search(
+                    r"READ_ADDRESS ch=(\d+) index=(\d+) got=([0-9a-fA-F]+) "
+                    r"expected=([0-9a-fA-F]+) response_counts=(\d+),(\d+),(\d+),(\d+)",
+                    diagnosis)
+                assert mismatch is not None, ("missing ownership counterexample", diagnosis)
+                channel, index = (int(x) for x in mismatch.group(1, 2))
+                got, expected = (int(x, 16) for x in mismatch.group(3, 4))
+                consumed = [int(x) for x in mismatch.group(5, 6, 7, 8)]
+                manifest = json.loads(case_path.with_suffix(".json").read_text())
+                segments = manifest[channel]["src_segments"]
+                assert index == consumed[channel] == 0, ("wrong ownership rejection", diagnosis)
+                assert consumed[(channel - 1) & 3] > 0, (
+                    "missing predecessor response", diagnosis)
+                assert segments[0][1] == 1 and expected == segments[0][0]
+                assert got == segments[1][0], ("not a skipped content byte", diagnosis)
+                diagnosis += "; lane skipped its first byte without any own read response"
         record = {"defect": label, "compiled": True, "detected": True,
                   "intended_observable": observable, "observed_mismatch": diagnosis,
                   "functional_exit": child["exit"],

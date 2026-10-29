@@ -287,14 +287,19 @@ def prepare(run, kind):
                         (b"Z" * 65536, oracle.periodic_block(b"Z" * 65536)),
                         (b"123456789", None), (b"", None)))]]
         simulate(run, build, batches, 16, 17, "maximum-endpoint")
-    elif kind in ("mutation", "mutation-transfer"):
+    elif kind in ("mutation", "mutation-transfer", "mutation-sg-boundary"):
         mutations.execute(run, compile_bus, write_cases, compare_results, make_frame,
-                          only=("channel-ownership" if kind == "mutation-transfer"
-                                else "suppressed-mismatch"))
+                          only={"mutation": "suppressed-mismatch",
+                                "mutation-transfer": "channel-ownership",
+                                "mutation-sg-boundary": "sg-boundary"}[kind])
     elif kind == "matrix-cell":
         build = compile_bus(run, 3, 3, "verilator")
         simulate(run, build, scenarios.matrix_batches(3, 89, make_frame),
                  3, 89, "nonpower-seed89", resets=True)
+    elif kind == "matrix-reset-255-seed89":
+        build = compile_bus(run, 255, 16, "verilator")
+        simulate(run, build, scenarios.matrix_batches(255, 89, make_frame),
+                 16, 89, "reset-255-seed89", resets=True)
     elif kind == "hidden-reservation-error-settlement":
         error_settlement.execute(run)
     else:
@@ -518,7 +523,9 @@ def main():
     parser.add_argument("--prepare", nargs="?", const="compact",
                         choices=("compact", "errors", "synthesis", "parent",
                                  "protocol", "full-parent", "endpoint", "default-synthesis",
-                                 "mutation", "mutation-transfer", "matrix-cell", "portable",
+                                 "mutation", "mutation-transfer", "mutation-sg-boundary",
+                                 "matrix-cell", "portable",
+                                 "matrix-reset-255-seed89",
                                  "hidden-reservation-error-settlement"),
                         help="bounded development probe, not acceptance")
     parser.add_argument("--out-root", required=True)
