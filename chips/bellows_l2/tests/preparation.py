@@ -56,6 +56,8 @@ post-settlement retention; a readable bundle never certifies a platform remedy.
 Artifact audits repeat the inventory and re-read initially matching files before
 returning; disappearance or mutation during the audit fails explicitly. This
 bounded stability observation cannot establish persistence after process settlement.
+The top-level receipt is separately re-read byte-for-byte before the audit returns;
+its removal, replacement or symlink redirection invalidates the observation too.
 Symlinked artifacts, directories and bundle ancestors are rejected, including
 same-byte substitutions and redirects introduced between the two observations.
 This matches the producer's no-symlink retention contract; it does not identify
@@ -293,10 +295,13 @@ def audit_bundle(name, source_diff=False):
                   snapshot_files=0, generated_sources=0, matrix_passed=0,
                   bound_raw_streams=0, unbound_raw_streams=0,
                   artifact_integrity_present=False, bound_artifacts=0,
+                  receipt_stable=False,
                   current_sources_match=None, source_binding_errors=[],
                   components=[], missing_components=[],
                   matrix_required=len(CAPACITIES) * len(SEEDS))
     errors = report["errors"]
+    receipt_path = None
+    receipt_payload = None
 
     def local(value):
         if not isinstance(value, str) or not value:
@@ -343,7 +348,11 @@ def audit_bundle(name, source_diff=False):
             if not present:
                 report["missing_components"].append(path.as_posix())
                 errors.append(f"Missing required {kind}: {path}")
-        receipt = read_record(bundle / "receipt.json")
+        receipt_path = bundle / "receipt.json"
+        receipt_payload = receipt_path.read_bytes()
+        receipt = json.loads(receipt_payload)
+        if not isinstance(receipt, dict):
+            raise ValueError(f"Not a JSON object: {receipt_path}")
         if receipt.get("kind") != "portable-verifier":
             raise ValueError(f"Not a portable-verifier bundle: {name}")
         artifacts = audit_artifacts(bundle, receipt.get("artifact_integrity"))
@@ -442,6 +451,16 @@ def audit_bundle(name, source_diff=False):
                 errors.append(f"{child_name}: {error}")
     except (OSError, ValueError, KeyError, TypeError) as error:
         errors.append(str(error))
+    if receipt_payload is not None:
+        try:
+            for path in (receipt_path, *receipt_path.parents):
+                if path.is_symlink():
+                    raise ValueError(f"Symlink in bundle receipt path: {path}")
+            if receipt_path.read_bytes() != receipt_payload:
+                raise ValueError(f"Bundle receipt changed during audit: {receipt_path}")
+            report["receipt_stable"] = True
+        except (OSError, ValueError) as error:
+            errors.append(f"Cannot recheck bundle receipt: {error}")
     report["retained_files_readable"] = not errors
     artifacts = report.get("artifact_integrity", {})
     report["retention_handoff"] = dict(

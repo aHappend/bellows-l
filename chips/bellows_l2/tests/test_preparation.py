@@ -193,6 +193,77 @@ class ArtifactRetentionTests(unittest.TestCase):
         path.write_bytes(payload)
         return path.relative_to(self.root).as_posix(), file_integrity(path)
 
+    def complete_bundle(self):
+        source = b"synthetic RTL\n"
+        _, source_binding = self.artifact("source/rtl/example.sv", source)
+        sources = {"rtl/example.sv": source_binding["sha256"]}
+        child_name, _ = self.artifact("commands/001/receipt.json", json.dumps(dict(
+            source_sha256=sources, exit_code=0, timed_out=False,
+            stdout=f"{self.bundle}/commands/001/stdout.log",
+            stderr=f"{self.bundle}/commands/001/stderr.log",
+            generated_source_sha256={})).encode())
+        self.artifact("commands/001/stdout.log", b"synthetic output\n")
+        self.artifact("commands/001/stderr.log", b"")
+        self.artifact("results.json", json.dumps(dict(
+            outcome="passed", mandatory_matrix=[
+                dict(capacity=capacity, seed=seed, outcome="passed")
+                for capacity in (1, 5, 13, 257, 4096, 65536)
+                for seed in (1, 17, 89)])).encode())
+        artifacts = {path.relative_to(self.root).as_posix(): file_integrity(path)
+                     for path in self.base.rglob("*") if path.is_file()}
+        receipt = self.base / "receipt.json"
+        receipt.write_text(json.dumps(dict(
+            kind="portable-verifier", results=f"{self.bundle}/results.json",
+            source_sha256=sources, children=[child_name],
+            artifact_integrity=artifacts)))
+        return receipt, sources
+
+    def test_unchanged_complete_receipt_remains_readable(self):
+        receipt, sources = self.complete_bundle()
+        original = receipt.read_bytes()
+        with chdir(self.root), patch("preparation.inputs", return_value=sources):
+            report = audit_bundle(self.bundle.as_posix())
+        self.assertTrue(report["retained_files_readable"], report["errors"])
+        self.assertTrue(report["receipt_stable"])
+        self.assertEqual(receipt.read_bytes(), original)
+
+    def test_receipt_must_remain_identical_through_artifact_audit(self):
+        receipt, sources = self.complete_bundle()
+        original = receipt.read_bytes()
+
+        def replace_receipt(*args, **kwargs):
+            report = audit_artifacts(*args, **kwargs)
+            changed = json.loads(original)
+            changed["artifact_integrity"] = {}
+            receipt.write_text(json.dumps(changed))
+            return report
+
+        with chdir(self.root), patch("preparation.inputs", return_value=sources), \
+                patch("preparation.audit_artifacts", side_effect=replace_receipt):
+            report = audit_bundle(self.bundle.as_posix())
+        self.assertFalse(report["retained_files_readable"])
+        self.assertFalse(report["receipt_stable"])
+        self.assertTrue(any("receipt changed during audit" in error.lower()
+                            for error in report["errors"]), report["errors"])
+        self.assertNotEqual(receipt.read_bytes(), original)
+
+    def test_receipt_disappearance_during_audit_is_explicit_failure(self):
+        receipt, sources = self.complete_bundle()
+
+        def remove_receipt(*args, **kwargs):
+            report = audit_artifacts(*args, **kwargs)
+            receipt.unlink()
+            return report
+
+        with chdir(self.root), patch("preparation.inputs", return_value=sources), \
+                patch("preparation.audit_artifacts", side_effect=remove_receipt):
+            report = audit_bundle(self.bundle.as_posix())
+        self.assertFalse(report["retained_files_readable"])
+        self.assertFalse(report["receipt_stable"])
+        self.assertTrue(any("cannot recheck bundle receipt" in error.lower()
+                            for error in report["errors"]), report["errors"])
+        self.assertFalse(receipt.exists())
+
     def test_complete_inventory_rechecks_every_bound_file(self):
         bindings = dict([self.artifact("stdout.log"), self.artifact("obj/model.o")])
         report = audit_artifacts(self.bundle, bindings)
