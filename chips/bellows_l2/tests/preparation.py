@@ -133,7 +133,8 @@ mandatory portable destinations for occupation, including dangling symlinks.
 Source identity uses direct byte comparisons; hashes are retained for provenance,
 not used as a substitute for reading and comparing the copied contents.
 Per-file comparisons identify the first differing byte, and both source inventories
-are rechecked before reporting success so changes during inspection fail explicitly.
+are rechecked after all output-path inspections before reporting success, so changes
+or source loss during output inspection fail explicitly.
 Optional --source-diff adds readable staged-to-current source differences to those
 same byte comparisons. It does not waive mismatches, occupied outputs or retention
 prerequisites, and does not change or rebind either source tree.
@@ -1078,6 +1079,7 @@ def inspect_portable_inputs(name=".", reference=ROOT, source_diff=False):
                   source_sha256={}, outputs=[], errors=[])
     errors = report["errors"]
     inspection_root = None
+    current = staged = None
 
     def reject_source_redirects(root):
         paths = {path for pattern in DECLARED for path in root.glob(pattern)}
@@ -1134,12 +1136,6 @@ def inspect_portable_inputs(name=".", reference=ROOT, source_diff=False):
                     errors.append(f"Declared source changed during comparison: {source}")
                 if not equal:
                     errors.append(f"Declared source differs from current input: {source}")
-        report["source_inventory_stable"] = (
-            inputs(reference) == current and inputs(root) == staged)
-        reject_source_redirects(reference)
-        reject_source_redirects(root)
-        if not report["source_inventory_stable"]:
-            errors.append("Declared source inventory changed during inspection")
         report["current_sources_match"] = not errors
     except (OSError, ValueError, AssertionError) as error:
         errors.append(str(error))
@@ -1156,6 +1152,18 @@ def inspect_portable_inputs(name=".", reference=ROOT, source_diff=False):
         except (OSError, ValueError) as error:
             output["error"] = str(error)
             errors.append(f"Mandatory output rejected; preserve it: {error}")
+    if current is not None and staged is not None:
+        try:
+            current_unchanged = inputs(reference) == current
+            staged_unchanged = inputs(root) == staged
+            reject_source_redirects(reference)
+            reject_source_redirects(root)
+            if not current_unchanged or not staged_unchanged:
+                raise ValueError("Declared source inventory changed during inspection")
+            report["source_inventory_stable"] = True
+        except (OSError, ValueError, AssertionError) as error:
+            report["current_sources_match"] = False
+            errors.append(f"Final declared-source inspection failed: {error}")
     report["portable_preflight_passed"] = not errors
     return report
 

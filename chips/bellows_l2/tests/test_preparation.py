@@ -365,6 +365,35 @@ class PortableRecoveryTests(unittest.TestCase):
         self.assertTrue(all(entry["fresh"] for entry in report["outputs"]))
         self.assertFalse(report["authorizes_resumption"])
 
+    def test_source_change_during_output_inspection_invalidates_preflight(self):
+        source = self.root / "tests/example.py"
+        original = source.read_bytes()
+        for change in ("modify", "remove"):
+            with self.subTest(change=change):
+                inspected = []
+
+                def inspect_output(path, root):
+                    verifier.validate_output(path, root=root)
+                    inspected.append(path.as_posix())
+                    if len(inspected) == 1:
+                        if change == "modify":
+                            source.write_bytes(b"changed during output inspection\n")
+                        else:
+                            source.unlink()
+
+                try:
+                    with patch("preparation.validate_output",
+                               side_effect=inspect_output):
+                        report = inspect_portable_inputs(reference=self.root)
+                    self.assertEqual(inspected, list(self.outputs))
+                    self.assertFalse(report["portable_preflight_passed"], report)
+                    self.assertFalse(report["current_sources_match"], report)
+                    self.assertFalse(report["source_inventory_stable"], report)
+                    self.assertTrue(report["errors"])
+                    self.assertFalse(report["authorizes_resumption"])
+                finally:
+                    source.write_bytes(original)
+
     def test_readable_source_deltas_do_not_waive_mismatches_or_occupied_outputs(self):
         staged = self.root / "evidence/fresh/project"
         stage_portable_root("evidence/fresh/project", reference=self.root)
