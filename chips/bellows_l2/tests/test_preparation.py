@@ -6,7 +6,7 @@ No transport commands are executed and no hardware acceptance is established.
 """
 
 import copy
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import chdir, redirect_stderr, redirect_stdout
 import io
 import json
 from pathlib import Path
@@ -17,7 +17,7 @@ from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from preparation import (audit_artifacts, audit_receipt, diagnose_hil_record,
+from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
                          stage_portable_root)
 from verify import file_integrity
@@ -112,6 +112,53 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertEqual(report["checked_files"], 2)
         self.assertEqual(report["rechecked_files"], 2)
         self.assertTrue(report["inventory_stable"])
+
+    def test_absent_bundle_routes_to_platform_without_authorizing_replay(self):
+        with chdir(self.root):
+            report = audit_bundle("evidence/absent")
+        handoff = report["retention_handoff"]
+        self.assertFalse(report["retained_files_readable"])
+        self.assertEqual(handoff["prerequisite_owner"], "shared-runtime platform owner")
+        self.assertEqual(handoff["artifact_availability"], "unestablished")
+        self.assertIsNone(handoff["missing_bytes"])
+        self.assertFalse(handoff["authorizes_staging"])
+        self.assertFalse(handoff["authorizes_resumption"])
+        self.assertFalse((self.root / "evidence/absent").exists())
+
+    def test_bundle_handoff_preserves_loss_inventory_and_source_uncertainty(self):
+        name, binding = self.artifact("obj/model.o")
+        (self.root / name).unlink()
+        receipt = self.base / "receipt.json"
+        receipt.write_text(json.dumps(dict(
+            kind="portable-verifier", artifact_integrity={name: binding})))
+        before = receipt.read_bytes()
+        with chdir(self.root):
+            report = audit_bundle(self.bundle.as_posix())
+        handoff = report["retention_handoff"]
+        self.assertEqual(handoff["artifact_availability"], "incomplete_or_invalid")
+        self.assertEqual(handoff["missing_artifact_bindings"], {name: binding})
+        self.assertEqual(handoff["missing_bytes"], binding["bytes"])
+        self.assertIsNone(handoff["current_sources_match"])
+        self.assertFalse(handoff["platform_retention_remedy_established"])
+        self.assertFalse(handoff["post_settlement_retention_established"])
+        self.assertFalse(handoff["authorizes_resumption"])
+        self.assertEqual(receipt.read_bytes(), before)
+        self.assertFalse((self.root / name).exists())
+
+    def test_complete_artifact_observation_does_not_certify_platform_remedy(self):
+        name, binding = self.artifact("trace.log")
+        (self.base / "receipt.json").write_text(json.dumps(dict(
+            kind="portable-verifier", artifact_integrity={name: binding})))
+        with chdir(self.root):
+            report = audit_bundle(self.bundle.as_posix())
+        handoff = report["retention_handoff"]
+        self.assertEqual(handoff["artifact_availability"], "complete_at_observation")
+        self.assertEqual(handoff["missing_bytes"], 0)
+        self.assertFalse(handoff["platform_retention_remedy_established"])
+        self.assertFalse(handoff["post_settlement_retention_established"])
+        self.assertFalse(handoff["authorizes_staging"])
+        self.assertFalse(handoff["authorizes_resumption"])
+        self.assertFalse(report["retained_files_readable"])
 
     def test_missing_compiler_intermediates_are_not_exempted_or_regenerated(self):
         bindings = dict(self.artifact(f"obj/file-{index}.o") for index in range(299))

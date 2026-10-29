@@ -50,6 +50,9 @@ identifies the mechanism responsible for a missing file.
 Missing artifacts include their validated original sizes and hashes, total byte
 count and bundle-relative directory groups for an authentic-archive recovery
 request. This inventory does not restore files or authorize regeneration.
+Bundle diagnostics include a platform-owner handoff even if the receipt is
+absent. It separates artifact availability, source currency and unestablished
+post-settlement retention; a readable bundle never certifies a platform remedy.
 Artifact audits repeat the inventory and re-read initially matching files before
 returning; disappearance or mutation during the audit fails explicitly. This
 bounded stability observation cannot establish persistence after process settlement.
@@ -435,6 +438,36 @@ def audit_bundle(name, source_diff=False):
     except (OSError, ValueError, KeyError, TypeError) as error:
         errors.append(str(error))
     report["retained_files_readable"] = not errors
+    artifacts = report.get("artifact_integrity", {})
+    report["retention_handoff"] = dict(
+        recipient="Coordinator",
+        prerequisite_owner="shared-runtime platform owner",
+        bundle=name,
+        historical_manifest=f"{name}/receipt.json",
+        artifact_availability=(
+            "unestablished" if not artifacts.get("present") else
+            "incomplete_or_invalid" if artifacts.get("errors") else
+            "complete_at_observation"),
+        missing_artifact_bindings=artifacts.get("missing_artifact_bindings", {}),
+        missing_bytes=artifacts.get("missing_bytes"),
+        current_sources_match=report["current_sources_match"],
+        platform_retention_remedy_established=False,
+        post_settlement_retention_established=False,
+        required_inputs=[
+            "Authentic archive restoration, or a retained platform diagnosis and "
+            "retention remedy before independently admitted fresh-root staging",
+            "Adequate storage and direct-byte current-source preflight before execution",
+            "Shared-runtime execution of all three unchanged mandatory portable "
+            "commands in order from the admitted actual source root",
+        ],
+        prohibited_actions=[
+            "Regenerate missing files into historical evidence",
+            "Remove manifest entries or overwrite occupied outputs",
+            "Treat source hashes, free storage or an in-process audit as a retention remedy",
+        ],
+        authorizes_staging=False,
+        authorizes_resumption=False,
+        establishes_physical_acceptance=False)
     return report
 
 
