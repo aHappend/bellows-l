@@ -22,7 +22,8 @@ from unittest.mock import patch
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify as verifier
-from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
+from preparation import (audit_artifacts, audit_bundle, audit_receipt, audit_recovery_archive,
+                         diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
                          repair_receipt, stage_portable_root)
 from verify import (archive_artifacts, file_integrity, inputs, json_write,
@@ -59,6 +60,10 @@ class ArtifactProducerTests(unittest.TestCase):
                 archive = root / record["path"]
                 archive_bytes = archive.read_bytes()
                 bindings = persist_artifacts(output)
+                archive_report = audit_recovery_archive(Path("evidence/bundle"), dict(
+                    recovery_archive=record, artifact_integrity=bindings))
+                self.assertTrue(archive_report["verified"], archive_report["errors"])
+                self.assertEqual(archive_report["checked_members"], 1)
                 self.assertEqual(record["members"], 1)
                 self.assertTrue(record["original_files_required"])
                 self.assertFalse(record["post_settlement_retention_verified"])
@@ -619,6 +624,90 @@ class ArtifactRetentionTests(unittest.TestCase):
                         report["artifact_manifest_errors"])
         self.assertTrue(report["receipt_stable"])
         self.assertEqual(receipt.read_bytes(), original)
+
+    def recovery_archive(self, receipt, transform=None):
+        record = json.loads(receipt.read_bytes())
+        archive = self.base / "retained-artifacts.tar.gz"
+        members = []
+        for name in record["artifact_integrity"]:
+            path = self.root / name
+            members.append((path.relative_to(self.base).as_posix(), path.read_bytes()))
+        if transform is not None:
+            members = transform(members)
+        with tarfile.open(archive, "w:gz") as retained:
+            for name, payload in members:
+                member = tarfile.TarInfo(name)
+                member.size = len(payload)
+                retained.addfile(member, io.BytesIO(payload))
+        record["recovery_archive"] = dict(
+            path=archive.relative_to(self.root).as_posix(),
+            members=len(record["artifact_integrity"]))
+        record["artifact_integrity"][record["recovery_archive"]["path"]] = file_integrity(archive)
+        receipt.write_text(json.dumps(record))
+        return archive, record
+
+    def test_verified_archive_does_not_restore_or_excuse_missing_original(self):
+        receipt, sources = self.complete_bundle()
+        archive, record = self.recovery_archive(receipt)
+        target = self.base / "synthesis/netlist.json"
+        target.unlink()
+        original_receipt = receipt.read_bytes()
+        original_archive = archive.read_bytes()
+        with chdir(self.root), patch("preparation.inputs", return_value=sources):
+            report = audit_bundle(self.bundle.as_posix())
+        recovery = report["recovery_archive"]
+        self.assertTrue(recovery["verified"], recovery["errors"])
+        self.assertEqual(recovery["checked_members"],
+                         record["recovery_archive"]["members"])
+        self.assertFalse(recovery["authorizes_restoration"])
+        self.assertFalse(report["artifact_manifest_verified"])
+        self.assertIn(target.relative_to(self.root).as_posix(),
+                      report["artifact_integrity"]["missing_files"])
+        self.assertFalse(target.exists())
+        self.assertEqual(receipt.read_bytes(), original_receipt)
+        self.assertEqual(archive.read_bytes(), original_archive)
+        self.assertFalse(report["retention_handoff"]["authorizes_resumption"])
+
+    def test_archive_semantics_rejected_even_with_matching_container_hash(self):
+        for label, transform, message in (
+                ("duplicate", lambda rows: rows + rows[:1], "duplicate"),
+                ("missing", lambda rows: rows[1:], "missing original"),
+                ("escape", lambda rows: [("../escape", b"no")] + rows, "Unexpected"),
+                ("wrong-bytes", lambda rows: [(rows[0][0], b"x" * len(rows[0][1])),
+                                              *rows[1:]], "integrity mismatch")):
+            with self.subTest(case=label):
+                self.bundle = Path("evidence") / f"archive-{label}"
+                self.base = self.root / self.bundle
+                self.base.mkdir()
+                receipt, _ = self.complete_bundle()
+                archive, record = self.recovery_archive(receipt, transform)
+                original = archive.read_bytes()
+                report = audit_recovery_archive(self.bundle, record)
+                self.assertFalse(report["verified"])
+                self.assertTrue(any(message in error for error in report["errors"]),
+                                report["errors"])
+                self.assertEqual(archive.read_bytes(), original)
+                self.assertFalse((self.root / "escape").exists())
+
+    def test_changed_archive_is_not_a_verified_recovery_source(self):
+        receipt, _ = self.complete_bundle()
+        archive, record = self.recovery_archive(receipt)
+        archive.write_bytes(b"not the recorded archive")
+        report = audit_recovery_archive(self.bundle, record)
+        self.assertFalse(report["verified"])
+        self.assertIn("Recovery archive integrity mismatch", report["errors"])
+
+    def test_archive_symlink_is_rejected_without_following_it(self):
+        receipt, _ = self.complete_bundle()
+        archive, record = self.recovery_archive(receipt)
+        peer = self.root / "original-archive.tar.gz"
+        archive.rename(peer)
+        archive.symlink_to(peer)
+        with patch("preparation.file_integrity", side_effect=AssertionError(
+                "A redirected archive must not be read")):
+            report = audit_recovery_archive(self.bundle, record)
+        self.assertFalse(report["verified"])
+        self.assertIn("Symlink in recovery archive path", report["errors"])
 
     def test_readable_legacy_bundle_without_manifest_cannot_pass_retention_check(self):
         receipt, sources = self.complete_bundle()

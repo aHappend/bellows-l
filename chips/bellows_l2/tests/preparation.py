@@ -73,6 +73,10 @@ identifies the mechanism responsible for a missing file.
 Missing artifacts include their validated original sizes and hashes, total byte
 count and bundle-relative directory groups for an authentic-archive recovery
 request. This inventory does not restore files or authorize regeneration.
+Receipt-declared recovery archives are inspected without extraction: every member
+must match the original manifest, with no duplicate, redirected or extra members.
+Matching archived bytes identify a possible recovery source, not historical
+authenticity, restored originals, a retention remedy or permission to resume.
 Suffix groups compare validated manifest counts/bytes with missing counts/bytes
 to expose selective loss, including compiler intermediates. Suffixes are descriptive,
 not exemptions or evidence of which process removed a file.
@@ -191,6 +195,7 @@ import re
 import signal
 import subprocess
 import sys
+import tarfile
 import time
 import uuid
 
@@ -341,6 +346,80 @@ def audit_artifacts(bundle, bindings):
             directory, dict(files=0, bytes=0))
         group["files"] += 1
         group["bytes"] += binding["bytes"]
+    return report
+
+
+def audit_recovery_archive(bundle, receipt):
+    """Compare a declared recovery copy without extracting or forgiving originals."""
+    record = receipt.get("recovery_archive")
+    report = dict(declared=record is not None, verified=False, checked_members=0,
+                  original_files_required=True, authorizes_restoration=False,
+                  platform_retention_remedy_established=False, errors=[])
+    if record is None:
+        return report
+    try:
+        archive = bundle / "retained-artifacts.tar.gz"
+        if not isinstance(record, dict) or record.get("path") != archive.as_posix():
+            raise ValueError("Recovery archive must be the nominated bundle's archive")
+        for path in (ROOT / archive, *(ROOT / archive).parents):
+            if path == ROOT:
+                break
+            if path.is_symlink():
+                raise ValueError("Symlink in recovery archive path")
+        bindings = receipt.get("artifact_integrity")
+        if not isinstance(bindings, dict) or archive.as_posix() not in bindings:
+            raise ValueError("Recovery archive lacks a historical integrity binding")
+        before = file_integrity(ROOT / archive)
+        if before != bindings[archive.as_posix()]:
+            raise ValueError("Recovery archive integrity mismatch")
+        expected = {}
+        for name, binding in bindings.items():
+            path = Path(name)
+            if (path.is_absolute() or ".." in path.parts
+                    or not path.is_relative_to(bundle)
+                    or path == bundle / "receipt.json"):
+                raise ValueError("Invalid original path in recovery archive manifest")
+            if path != archive:
+                if (not isinstance(binding, dict)
+                        or type(binding.get("bytes")) is not int or binding["bytes"] < 0
+                        or not isinstance(binding.get("sha256"), str)
+                        or re.fullmatch(r"[0-9a-f]{64}", binding["sha256"]) is None):
+                    raise ValueError("Invalid original recovery archive binding")
+                expected[path.relative_to(bundle).as_posix()] = binding
+        if (type(record.get("members")) is not int
+                or record["members"] != len(expected)):
+            raise ValueError("Recovery archive recorded member count mismatch")
+        seen = set()
+        with tarfile.open(ROOT / archive, mode="r|gz") as retained:
+            for member in retained:
+                if (not member.isfile() or member.name not in expected
+                        or member.name in seen):
+                    raise ValueError(f"Unexpected or duplicate recovery member: {member.name}")
+                binding = expected[member.name]
+                if member.size != binding["bytes"]:
+                    raise ValueError(f"Recovery member size mismatch: {member.name}")
+                digest = hashlib.sha256()
+                size = 0
+                with retained.extractfile(member) as handle:
+                    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                        digest.update(chunk)
+                        size += len(chunk)
+                if dict(bytes=size, sha256=digest.hexdigest()) != binding:
+                    raise ValueError(f"Recovery member integrity mismatch: {member.name}")
+                seen.add(member.name)
+                report["checked_members"] += 1
+        if seen != set(expected):
+            raise ValueError("Recovery archive is missing original members")
+        for path in (ROOT / archive, *(ROOT / archive).parents):
+            if path == ROOT:
+                break
+            if path.is_symlink():
+                raise ValueError("Symlink in recovery archive path")
+        if file_integrity(ROOT / archive) != before:
+            raise ValueError("Recovery archive changed during inspection")
+        report["verified"] = True
+    except (OSError, ValueError, TypeError, tarfile.TarError, EOFError) as error:
+        report["errors"].append(str(error))
     return report
 
 
@@ -517,6 +596,9 @@ def audit_bundle(name, source_diff=False):
     except (OSError, ValueError, KeyError, TypeError) as error:
         errors.append(str(error))
     if artifact_receipt is not None:
+        archive = audit_recovery_archive(bundle, artifact_receipt)
+        report["recovery_archive"] = archive
+        errors.extend(archive["errors"])
         artifacts = audit_artifacts(bundle, artifact_receipt.get("artifact_integrity"))
         report["artifact_integrity"] = artifacts
         report["artifact_integrity_present"] = artifacts["present"]
@@ -564,6 +646,7 @@ def audit_bundle(name, source_diff=False):
         missing_artifact_bindings=artifacts.get("missing_artifact_bindings", {}),
         missing_bytes=artifacts.get("missing_bytes"),
         artifacts_by_suffix=artifacts.get("artifacts_by_suffix", {}),
+        recovery_archive=report.get("recovery_archive"),
         current_sources_match=report["current_sources_match"],
         platform_retention_remedy_established=False,
         post_settlement_retention_established=False,
