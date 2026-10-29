@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
                          repair_receipt, stage_portable_root)
-from verify import file_integrity, json_write, persist_artifacts, sync_directory
+from verify import file_integrity, inputs, json_write, persist_artifacts, sync_directory
 
 
 class ArtifactProducerTests(unittest.TestCase):
@@ -217,6 +217,50 @@ class PortableRecoveryTests(unittest.TestCase):
                          list(self.outputs))
         self.assertTrue(all(entry["fresh"] for entry in report["outputs"]))
         self.assertFalse(report["authorizes_resumption"])
+
+    def test_preflight_rejects_same_byte_current_source_redirect(self):
+        stage_portable_root("evidence/fresh/project", reference=self.root)
+        source = self.root / "rtl/example.sv"
+        original = self.root / "original.sv"
+        source.rename(original)
+        source.symlink_to(original)
+        report = inspect_portable_inputs("evidence/fresh/project", reference=self.root)
+        self.assertFalse(report["portable_preflight_passed"], report)
+        self.assertFalse(report["current_sources_match"])
+        self.assertTrue(any("symlink" in error for error in report["errors"]))
+        self.assertEqual(source.read_bytes(), original.read_bytes())
+        self.assertTrue(source.is_symlink())
+        self.assertEqual(len(report["outputs"]), len(self.outputs))
+
+    def test_preflight_rechecks_both_source_trees_for_same_byte_redirects(self):
+        stage_portable_root("evidence/fresh/project", reference=self.root)
+        for side in ("current", "staged"):
+            with self.subTest(side=side):
+                root = (self.root if side == "current" else
+                        self.root / "evidence/fresh/project")
+                source = root / "rtl/example.sv"
+                original = root / "original.sv"
+                calls = 0
+
+                def inventory(path):
+                    nonlocal calls
+                    result = inputs(path)
+                    calls += 1
+                    if calls == 4:
+                        source.rename(original)
+                        source.symlink_to(original)
+                    return result
+
+                with patch("preparation.inputs", side_effect=inventory):
+                    report = inspect_portable_inputs(
+                        "evidence/fresh/project", reference=self.root)
+                self.assertEqual(calls, 4)
+                self.assertFalse(report["portable_preflight_passed"], report)
+                self.assertFalse(report["current_sources_match"])
+                self.assertTrue(any("symlink" in error for error in report["errors"]))
+                self.assertEqual(source.read_bytes(), original.read_bytes())
+                source.unlink()
+                original.rename(source)
 
     def test_each_occupied_mandatory_output_is_preserved_and_rejected(self):
         for destination in self.outputs:

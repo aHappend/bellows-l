@@ -108,6 +108,9 @@ Source identity uses direct byte comparisons; hashes are retained for provenance
 not used as a substitute for reading and comparing the copied contents.
 Per-file comparisons identify the first differing byte, and both source inventories
 are rechecked before reporting success so changes during inspection fail explicitly.
+Both current and staged source paths are checked for symlink redirection before
+comparison and after the final inventories, including same-byte substitutions.
+These bounded path observations do not prevent concurrent filesystem replacement.
 All mandatory output destinations are reported even when source inspection fails;
 an unavailable or rejected execution root never makes a destination look usable.
 It neither stages a root nor executes checks. A successful preflight establishes
@@ -912,6 +915,15 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                   source_sha256={}, outputs=[], errors=[])
     errors = report["errors"]
     inspection_root = None
+
+    def reject_source_redirects(root):
+        paths = {path for pattern in DECLARED for path in root.glob(pattern)}
+        for path in paths:
+            if any(candidate.is_symlink() for candidate in (path, *path.parents)
+                   if candidate != reference and candidate.is_relative_to(reference)):
+                raise ValueError(
+                    f"Declared source depends on a symlink: {path.relative_to(reference)}")
+
     try:
         relative_root = Path(name)
         if (relative_root.is_absolute() or ".." in relative_root.parts
@@ -924,13 +936,9 @@ def inspect_portable_inputs(name=".", reference=ROOT):
         if not root.is_dir():
             raise ValueError("Execution root is not an existing readable directory")
         inspection_root = root
+        reject_source_redirects(reference)
+        reject_source_redirects(root)
         current = inputs(reference)
-        paths = {path for pattern in DECLARED for path in root.glob(pattern)}
-        for path in paths:
-            if any(candidate.is_symlink() for candidate in (path, *path.parents)
-                   if candidate != reference and candidate.is_relative_to(reference)):
-                raise ValueError(
-                    f"Declared source depends on a symlink: {path.relative_to(root)}")
         staged = inputs(root)
         report["source_sha256"] = staged
         for source in sorted(set(current) | set(staged)):
@@ -959,6 +967,8 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                     errors.append(f"Declared source differs from current input: {source}")
         report["source_inventory_stable"] = (
             inputs(reference) == current and inputs(root) == staged)
+        reject_source_redirects(reference)
+        reject_source_redirects(root)
         if not report["source_inventory_stable"]:
             errors.append("Declared source inventory changed during inspection")
         report["current_sources_match"] = not errors
