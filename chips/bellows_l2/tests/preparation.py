@@ -151,6 +151,8 @@ outputs or runtime metadata, and retains a source inventory and root mapping.
 It refuses an occupied root and never launches checks or hardware commands.
 Copied files and their directory entries are synchronized before source preflight
 and success recording; synchronization failures retain a failed staging receipt.
+After preflight, both source inventories must still match the original staging
+bindings; mutually equal changed trees cannot validate a stale staging receipt.
 This crash-durability step does not establish a platform retention remedy or
 protection against external deletion after the staging process settles.
 The shared runtime must execute all three unchanged mandatory commands in that actual
@@ -1256,6 +1258,8 @@ def stage_portable_root(name, reference=ROOT):
             relative_root.as_posix(), reference=reference)
         if not record["preflight"]["portable_preflight_passed"]:
             raise ValueError("Staged portable-input preflight failed")
+        if inputs(reference) != sources or inputs(root) != sources:
+            raise ValueError("Sources changed during staging")
         record["exit_code"] = 0
     except (OSError, ValueError, AssertionError) as failure:
         error = f"{type(failure).__name__}: {failure}"

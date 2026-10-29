@@ -562,6 +562,32 @@ class PortableRecoveryTests(unittest.TestCase):
         for destination in self.outputs:
             self.assertFalse((self.root / "evidence/fresh/project" / destination).exists())
 
+    def test_staging_rechecks_original_bindings_after_preflight(self):
+        root = self.root / "evidence/changed/project"
+        original = inputs(self.root)
+
+        def change_before_preflight(name, reference):
+            for directory in (reference, root):
+                (directory / "tests/example.py").write_bytes(
+                    b"both trees changed after staging inventory\n")
+            return inspect_portable_inputs(name, reference=reference)
+
+        with patch("preparation.inspect_portable_inputs",
+                   side_effect=change_before_preflight):
+            with self.assertRaisesRegex(ValueError, "Sources changed during staging"):
+                stage_portable_root("evidence/changed/project", reference=self.root)
+        record = json.loads((root / "staging-receipt.json").read_text())
+        self.assertEqual(record["exit_code"], 1)
+        self.assertEqual(record["source_sha256"], original)
+        self.assertTrue(record["preflight"]["portable_preflight_passed"])
+        self.assertNotEqual(inputs(self.root), original)
+        self.assertNotEqual(inputs(root), original)
+        self.assertEqual((root / "staging.stdout.log").read_bytes(), b"")
+        self.assertIn("Sources changed during staging",
+                      (root / "staging.stderr.log").read_text())
+        self.assertFalse(record["checks_executed"])
+        self.assertFalse(record["hardware_executed"])
+
     def test_staging_synchronizes_sources_before_success_receipt(self):
         synchronized_files = set()
         real_fsync = os.fsync
