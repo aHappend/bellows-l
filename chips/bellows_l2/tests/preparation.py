@@ -47,6 +47,9 @@ proves that files remain available after the audit's own process settles.
 Artifact diagnostics distinguish missing, changed and unbound files, including
 compiler intermediates. Classification never excludes files from the audit or
 identifies the mechanism responsible for a missing file.
+Missing artifacts include their validated original sizes and hashes, total byte
+count and bundle-relative directory groups for an authentic-archive recovery
+request. This inventory does not restore files or authorize regeneration.
 Artifact audits repeat the inventory and re-read initially matching files before
 returning; disappearance or mutation during the audit fails explicitly. This
 bounded stability observation cannot establish persistence after process settlement.
@@ -168,7 +171,9 @@ def audit_artifacts(bundle, bindings):
     """Validate an optional manifest without repairing or creating any files."""
     report = dict(present=bindings is not None, checked_files=0, expected_files=0,
                   rechecked_files=0, inventory_stable=False,
-                  missing_files=[], mismatched_files=[], unbound_files=[], errors=[])
+                  missing_files=[], missing_artifact_bindings={},
+                  missing_bytes=0, missing_by_directory={},
+                  mismatched_files=[], unbound_files=[], errors=[])
     if bindings is None:
         return report
     if not isinstance(bindings, dict) or not bindings:
@@ -177,6 +182,7 @@ def audit_artifacts(bundle, bindings):
     report["expected_files"] = len(bindings)
     base = ROOT / bundle
     initially_checked = []
+    validated_bindings = {}
     actual = None
 
     def reject_symlinks(path):
@@ -222,6 +228,7 @@ def audit_artifacts(bundle, bindings):
                     or not isinstance(binding.get("sha256"), str)
                     or re.fullmatch(r"[0-9a-f]{64}", binding["sha256"]) is None):
                 raise ValueError(f"Invalid artifact integrity binding: {name}")
+            validated_bindings[name] = dict(binding)
             if file_integrity(ROOT / path) != binding:
                 report["mismatched_files"].append(name)
                 raise ValueError(f"Artifact integrity mismatch: {name}")
@@ -251,6 +258,17 @@ def audit_artifacts(bundle, bindings):
                 report["errors"].append(str(error))
     except (OSError, ValueError) as error:
         report["errors"].append(f"Cannot re-inventory retained artifacts: {error}")
+    for name in sorted(set(report["missing_files"])):
+        binding = validated_bindings.get(name)
+        if binding is None:
+            continue
+        report["missing_artifact_bindings"][name] = binding
+        report["missing_bytes"] += binding["bytes"]
+        directory = Path(name).parent.relative_to(bundle).as_posix()
+        group = report["missing_by_directory"].setdefault(
+            directory, dict(files=0, bytes=0))
+        group["files"] += 1
+        group["bytes"] += binding["bytes"]
     return report
 
 

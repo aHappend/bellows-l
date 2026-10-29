@@ -62,7 +62,41 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertEqual(report["checked_files"], 0)
         self.assertEqual(set(report["missing_files"]), set(bindings))
         self.assertEqual(len(report["errors"]), 299)
+        self.assertEqual(report["missing_artifact_bindings"], bindings)
+        self.assertEqual(report["missing_bytes"],
+                         sum(binding["bytes"] for binding in bindings.values()))
+        self.assertEqual(report["missing_by_directory"], {
+            "obj": dict(files=299, bytes=report["missing_bytes"])})
         self.assertEqual(list(self.base.rglob("*.o")), [])
+
+    def test_missing_inventory_preserves_exact_bindings_across_directories(self):
+        bindings = dict([
+            self.artifact("matrix/obj/model.o", b"object"),
+            self.artifact("matrix/obj/model.d", b""),
+            self.artifact("reproduction/run.log", b"raw log")])
+        retained, retained_binding = self.artifact("retained.log")
+        for name in bindings:
+            (self.root / name).unlink()
+        report = audit_artifacts(self.bundle, {
+            **bindings, retained: retained_binding})
+        self.assertEqual(report["missing_artifact_bindings"], bindings)
+        self.assertEqual(report["missing_bytes"], 13)
+        self.assertEqual(report["missing_by_directory"], {
+            "matrix/obj": dict(files=2, bytes=6),
+            "reproduction": dict(files=1, bytes=7)})
+        self.assertEqual(report["checked_files"], 1)
+        self.assertTrue(report["errors"])
+
+    def test_invalid_missing_binding_does_not_enter_recovery_inventory(self):
+        name, binding = self.artifact("model.o")
+        (self.root / name).unlink()
+        for invalid in (dict(binding, bytes=True), dict(binding, sha256="invalid")):
+            with self.subTest(binding=invalid):
+                report = audit_artifacts(self.bundle, {name: invalid})
+                self.assertTrue(report["errors"])
+                self.assertEqual(report["missing_artifact_bindings"], {})
+                self.assertEqual(report["missing_bytes"], 0)
+                self.assertEqual(report["missing_by_directory"], {})
 
     def test_same_size_corruption_and_unbound_files_both_fail(self):
         name, binding = self.artifact("trace.log", b"original")
@@ -87,6 +121,8 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertEqual(report["rechecked_files"], 0)
         self.assertFalse(report["inventory_stable"])
         self.assertEqual(report["missing_files"], [name])
+        self.assertEqual(report["missing_artifact_bindings"], {name: binding})
+        self.assertEqual(report["missing_bytes"], binding["bytes"])
         self.assertTrue(report["errors"])
 
     def test_same_bytes_symlink_substitution_is_not_retained_original(self):
