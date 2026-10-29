@@ -1108,6 +1108,68 @@ class ArtifactRetentionTests(unittest.TestCase):
 
 
 class ReceiptOutcomeTests(unittest.TestCase):
+    def invoke_inventory(self, records, require_current=False):
+        arguments = ["tests/preparation.py", "--audit-receipts",
+                     *[record["path"] for record in records]]
+        if require_current:
+            arguments.append("--require-current-sources")
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with patch.object(sys, "argv", arguments), \
+                patch("preparation.os.chdir"), \
+                patch("preparation.audit_receipt", side_effect=records), \
+                patch("subprocess.Popen", side_effect=AssertionError(
+                    "Receipt inventory must not launch commands")), \
+                redirect_stdout(stdout), redirect_stderr(stderr):
+            code = main()
+        self.assertEqual(stderr.getvalue(), "")
+        return code, json.loads(stdout.getvalue())
+
+    def test_strict_currency_rejects_stale_preflight_without_relabeling_success(self):
+        records = [dict(path="evidence/synthetic/receipt.json", available=True,
+                        current_sources_match=False,
+                        source_binding_errors=["Current input differs: tests/verify.py"],
+                        recorded_execution=dict(outcome="succeeded", exit_code=0))]
+        for require_current, expected in ((False, 0), (True, 1)):
+            with self.subTest(require_current=require_current):
+                code, report = self.invoke_inventory(records, require_current)
+                self.assertEqual(code, expected)
+                self.assertTrue(report["complete"])
+                self.assertFalse(report["current_sources_match"])
+                self.assertEqual(report["current_sources_required"], require_current)
+                self.assertEqual(report["receipts"], records)
+                self.assertFalse(report["authorizes_resumption"])
+
+    def test_currency_gate_does_not_hide_unavailable_receipt_in_a_batch(self):
+        records = [dict(path="evidence/synthetic/current.json", available=True,
+                        current_sources_match=True),
+                   dict(path="evidence/synthetic/missing.json", available=False,
+                        error="Synthetic missing receipt")]
+        code, report = self.invoke_inventory(records, require_current=True)
+        self.assertEqual(code, 1)
+        self.assertFalse(report["complete"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertEqual(len(report["receipts"]), 2)
+
+    def test_current_binding_does_not_turn_historical_failure_into_success(self):
+        records = [dict(path="evidence/synthetic/receipt.json", available=True,
+                        current_sources_match=True,
+                        recorded_execution=dict(outcome="failed", exit_code=1))]
+        code, report = self.invoke_inventory(records, require_current=True)
+        self.assertEqual(code, 0)
+        self.assertEqual(report["receipts"][0]["recorded_execution"]["outcome"], "failed")
+        self.assertFalse(report["acceptance_evidence"])
+        self.assertFalse(report["authorizes_resumption"])
+
+    def test_currency_flag_rejects_unrelated_operations(self):
+        with patch.object(sys, "argv", [
+                "tests/preparation.py", "--inspect-hil-inputs",
+                "--require-current-sources"]), redirect_stderr(io.StringIO()), \
+                patch("preparation.inspect_hil_inputs", side_effect=AssertionError(
+                    "Invalid option combination must fail before inspection")):
+            with self.assertRaises(SystemExit) as failure:
+                main()
+        self.assertEqual(failure.exception.code, 2)
+
     def audit(self, **metadata):
         record = dict(argv=["synthetic-never-execute"], cwd=".",
                       exit_code=0, timed_out=False, source_sha256={},

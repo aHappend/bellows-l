@@ -7,6 +7,7 @@
     python3 tests/preparation.py --subset harness-focused
     python3 tests/preparation.py --subset ratio-focused --repair-of <receipt>
     python3 tests/preparation.py --audit-receipts <receipt> [<receipt> ...]
+    python3 tests/preparation.py --audit-receipts <receipt> --require-current-sources
     python3 tests/preparation.py --audit-bundles evidence/l1 [<bundle> ...]
     python3 tests/preparation.py --audit-bundles evidence/l1 --source-diff
     python3 tests/preparation.py --inspect-hil-inputs
@@ -29,6 +30,9 @@ An optional launch_error must be null/absent for success, or a nonempty string
 for a launch failure; false-valued malformed fields are invalid, not success.
 Receipt audits also report source currency separately from historical execution:
 a successful prerequisite from an older source set is not a current passing check.
+With --require-current-sources, unavailable receipts or stale source bindings make
+the receipt audit exit nonzero. The default remains an availability diagnostic.
+Neither mode upgrades the recorded execution result or authorizes resumption.
 Bundle audits separately report readability and binding to current declared inputs;
 a readable historical bundle is not necessarily evidence for the current sources.
 Current input bindings are rechecked after child inspection; a changed or unavailable
@@ -1148,8 +1152,12 @@ def main():
                         help="read-only fresh-output inspection with --inspect-hil-inputs")
     parser.add_argument("--source-diff", action="store_true",
                         help="include readable changes with bundle or portable-input inspection")
+    parser.add_argument("--require-current-sources", action="store_true",
+                        help="fail receipt inventory when any declared source binding is stale")
     parser.add_argument("--repair-of")
     args = parser.parse_args()
+    if args.require_current_sources and not args.audit_receipts:
+        parser.error("--require-current-sources applies only to --audit-receipts")
     if args.hil_output is not None and not args.inspect_hil_inputs:
         parser.error("--hil-output applies only to --inspect-hil-inputs")
     if (args.source_diff and not args.audit_bundles
@@ -1209,12 +1217,15 @@ def main():
             parser.error("--repair-of applies only to --subset")
         records = [audit_receipt(name) for name in args.audit_receipts]
         complete = all(record["available"] for record in records)
+        current = all(record.get("current_sources_match") is True for record in records)
         json.dump(dict(kind="read-only-receipt-inventory",
                        acceptance_evidence=False, acceptance_credit=0,
                        authorizes_resumption=False, complete=complete,
+                       current_sources_match=current,
+                       current_sources_required=args.require_current_sources,
                        receipts=records), sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
-        return 0 if complete else 1
+        return 0 if complete and (current or not args.require_current_sources) else 1
     prior_digest = None
     if args.repair_of:
         try:
