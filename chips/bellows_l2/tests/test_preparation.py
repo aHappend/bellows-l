@@ -746,6 +746,34 @@ class HilDiagnosticTests(unittest.TestCase):
         self.assertFalse(result["physical_acceptance_established"])
         self.assertFalse(result["authorizes_resumption"])
 
+    def test_receipt_symlinks_are_rejected_before_reading(self):
+        for component in ("receipt", "directory"):
+            with self.subTest(component=component), \
+                    tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                evidence = root / "evidence"
+                evidence.mkdir()
+                original = evidence / "original.json"
+                payload = json.dumps(self.record).encode()
+                original.write_bytes(payload)
+                if component == "receipt":
+                    receipt = evidence / "redirect.json"
+                    receipt.symlink_to(original.name)
+                else:
+                    redirect = evidence / "redirect"
+                    redirect.symlink_to(".", target_is_directory=True)
+                    receipt = redirect / original.name
+                with patch("preparation.ROOT", root), patch.object(
+                        Path, "read_bytes", side_effect=AssertionError(
+                            "Redirected HIL evidence must not be read")):
+                    code, result = self.invoke_cli(
+                        "--inspect-hil-receipt",
+                        receipt.relative_to(root).as_posix())
+                self.assertEqual(code, 1)
+                self.assertTrue(any("symlink" in error for error in result["errors"]))
+                self.assertFalse(result["physical_acceptance_established"])
+                self.assertEqual(original.read_bytes(), payload)
+
     def test_cli_unknown_output_is_not_inferred_to_be_product_comparisons(self):
         record = copy.deepcopy(self.record)
         for run in record["runs"]:

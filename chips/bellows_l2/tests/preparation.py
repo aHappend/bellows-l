@@ -117,6 +117,9 @@ source root, in order; a launch-directory change without source copies is not
 sufficient. Staging is preparation, not current portable or physical acceptance.
 HIL receipt inspection diagnoses retained register-only runs without executing
 hardware. A claimed native pass is reported separately from product acceptance.
+Receipt files and their ancestors must not be symlinks, even when they resolve
+to identical bytes inside project evidence; rejected paths are not read.
+This preflight does not protect against concurrent filesystem replacement.
 Unrecognized output remains unestablished, never inferred to be byte comparisons.
 The longest consecutive sequence counts only explicitly indexed, successful native
 runs with complete raw streams and no contradictory recorded token failures.
@@ -826,6 +829,11 @@ def inspect_hil_receipt(name):
                 or not (ROOT / path).resolve().is_relative_to(
                     (ROOT / "evidence").resolve())):
             raise ValueError("HIL receipt must remain inside project evidence/")
+        for candidate in (ROOT / path, *(ROOT / path).parents):
+            if candidate == ROOT:
+                break
+            if candidate.is_symlink():
+                raise ValueError("HIL receipt must not depend on symlinks")
         payload = (ROOT / path).read_bytes()
         report["receipt_integrity"] = dict(
             bytes=len(payload), sha256=hashlib.sha256(payload).hexdigest())
