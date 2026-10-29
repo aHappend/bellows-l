@@ -42,7 +42,10 @@ restores historical artifacts or exercises hardware.
 Final receipts bind every retained artifact, including compared data and synthesis
 outputs. Before publishing a final receipt, all artifact files and their directory
 entries are fsynced and rechecked against the manifest. Synchronization errors
-fail explicitly. This improves crash durability, not protection against external
+fail explicitly. Bundle paths and project-local ancestors are checked again for
+symlink substitution after synchronization, before final content comparisons.
+These bounded observations do not prevent concurrent filesystem replacement.
+This improves crash durability, not protection against external
 deletion; it cannot restore a missing bundle or authorize replay of a paused check.
 Final stdout also identifies the receipt and results by size and SHA-256, with
 source bindings and matrix outcomes. This diagnostic is not a replacement for
@@ -117,8 +120,11 @@ def sync_directory(path):
 
 def persist_artifacts(output):
     """Synchronize a completed bundle before publishing its integrity bindings."""
+    ancestors = [output, *(path for path in output.parents if path.is_relative_to(ROOT))]
+    if any(path.is_symlink() for path in ancestors):
+        raise AssertionError("Evidence artifacts must not depend on symlinks")
     paths = sorted(output.rglob("*"))
-    if output.is_symlink() or any(path.is_symlink() for path in paths):
+    if any(path.is_symlink() for path in paths):
         raise AssertionError("Evidence artifacts must not depend on symlinks")
     files = [path for path in paths if path.is_file()]
     artifacts = {}
@@ -135,7 +141,10 @@ def persist_artifacts(output):
         if not directory.is_relative_to(ROOT):
             break
         sync_directory(directory)
-    if sorted(output.rglob("*")) != paths:
+    final_paths = sorted(output.rglob("*"))
+    if any(path.is_symlink() for path in [*ancestors, *final_paths]):
+        raise AssertionError("Evidence artifacts must not depend on symlinks")
+    if final_paths != paths:
         raise AssertionError("Evidence inventory changed during synchronization")
     for path in files:
         if file_integrity(path) != artifacts[relative(path)]:

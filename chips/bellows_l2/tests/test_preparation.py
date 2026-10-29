@@ -21,7 +21,58 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
                          repair_receipt, stage_portable_root)
-from verify import file_integrity, json_write
+from verify import file_integrity, json_write, persist_artifacts, sync_directory
+
+
+class ArtifactProducerTests(unittest.TestCase):
+    def test_same_byte_symlink_substitution_during_synchronization_is_rejected(self):
+        for replacement in ("file", "bundle", "ancestor"):
+            with self.subTest(replacement=replacement), \
+                    tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                output = root / "evidence/bundle"
+                output.mkdir(parents=True)
+                artifact = output / "data.bin"
+                artifact.write_bytes(b"synthetic retained bytes")
+                peer = output / "peer.bin"
+                peer.write_bytes(artifact.read_bytes())
+                substituted = False
+
+                def synchronize(path):
+                    nonlocal substituted
+                    sync_directory(path)
+                    if path == output and not substituted:
+                        substituted = True
+                        if replacement == "file":
+                            artifact.unlink()
+                            artifact.symlink_to(peer)
+                        elif replacement == "bundle":
+                            original = root / "original-bundle"
+                            output.rename(original)
+                            output.symlink_to(original, target_is_directory=True)
+                        else:
+                            original = root / "original-evidence"
+                            output.parent.rename(original)
+                            output.parent.symlink_to(original, target_is_directory=True)
+
+                with patch("verify.ROOT", root), patch(
+                        "verify.sync_directory", side_effect=synchronize):
+                    with self.assertRaisesRegex(AssertionError, "symlink"):
+                        persist_artifacts(output)
+                self.assertTrue(substituted)
+                self.assertEqual(artifact.read_bytes(), b"synthetic retained bytes")
+
+    def test_regular_bundle_is_synchronized_and_bound(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "evidence/bundle"
+            output.mkdir(parents=True)
+            artifact = output / "data.bin"
+            artifact.write_bytes(b"synthetic retained bytes")
+            with patch("verify.ROOT", root):
+                bindings = persist_artifacts(output)
+            self.assertEqual(bindings, {
+                "evidence/bundle/data.bin": file_integrity(artifact)})
 
 
 class PreparationStreamTests(unittest.TestCase):
