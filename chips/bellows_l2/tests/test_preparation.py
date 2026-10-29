@@ -14,19 +14,118 @@ import json
 import os
 from pathlib import Path
 import sys
+import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import verify as verifier
 from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
                          repair_receipt, stage_portable_root)
-from verify import file_integrity, inputs, json_write, persist_artifacts, sync_directory
+from verify import (archive_artifacts, file_integrity, inputs, json_write,
+                    persist_artifacts, sync_directory)
 
 
 class ArtifactProducerTests(unittest.TestCase):
+    def test_finalization_failure_is_not_retried_over_occupied_results(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with chdir(root), patch("verify.ROOT", root), patch(
+                    "verify.Execution") as execution, patch(
+                    "verify.check_parent"), patch("verify.source_contract"), patch(
+                    "verify.preparation_regressions"), patch(
+                    "sys.argv", ["verify.py", "--output", "result",
+                                 "--subset", "harness-focused"]):
+                execution.return_value.finish.side_effect = OSError(
+                    "synthetic retention failure")
+                with self.assertRaisesRegex(OSError, "synthetic retention failure"):
+                    verifier.main()
+                execution.return_value.finish.assert_called_once_with("passed")
+                self.assertFalse((root / "result/failure.log").exists())
+
+    def test_archive_preserves_bytes_but_never_excuses_missing_originals(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "evidence/bundle"
+            original = output / "obj/model.o"
+            original.parent.mkdir(parents=True)
+            payload = b"synthetic compiler intermediate\0" * 17
+            original.write_bytes(payload)
+            with patch("verify.ROOT", root), patch("preparation.ROOT", root):
+                record = archive_artifacts(output)
+                archive = root / record["path"]
+                archive_bytes = archive.read_bytes()
+                bindings = persist_artifacts(output)
+                self.assertEqual(record["members"], 1)
+                self.assertTrue(record["original_files_required"])
+                self.assertFalse(record["post_settlement_retention_verified"])
+                with self.assertRaises(FileExistsError):
+                    archive_artifacts(output)
+                self.assertEqual(archive.read_bytes(), archive_bytes)
+                original.unlink()
+                report = audit_artifacts(Path("evidence/bundle"), bindings)
+                self.assertTrue(report["errors"])
+                self.assertEqual(report["missing_files"],
+                                 ["evidence/bundle/obj/model.o"])
+                with tarfile.open(archive, "r:gz") as retained:
+                    self.assertEqual(retained.getnames(), ["obj/model.o"])
+                    with retained.extractfile("obj/model.o") as handle:
+                        self.assertEqual(handle.read(), payload)
+                self.assertFalse(original.exists())
+
+    def test_archive_rejects_symlinked_artifacts_before_creation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "evidence/bundle"
+            output.mkdir(parents=True)
+            original = output / "data.bin"
+            original.write_bytes(b"synthetic bytes")
+            (output / "redirect.bin").symlink_to(original)
+            with patch("verify.ROOT", root):
+                with self.assertRaisesRegex(AssertionError, "symlink"):
+                    archive_artifacts(output)
+            self.assertFalse((output / "retained-artifacts.tar.gz").exists())
+
+    def test_archive_rejects_original_mutation_and_retains_failed_copy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "evidence/bundle"
+            output.mkdir(parents=True)
+            original = output / "data.bin"
+            original.write_bytes(b"original bytes")
+            add = tarfile.TarFile.add
+
+            def mutate_after_copy(retained, path, **kwargs):
+                add(retained, path, **kwargs)
+                path.write_bytes(b"modified bytes")
+
+            with patch("verify.ROOT", root), patch.object(
+                    tarfile.TarFile, "add", new=mutate_after_copy):
+                with self.assertRaisesRegex(AssertionError, "Original evidence changed"):
+                    archive_artifacts(output)
+            self.assertEqual(original.read_bytes(), b"modified bytes")
+            with tarfile.open(output / "retained-artifacts.tar.gz", "r:gz") as retained:
+                with retained.extractfile("data.bin") as handle:
+                    self.assertEqual(handle.read(), b"original bytes")
+
+    def test_archive_rejects_member_byte_mismatch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "evidence/bundle"
+            output.mkdir(parents=True)
+            original = output / "data.bin"
+            original.write_bytes(b"original bytes")
+            with patch("verify.ROOT", root), patch.object(
+                    tarfile.TarFile, "extractfile",
+                    return_value=io.BytesIO(b"corrupted bytes")):
+                with self.assertRaisesRegex(AssertionError, "archive byte mismatch"):
+                    archive_artifacts(output)
+            self.assertTrue((output / "retained-artifacts.tar.gz").is_file())
+            self.assertEqual(original.read_bytes(), b"original bytes")
+
     def test_same_byte_symlink_substitution_during_synchronization_is_rejected(self):
         for replacement in ("file", "bundle", "ancestor"):
             with self.subTest(replacement=replacement), \

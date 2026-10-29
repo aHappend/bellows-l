@@ -50,6 +50,12 @@ deletion; it cannot restore a missing bundle or authorize replay of a paused che
 Final stdout also identifies the receipt and results by size and SHA-256, with
 source bindings and matrix outcomes. This diagnostic is not a replacement for
 the raw bundle or proof of its availability after process settlement.
+New bundles also retain a compressed, byte-verified archive of their original
+artifacts before the final manifest is published. Both the archive and every
+original file remain mandatory audit inputs. This provides a prospective copy
+for authentic recovery, not restoration of historical losses or proof of a
+platform retention remedy. No extraction, staging or hardware execution is
+authorized by creating it.
 """
 
 import argparse
@@ -65,6 +71,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tarfile
 import time
 import traceback
 
@@ -116,6 +123,52 @@ def sync_directory(path):
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
+
+
+def archive_artifacts(output):
+    """Keep original artifact bytes without relaxing the original-file audit."""
+    archive = output / "retained-artifacts.tar.gz"
+    ancestors = [output, *(path for path in output.parents if path.is_relative_to(ROOT))]
+    paths = sorted(output.rglob("*"))
+    if any(path.is_symlink() for path in [*ancestors, *paths]):
+        raise AssertionError("Evidence archive must not depend on symlinks")
+    files = [path for path in paths if path.is_file()]
+    bindings = {path.relative_to(output).as_posix(): file_integrity(path) for path in files}
+    with archive.open("xb") as handle:
+        with tarfile.open(fileobj=handle, mode="w:gz", compresslevel=1) as retained:
+            for path in files:
+                retained.add(path, arcname=path.relative_to(output).as_posix(),
+                             recursive=False)
+        handle.flush()
+        os.fsync(handle.fileno())
+    with tarfile.open(archive, mode="r:gz") as retained:
+        names = []
+        for member in retained:
+            names.append(member.name)
+            if not member.isfile() or member.name not in bindings:
+                raise AssertionError(f"Unexpected evidence archive member: {member.name}")
+            with retained.extractfile(member) as handle:
+                digest = hashlib.sha256()
+                size = 0
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                    size += len(chunk)
+            if dict(bytes=size, sha256=digest.hexdigest()) != bindings[member.name]:
+                raise AssertionError(f"Evidence archive byte mismatch: {member.name}")
+        if names != list(bindings):
+            raise AssertionError("Evidence archive inventory mismatch")
+    final_paths = sorted(path for path in output.rglob("*") if path != archive)
+    if any(path.is_symlink() for path in [*ancestors, archive, *final_paths]):
+        raise AssertionError("Evidence archive must not depend on symlinks")
+    if final_paths != paths:
+        raise AssertionError("Evidence inventory changed during archival")
+    for path in files:
+        if file_integrity(path) != bindings[path.relative_to(output).as_posix()]:
+            raise AssertionError(f"Original evidence changed during archival: {relative(path)}")
+    sync_directory(output)
+    return dict(path=relative(archive), members=len(bindings),
+                verified_against_original_files=True,
+                original_files_required=True, post_settlement_retention_verified=False)
 
 
 def persist_artifacts(output):
@@ -281,12 +334,14 @@ class Execution:
                         coverage=dict(self.coverage), mandatory_matrix=[
                             dict(capacity=c, seed=s, outcome=self.matrix_status[(c, s)])
                             for c in CAPACITIES for s in SEEDS]))
+        archive = archive_artifacts(self.output)
         artifacts = persist_artifacts(self.output)
         json_write(self.output / "receipt.json",
                    dict(kind="portable-verifier", start_time=self.started, end_time=now(),
                         cwd=".", argv=["python3", *sys.argv], source_sha256=self.source_hashes,
                         tool_versions=self.versions, children=self.children,
                         outcome=outcome, error=error,
+                        recovery_archive=archive,
                         artifact_integrity=artifacts,
                         results=relative(self.output / "results.json")))
         completion = dict(
@@ -1075,9 +1130,6 @@ def main():
             if args.subset == "targeted":
                 illegal_parameters(execution)
                 mutate(execution)
-        execution.finish("passed")
-        print(f"Portable verification passed: {output.as_posix()}/results.json")
-        return 0
     except Exception as error:
         detail = f"{type(error).__name__}: {error}"
         for key, value in execution.matrix_status.items():
@@ -1087,6 +1139,9 @@ def main():
         execution.finish("failed", detail)
         print(detail, file=sys.stderr)
         return 1
+    execution.finish("passed")
+    print(f"Portable verification passed: {output.as_posix()}/results.json")
+    return 0
 
 
 if __name__ == "__main__":
