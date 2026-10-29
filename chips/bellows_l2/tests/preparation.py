@@ -52,7 +52,11 @@ unreadable, even when the child exits zero. The receipt preserves the child
 exit_code separately from probe_exit_code and retains the source error in stderr.
 New bundle receipts bind all retained artifacts, not just sources and raw streams.
 The audit checks their exact file inventory, sizes and hashes; legacy bundles
-are explicitly reported as lacking these bindings. Neither kind of receipt
+are explicitly reported as lacking these bindings. Readable legacy metadata
+is still inspected, but cannot make --audit-bundles succeed without an artifact
+manifest. artifact_manifest_verified means a complete integrity observation,
+not post-settlement retention, historical authenticity or permission to resume.
+Neither kind of receipt
 proves that files remain available after the audit's own process settles.
 Artifact diagnostics distinguish missing, changed and unbound files, including
 compiler intermediates. Classification never excludes files from the audit or
@@ -530,6 +534,12 @@ def audit_bundle(name, source_diff=False):
             and not report["source_binding_errors"])
     report["retained_files_readable"] = not errors
     artifacts = report.get("artifact_integrity", {})
+    report["artifact_manifest_errors"] = list(errors)
+    if not artifacts.get("present"):
+        report["artifact_manifest_errors"].append(
+            "Missing artifact integrity manifest; readable metadata cannot "
+            "establish complete retained artifacts")
+    report["artifact_manifest_verified"] = not report["artifact_manifest_errors"]
     report["retention_handoff"] = dict(
         recipient="Coordinator",
         prerequisite_owner="shared-runtime platform owner",
@@ -1173,13 +1183,15 @@ def main():
         records = [audit_bundle(name, source_diff=args.source_diff) for name in args.audit_bundles]
         readable = all(record["retained_files_readable"] for record in records)
         current = all(record["current_sources_match"] is True for record in records)
+        manifests = all(record["artifact_manifest_verified"] for record in records)
         json.dump(dict(kind="read-only-bundle-inventory",
                        acceptance_evidence=False, acceptance_credit=0,
                        authorizes_resumption=False, retained_files_readable=readable,
+                       artifact_manifest_verified=manifests,
                        current_sources_match=current,
                        bundles=records), sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
-        return 0 if readable and current else 1
+        return 0 if readable and current and manifests else 1
     if args.audit_receipts:
         if args.repair_of:
             parser.error("--repair-of applies only to --subset")

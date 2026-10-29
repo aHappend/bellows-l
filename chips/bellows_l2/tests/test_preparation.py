@@ -466,8 +466,45 @@ class ArtifactRetentionTests(unittest.TestCase):
         with chdir(self.root), patch("preparation.inputs", return_value=sources):
             report = audit_bundle(self.bundle.as_posix())
         self.assertTrue(report["retained_files_readable"], report["errors"])
+        self.assertTrue(report["artifact_manifest_verified"],
+                        report["artifact_manifest_errors"])
         self.assertTrue(report["receipt_stable"])
         self.assertEqual(receipt.read_bytes(), original)
+
+    def test_readable_legacy_bundle_without_manifest_cannot_pass_retention_check(self):
+        receipt, sources = self.complete_bundle()
+        original_record = json.loads(receipt.read_bytes())
+        for missing in ("absent", "null"):
+            with self.subTest(manifest=missing):
+                record = copy.deepcopy(original_record)
+                if missing == "absent":
+                    del record["artifact_integrity"]
+                else:
+                    record["artifact_integrity"] = None
+                receipt.write_text(json.dumps(record))
+                original = receipt.read_bytes()
+                stdout, stderr = io.StringIO(), io.StringIO()
+                with chdir(self.root), patch("preparation.inputs", return_value=sources), \
+                        patch("sys.argv", ["preparation.py", "--audit-bundles",
+                                           self.bundle.as_posix()]), \
+                        redirect_stdout(stdout), redirect_stderr(stderr):
+                    exit_code = main()
+                report = json.loads(stdout.getvalue())
+                self.assertEqual(exit_code, 1)
+                self.assertTrue(report["retained_files_readable"])
+                self.assertTrue(report["current_sources_match"])
+                self.assertFalse(report["artifact_manifest_verified"])
+                bundle = report["bundles"][0]
+                self.assertFalse(bundle["artifact_manifest_verified"])
+                self.assertTrue(any("Missing artifact integrity manifest" in error
+                                    for error in bundle["artifact_manifest_errors"]))
+                self.assertEqual(bundle["recorded_outcome"], "passed")
+                self.assertEqual(bundle["matrix_passed"], 18)
+                self.assertEqual(bundle["child_receipts"], 1)
+                self.assertEqual(bundle["raw_streams"], 2)
+                self.assertFalse(report["authorizes_resumption"])
+                self.assertEqual(stderr.getvalue(), "")
+                self.assertEqual(receipt.read_bytes(), original)
 
     def test_artifact_loss_during_child_inspection_is_rejected(self):
         for change in ("missing", "changed", "unbound"):
