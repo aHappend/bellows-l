@@ -366,6 +366,49 @@ class ArtifactRetentionTests(unittest.TestCase):
                             for error in report["source_binding_errors"]))
         self.assertEqual(receipt.read_bytes(), original)
 
+    def test_initial_source_inventory_failure_preserves_retention_diagnostics(self):
+        receipt, _ = self.complete_bundle()
+        original = receipt.read_bytes()
+        artifact = self.base / "synthesis/netlist.json"
+        artifact.unlink()
+        for error in (AssertionError("Unmatched declared input: rtl/*.sv"),
+                      PermissionError("synthetic current source access denied")):
+            with self.subTest(error=type(error).__name__):
+                with chdir(self.root), patch("preparation.inputs", side_effect=error):
+                    report = audit_bundle(self.bundle.as_posix(), source_diff=True)
+                self.assertFalse(report["current_sources_match"])
+                self.assertFalse(report["current_source_inventory_stable"])
+                self.assertTrue(any(str(error) in message
+                                    for message in report["source_binding_errors"]))
+                self.assertFalse(report["retained_files_readable"])
+                self.assertEqual(report["child_receipts"], 1)
+                self.assertEqual(report["raw_streams"], 2)
+                name = artifact.relative_to(self.root).as_posix()
+                self.assertIn(name, report["artifact_integrity"]["missing_files"])
+                self.assertIn(name, report["retention_handoff"]["missing_artifact_bindings"])
+                self.assertFalse(report["retention_handoff"]["authorizes_resumption"])
+                self.assertNotIn("source_deltas", report)
+                self.assertFalse(artifact.exists())
+                self.assertEqual(receipt.read_bytes(), original)
+
+    def test_initial_source_failure_does_not_relabel_readable_history_as_lost(self):
+        receipt, _ = self.complete_bundle()
+        original = receipt.read_bytes()
+        with chdir(self.root), patch(
+                "preparation.inputs", side_effect=AssertionError("Unmatched declared input")):
+            report = audit_bundle(self.bundle.as_posix(), source_diff=True)
+        self.assertTrue(report["retained_files_readable"], report["errors"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertFalse(report["current_source_inventory_stable"])
+        self.assertTrue(report["source_binding_errors"])
+        self.assertEqual(report["artifact_integrity"]["missing_files"], [])
+        self.assertEqual(report["child_receipts"], 1)
+        self.assertEqual(report["raw_streams"], 2)
+        self.assertTrue(report["receipt_stable"])
+        self.assertFalse(report["retention_handoff"]["authorizes_resumption"])
+        self.assertNotIn("source_deltas", report)
+        self.assertEqual(receipt.read_bytes(), original)
+
     def test_receipt_must_remain_identical_through_artifact_audit(self):
         receipt, sources = self.complete_bundle()
         original = receipt.read_bytes()

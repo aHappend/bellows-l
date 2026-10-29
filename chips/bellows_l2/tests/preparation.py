@@ -32,6 +32,8 @@ Bundle audits separately report readability and binding to current declared inpu
 a readable historical bundle is not necessarily evidence for the current sources.
 Current input bindings are rechecked after child inspection; a changed or unavailable
 source inventory invalidates currency without relabeling historical files as lost.
+An initially unavailable source inventory also leaves artifact and child inspection
+running, retaining the loss inventory and platform handoff without source deltas.
 Optional --source-diff includes readable unified source changes from hash-checked
 snapshots. It never rebases a receipt, excuses a changed binding or grants reuse.
 The component inventory runs even when the top-level receipt is missing, so a
@@ -390,10 +392,16 @@ def audit_bundle(name, source_diff=False):
         sources = receipt["source_sha256"]
         if not isinstance(sources, dict) or not sources:
             raise ValueError("Missing source snapshot bindings")
-        current = inputs()
-        report["source_binding_errors"] = source_binding_errors(sources)
-        report["current_sources_match"] = not report["source_binding_errors"]
-        if source_diff:
+        try:
+            current = inputs()
+        except (OSError, AssertionError) as error:
+            report["source_binding_errors"].append(
+                f"Cannot inventory current declared inputs: {error}")
+            report["current_sources_match"] = False
+        else:
+            report["source_binding_errors"] = source_binding_errors(sources)
+            report["current_sources_match"] = not report["source_binding_errors"]
+        if source_diff and current is not None:
             report["source_deltas"] = []
 
         def append_delta(source, before, after):
@@ -414,12 +422,12 @@ def audit_bundle(name, source_diff=False):
             try:
                 check_file(path, digest)
                 report["snapshot_files"] += 1
-                if source_diff:
+                if source_diff and current is not None:
                     append_delta(source, path.read_bytes(),
                                  (ROOT / source).read_bytes() if source in current else None)
             except (OSError, ValueError) as error:
                 errors.append(str(error))
-        if source_diff:
+        if source_diff and current is not None:
             for source in sorted(set(current) - set(sources)):
                 try:
                     append_delta(source, None, (ROOT / source).read_bytes())
