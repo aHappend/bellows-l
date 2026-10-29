@@ -56,6 +56,10 @@ original file remain mandatory audit inputs. This provides a prospective copy
 for authentic recovery, not restoration of historical losses or proof of a
 platform retention remedy. No extraction, staging or hardware execution is
 authorized by creating it.
+
+Child receipts retain the actual exit and raw streams even if the closing
+declared-source inventory becomes unreadable. Such inventory failures remain
+explicit harness failures, never successful child verification.
 """
 
 import argparse
@@ -302,10 +306,18 @@ class Execution:
         }
         record["end_time"] = now()
         record["duration_s"] = time.monotonic() - monotonic
-        record["source_unchanged"] = inputs() == self.source_hashes
+        record["source_unchanged"] = False
+        try:
+            record["source_unchanged"] = inputs() == self.source_hashes
+        except (OSError, AssertionError) as error:
+            record["source_inventory_error"] = (
+                f"Source inventory unavailable: {type(error).__name__}: {error}")
         receipt = directory / "receipt.json"
         json_write(receipt, record)
         self.children.append(relative(receipt))
+        if "source_inventory_error" in record:
+            raise AssertionError(
+                f"{record['source_inventory_error']}: {relative(receipt)}")
         if "launch_error" in record:
             raise AssertionError(f"Tool launch failed: {relative(receipt)}: {record['launch_error']}")
         if record["timed_out"]:

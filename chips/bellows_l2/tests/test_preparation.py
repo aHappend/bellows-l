@@ -30,6 +30,52 @@ from verify import (archive_artifacts, file_integrity, inputs, json_write,
                     persist_artifacts, sync_directory)
 
 
+class ChildReceiptTests(unittest.TestCase):
+    def test_final_source_inventory_failure_preserves_child_outcome_and_streams(self):
+        for error in (FileNotFoundError("synthetic source disappeared"),
+                      PermissionError("synthetic source access denied"),
+                      AssertionError("synthetic source inventory invalid")):
+            for exit_code in (0, 7):
+                with self.subTest(error=type(error).__name__, exit_code=exit_code), \
+                        tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    source = root / "tests/fixture.py"
+                    source.parent.mkdir()
+                    source.write_text("# synthetic declared source\n")
+                    bindings = {"tests/fixture.py": verifier.sha(source)}
+                    output = root / "result"
+                    output.mkdir()
+                    with patch("verify.ROOT", root), patch(
+                            "verify.inputs", return_value=bindings):
+                        execution = verifier.Execution(output)
+                    argv = [sys.executable, "-c",
+                            "import sys; print('child stdout'); "
+                            "print('child stderr', file=sys.stderr); "
+                            f"sys.exit({exit_code})"]
+                    with patch("verify.ROOT", root), patch(
+                            "verify.inputs", side_effect=error):
+                        with self.assertRaisesRegex(
+                                AssertionError, "Source inventory unavailable"):
+                            execution.run("source-loss", argv, cwd=root)
+                    self.assertEqual(len(execution.children), 1)
+                    receipt_path = root / execution.children[0]
+                    record = json.loads(receipt_path.read_text())
+                    self.assertEqual(record["exit_code"], exit_code)
+                    self.assertFalse(record["source_unchanged"])
+                    self.assertFalse(record["timed_out"])
+                    self.assertEqual(record["argv"], argv)
+                    self.assertIn(type(error).__name__,
+                                  record["source_inventory_error"])
+                    self.assertEqual(record["source_sha256"], bindings)
+                    for channel in ("stdout", "stderr"):
+                        stream = root / record[channel]
+                        self.assertEqual(stream.read_text(), f"child {channel}\n")
+                        self.assertEqual(record["stream_integrity"][channel],
+                                         file_integrity(stream))
+                    self.assertEqual(
+                        (receipt_path.parent / "launch.json").is_file(), True)
+
+
 class ArtifactProducerTests(unittest.TestCase):
     def test_finalization_failure_is_not_retried_over_occupied_results(self):
         with tempfile.TemporaryDirectory() as directory:
