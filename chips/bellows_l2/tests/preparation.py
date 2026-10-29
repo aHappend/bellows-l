@@ -63,6 +63,8 @@ when every individual run reports success. A readable
 failed execution is not a successful native-execution diagnostic. Even three
 consistent successful runs never establish product traffic or image provenance.
 With --hil-output, also reject an occupied or non-project evidence destination.
+An existing non-directory ancestor, including a dangling symlink, also makes
+the destination unusable; inspection never removes it or creates directories.
 This only inventories the admitted output contract; it never creates, removes
 or renames that destination, and cannot authorize a different invocation.
 Portable-input inspection compares readable declared files in a nominated
@@ -503,6 +505,11 @@ def inspect_hil_inputs(root=ROOT, output=None):
                 raise ValueError(
                     "HIL output is occupied; preserve it and request independently "
                     "reviewed replanning, not an unchanged retry")
+            for ancestor in destination.parents:
+                if (os.path.lexists(root / ancestor)
+                        and not (root / ancestor).is_dir()):
+                    raise ValueError(
+                        f"HIL output ancestor is not a directory: {ancestor}")
             contract["fresh"] = True
         except (OSError, ValueError) as error:
             report["errors"].append(str(error))

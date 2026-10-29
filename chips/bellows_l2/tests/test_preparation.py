@@ -203,15 +203,15 @@ class HilDiagnosticTests(unittest.TestCase):
         self.assertTrue(any("occupied" in error for error in result["errors"]))
 
     def test_output_beneath_file_or_dangling_symlink_is_not_fresh(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            (root / "fpga").mkdir()
-            (root / "fpga/board_hil.json").write_text(json.dumps(dict(
-                remote_test_cmd="synthetic-never-execute")))
-            (root / "evidence").mkdir()
-            blocked = root / "evidence/blocked"
-            for kind in ("file", "dangling-symlink"):
-                with self.subTest(kind=kind):
+        for kind in ("file", "dangling-symlink"):
+            with self.subTest(kind=kind):
+                with tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    (root / "fpga").mkdir()
+                    (root / "fpga/board_hil.json").write_text(json.dumps(dict(
+                        remote_test_cmd="synthetic-never-execute")))
+                    (root / "evidence").mkdir()
+                    blocked = root / "evidence/blocked"
                     if kind == "file":
                         blocked.write_bytes(b"preserve")
                     else:
@@ -224,7 +224,6 @@ class HilDiagnosticTests(unittest.TestCase):
                     self.assertFalse(result["hardware_executed"])
                     self.assertTrue(blocked.is_symlink() if kind == "dangling-symlink"
                                     else blocked.read_bytes() == b"preserve")
-                    blocked.unlink()
 
     def test_output_beneath_missing_directories_is_only_preflight_fresh(self):
         with tempfile.TemporaryDirectory() as temporary:
