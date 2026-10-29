@@ -92,6 +92,10 @@ availability, functional results, hardware readiness or permission to resume.
 Fresh-root staging copies only the current declared inputs, never historical
 outputs or runtime metadata, and retains a source inventory and root mapping.
 It refuses an occupied root and never launches checks or hardware commands.
+Copied files and their directory entries are synchronized before source preflight
+and success recording; synchronization failures retain a failed staging receipt.
+This crash-durability step does not establish a platform retention remedy or
+protection against external deletion after the staging process settles.
 The shared runtime must execute all three unchanged mandatory commands in that actual
 source root, in order; a launch-directory change without source copies is not
 sufficient. Staging is preparation, not current portable or physical acceptance.
@@ -145,7 +149,7 @@ import uuid
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from verify import (CAPACITIES, DECLARED, ROOT, SEEDS, file_integrity, inputs,
-                    json_write, validate_output)
+                    json_write, sync_directory, validate_output)
 
 
 PORTABLE_OUTPUTS = (
@@ -922,6 +926,8 @@ def stage_portable_root(name, reference=ROOT):
         tool_versions={"python3": sys.version}, timeout_s=None,
         timed_out=False, exit_code=None, children=[],
         checks_executed=False, hardware_executed=False,
+        source_files_synchronized=0, source_directories_synchronized=0,
+        source_durability_completed=False,
         mandatory_commands=[
             ["python3", "tests/verify.py", "--output", "evidence/l1"],
             *[["sh", "-c",
@@ -943,6 +949,25 @@ def stage_portable_root(name, reference=ROOT):
             destination.parent.mkdir(parents=True, exist_ok=True)
             with destination.open("xb") as handle:
                 handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+            record["source_files_synchronized"] += 1
+        directories = {root}
+        for name in sources:
+            for directory in (root / name).parents:
+                if directory == root:
+                    break
+                directories.add(directory)
+        for directory in sorted(directories, key=lambda path: len(path.parts),
+                                reverse=True):
+            sync_directory(directory)
+            record["source_directories_synchronized"] += 1
+        for directory in root.parents:
+            sync_directory(directory)
+            record["source_directories_synchronized"] += 1
+            if directory == reference:
+                break
+        record["source_durability_completed"] = True
         record["staged_source_sha256"] = inputs(root)
         if record["staged_source_sha256"] != sources or inputs(reference) != sources:
             raise ValueError("Sources changed during staging")
@@ -961,6 +986,8 @@ def stage_portable_root(name, reference=ROOT):
         path = root / f"staging.{channel}.log"
         with path.open("x") as handle:
             handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
     record["stream_integrity"] = {
         channel: file_integrity(root / f"staging.{channel}.log")
         for channel in ("stdout", "stderr")

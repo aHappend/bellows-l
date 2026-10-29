@@ -9,6 +9,7 @@ import copy
 from contextlib import chdir, redirect_stderr, redirect_stdout
 import io
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -20,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from preparation import (audit_artifacts, audit_bundle, audit_receipt, diagnose_hil_record,
                          inspect_hil_inputs, inspect_portable_inputs, main,
                          stage_portable_root)
-from verify import file_integrity
+from verify import file_integrity, json_write
 
 
 class PortableRecoveryTests(unittest.TestCase):
@@ -80,6 +81,81 @@ class PortableRecoveryTests(unittest.TestCase):
         self.assertFalse(record["acceptance_evidence"])
         for destination in self.outputs:
             self.assertFalse((self.root / "evidence/fresh/project" / destination).exists())
+
+    def test_staging_synchronizes_sources_before_success_receipt(self):
+        synchronized_files = set()
+        real_fsync = os.fsync
+        root = self.root / "evidence/durable/project"
+        published = []
+
+        def observe_fsync(descriptor):
+            identity = os.fstat(descriptor)
+            synchronized_files.add((identity.st_dev, identity.st_ino))
+            real_fsync(descriptor)
+
+        def publish_receipt(path, record):
+            self.assertTrue(record["source_durability_completed"])
+            for name in record["source_sha256"]:
+                identity = (root / name).stat()
+                self.assertIn((identity.st_dev, identity.st_ino), synchronized_files)
+            for path_to_sync in (
+                    root, *root.parents[:3], root / "rtl", root / "tests",
+                    root / "design", root / "bellows_l1_reference",
+                    root / "bellows_l1_reference/rtl",
+                    root / "staging.stdout.log", root / "staging.stderr.log"):
+                identity = path_to_sync.stat()
+                self.assertIn((identity.st_dev, identity.st_ino), synchronized_files)
+            published.append(path)
+            json_write(path, record)
+
+        with patch("preparation.os.fsync", side_effect=observe_fsync), patch(
+                "preparation.json_write", side_effect=publish_receipt):
+            record = stage_portable_root("evidence/durable/project", reference=self.root)
+        self.assertEqual(published, [root / "staging-receipt.json"])
+        for name in record["source_sha256"]:
+            with self.subTest(source=name):
+                identity = (root / name).stat()
+                self.assertIn((identity.st_dev, identity.st_ino), synchronized_files)
+        self.assertTrue(record["source_durability_completed"])
+        self.assertEqual(record["source_files_synchronized"],
+                         len(record["source_sha256"]))
+
+    def test_staging_sync_failure_preserves_failed_receipt_without_success(self):
+        real_fsync = os.fsync
+        attempted = False
+
+        def fail_first_sync(descriptor):
+            nonlocal attempted
+            if not attempted:
+                attempted = True
+                raise OSError("synthetic staged-source synchronization failure")
+            real_fsync(descriptor)
+
+        with patch("preparation.os.fsync", side_effect=fail_first_sync):
+            with self.assertRaisesRegex(ValueError, "synchronization failure"):
+                stage_portable_root("evidence/sync-failed/project", reference=self.root)
+        root = self.root / "evidence/sync-failed/project"
+        record = json.loads((root / "staging-receipt.json").read_text())
+        self.assertEqual(record["exit_code"], 1)
+        self.assertFalse(record["source_durability_completed"])
+        self.assertFalse(record["checks_executed"])
+        self.assertFalse(record["hardware_executed"])
+        self.assertEqual((root / "staging.stdout.log").read_bytes(), b"")
+        self.assertIn("synchronization failure",
+                      (root / "staging.stderr.log").read_text())
+
+    def test_staging_directory_sync_failure_is_not_a_successful_preflight(self):
+        with patch("preparation.sync_directory", side_effect=OSError(
+                "synthetic directory synchronization failure")):
+            with self.assertRaisesRegex(ValueError, "directory synchronization failure"):
+                stage_portable_root("evidence/directory-failed/project", reference=self.root)
+        root = self.root / "evidence/directory-failed/project"
+        record = json.loads((root / "staging-receipt.json").read_text())
+        self.assertEqual(record["exit_code"], 1)
+        self.assertEqual(record["source_files_synchronized"], 5)
+        self.assertFalse(record["source_durability_completed"])
+        self.assertNotIn("preflight", record)
+        self.assertEqual((root / "staging.stdout.log").read_bytes(), b"")
 
 
 class ArtifactRetentionTests(unittest.TestCase):
