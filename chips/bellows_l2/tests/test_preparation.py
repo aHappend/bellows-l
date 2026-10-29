@@ -716,6 +716,39 @@ class HilDiagnosticTests(unittest.TestCase):
             self.assertIs(result[field], False, field)
         self.assertTrue(result["unverified_requirements"])
 
+    def test_hil_configuration_symlinks_are_rejected_before_reading(self):
+        for kind in ("file", "directory", "dangling-file", "dangling-directory"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                target = root / "synthetic-target"
+                target.mkdir()
+                config = target / "board_hil.json"
+                config.write_text(json.dumps(dict(
+                    remote_test_cmd="synthetic-never-execute")))
+                if "directory" in kind:
+                    link = root / "fpga"
+                    link.symlink_to(
+                        root / "missing" if kind.startswith("dangling") else target,
+                        target_is_directory=True)
+                else:
+                    (root / "fpga").mkdir()
+                    link = root / "fpga/board_hil.json"
+                    link.symlink_to(
+                        root / "missing" if kind.startswith("dangling") else config)
+                original = config.read_bytes()
+                with patch.object(Path, "read_bytes", side_effect=AssertionError(
+                        "A symlinked HIL configuration must not be read")):
+                    result = inspect_hil_inputs(root=root)
+                self.assertFalse(result["product_command_configured"])
+                self.assertTrue(any("Symlink in HIL configuration path" in error
+                                    for error in result["errors"]))
+                self.assertNotIn("configuration_integrity", result)
+                self.assertFalse(result["hardware_executed"])
+                self.assertFalse(result["authorizes_resumption"])
+                self.assertTrue(link.is_symlink())
+                self.assertEqual(config.read_bytes(), original)
+                self.assertTrue(result["coordinator_handoff"]["required_inputs"])
+
     def test_build_copy_and_programming_configurations_are_rejected(self):
         for settings in (
                 dict(bedrock_project_dir="synthetic"),

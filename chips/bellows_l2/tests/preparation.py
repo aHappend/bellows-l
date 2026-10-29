@@ -67,6 +67,10 @@ This matches the producer's no-symlink retention contract; it does not identify
 the cause of historical artifact loss or authorize reconstructing missing files.
 The HIL input inspection reads only fpga/board_hil.json, never invokes commands
 from it, and never builds, programs or contacts hardware. Exit zero establishes
+only a local inventory: symlinked configuration files or fpga directories are
+rejected before reading, even if they redirect to identical bytes in the project.
+This path preflight is not protection against concurrent filesystem replacement.
+For a regular configuration, exit zero establishes
 only that a nonempty command is configured without enabled native configuration
 actions that build, copy RTL or flash hardware, including force_flash. It does not inspect the command's
 own side effects or establish transport correctness,
@@ -637,6 +641,11 @@ def inspect_hil_inputs(root=ROOT, output=None):
         except (OSError, ValueError) as error:
             report["errors"].append(str(error))
     try:
+        for component in (root / "fpga", path):
+            if component.is_symlink():
+                raise ValueError(
+                    "Symlink in HIL configuration path: "
+                    f"{component.relative_to(root)}")
         payload = path.read_bytes()
         report["configuration_integrity"] = dict(
             bytes=len(payload), sha256=hashlib.sha256(payload).hexdigest())
