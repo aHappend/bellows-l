@@ -14,6 +14,7 @@
     python3 tests/preparation.py --inspect-hil-inputs --hil-output evidence/native-board-hil-recovery-0120.json
     python3 tests/preparation.py --inspect-portable-inputs
     python3 tests/preparation.py --inspect-portable-inputs evidence/maintenance-root
+    python3 tests/preparation.py --inspect-portable-inputs evidence/maintenance-root --source-diff
     python3 tests/preparation.py --stage-portable-root evidence/fresh-portable/project
 
 Repair links require predecessor metadata and both raw streams before launch.
@@ -114,6 +115,9 @@ Source identity uses direct byte comparisons; hashes are retained for provenance
 not used as a substitute for reading and comparing the copied contents.
 Per-file comparisons identify the first differing byte, and both source inventories
 are rechecked before reporting success so changes during inspection fail explicitly.
+Optional --source-diff adds readable staged-to-current source differences to those
+same byte comparisons. It does not waive mismatches, occupied outputs or retention
+prerequisites, and does not change or rebind either source tree.
 Both current and staged source paths are checked for symlink redirection before
 comparison and after the final inventories, including same-byte substitutions.
 These bounded path observations do not prevent concurrent filesystem replacement.
@@ -921,7 +925,7 @@ def inspect_hil_receipt(name):
     return report
 
 
-def inspect_portable_inputs(name=".", reference=ROOT):
+def inspect_portable_inputs(name=".", reference=ROOT, source_diff=False):
     """Check a maintenance-staged root without copying inputs or running checks."""
     report = dict(kind="read-only-portable-input-inventory",
                   acceptance_evidence=False, authorizes_resumption=False,
@@ -977,6 +981,12 @@ def inspect_portable_inputs(name=".", reference=ROOT):
                     path=source, direct_bytes_equal=equal,
                     current_bytes=len(original), staged_bytes=len(copied),
                     first_differing_byte=first_difference))
+                if source_diff and not equal:
+                    report["source_comparisons"][-1]["unified_diff"] = "".join(
+                        difflib.unified_diff(
+                            copied.decode("utf-8").splitlines(keepends=True),
+                            original.decode("utf-8").splitlines(keepends=True),
+                            fromfile=f"staged/{source}", tofile=f"current/{source}"))
                 if (hashlib.sha256(original).hexdigest() != current[source]
                         or hashlib.sha256(copied).hexdigest() != staged[source]):
                     errors.append(f"Declared source changed during comparison: {source}")
@@ -1137,13 +1147,14 @@ def main():
     parser.add_argument("--hil-output", metavar="PROJECT_RELATIVE_PATH",
                         help="read-only fresh-output inspection with --inspect-hil-inputs")
     parser.add_argument("--source-diff", action="store_true",
-                        help="include readable snapshot changes with --audit-bundles")
+                        help="include readable changes with bundle or portable-input inspection")
     parser.add_argument("--repair-of")
     args = parser.parse_args()
     if args.hil_output is not None and not args.inspect_hil_inputs:
         parser.error("--hil-output applies only to --inspect-hil-inputs")
-    if args.source_diff and not args.audit_bundles:
-        parser.error("--source-diff applies only to --audit-bundles")
+    if (args.source_diff and not args.audit_bundles
+            and args.inspect_portable_inputs is None):
+        parser.error("--source-diff requires --audit-bundles or --inspect-portable-inputs")
     os.chdir(ROOT)
     if args.inspect_hil_receipt is not None:
         if args.repair_of:
@@ -1166,7 +1177,8 @@ def main():
     if args.inspect_portable_inputs is not None:
         if args.repair_of:
             parser.error("--repair-of applies only to --subset")
-        report = inspect_portable_inputs(args.inspect_portable_inputs)
+        report = inspect_portable_inputs(
+            args.inspect_portable_inputs, source_diff=args.source_diff)
         json.dump(report, sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
         return 0 if report["portable_preflight_passed"] else 1

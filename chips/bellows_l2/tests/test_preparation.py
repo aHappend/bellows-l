@@ -218,6 +218,56 @@ class PortableRecoveryTests(unittest.TestCase):
         self.assertTrue(all(entry["fresh"] for entry in report["outputs"]))
         self.assertFalse(report["authorizes_resumption"])
 
+    def test_readable_source_deltas_do_not_waive_mismatches_or_occupied_outputs(self):
+        staged = self.root / "evidence/fresh/project"
+        stage_portable_root("evidence/fresh/project", reference=self.root)
+        source = self.root / "tests/example.py"
+        source.write_bytes(b"synthetic revised verification source\n")
+        for destination in self.outputs:
+            path = staged / destination
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"preserve historical evidence")
+        before = {path: path.read_bytes() for path in self.root.rglob("*")
+                  if path.is_file()}
+
+        report = inspect_portable_inputs(
+            "evidence/fresh/project", reference=self.root, source_diff=True)
+
+        self.assertFalse(report["portable_preflight_passed"])
+        self.assertFalse(report["current_sources_match"])
+        self.assertTrue(report["source_inventory_stable"])
+        self.assertFalse(report["authorizes_resumption"])
+        self.assertEqual(report["source_files_compared"], 5)
+        differences = [row for row in report["source_comparisons"]
+                       if not row["direct_bytes_equal"]]
+        self.assertEqual(len(differences), 1)
+        self.assertEqual(differences[0]["path"], "tests/example.py")
+        self.assertIn("--- staged/tests/example.py\n", differences[0]["unified_diff"])
+        self.assertIn("+++ current/tests/example.py\n", differences[0]["unified_diff"])
+        self.assertIn("-synthetic declared input\n", differences[0]["unified_diff"])
+        self.assertIn("+synthetic revised verification source\n",
+                      differences[0]["unified_diff"])
+        self.assertTrue(all(not row["fresh"] and not row["usable"]
+                            for row in report["outputs"]))
+        self.assertEqual(before, {path: path.read_bytes()
+                                  for path in self.root.rglob("*") if path.is_file()})
+
+    def test_source_deltas_are_opt_in_and_cli_preserves_failure_exit(self):
+        stage_portable_root("evidence/fresh/project", reference=self.root)
+        (self.root / "tests/example.py").write_bytes(b"changed input\n")
+        report = inspect_portable_inputs("evidence/fresh/project", reference=self.root)
+        self.assertTrue(all("unified_diff" not in row
+                            for row in report["source_comparisons"]))
+        output = io.StringIO()
+        with patch("preparation.ROOT", self.root), patch(
+                "sys.argv", ["preparation.py", "--inspect-portable-inputs",
+                             "evidence/fresh/project", "--source-diff"]), patch(
+                "preparation.inspect_portable_inputs", return_value=report) as inspect, \
+                chdir(self.root), redirect_stdout(output):
+            self.assertEqual(main(), 1)
+        inspect.assert_called_once_with("evidence/fresh/project", source_diff=True)
+        self.assertFalse(json.loads(output.getvalue())["current_sources_match"])
+
     def test_preflight_rejects_same_byte_current_source_redirect(self):
         stage_portable_root("evidence/fresh/project", reference=self.root)
         source = self.root / "rtl/example.sv"
