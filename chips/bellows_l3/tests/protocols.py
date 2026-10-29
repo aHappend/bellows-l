@@ -8,9 +8,9 @@ TB = r"""
 module tb;
   reg clk=0,rst_n;
   always #5 clk=~clk;
-  reg [3:0] lane_rd_valid=15,lane_wr_valid=15,lane_status_valid=15;
-  wire [255:0] lane_rd_addr={64'h12340003,64'h12340002,64'h12340001,64'h12340000};
-  wire [287:0] lane_wr_payload={72'h56780003,72'h56780002,72'h56780001,72'h56780000};
+  reg [3:0] lane_rd_valid=0,lane_wr_valid=0,lane_status_valid=0;
+  reg [255:0] lane_rd_addr={64'h12340003,64'h12340002,64'h12340001,64'h12340000};
+  reg [287:0] lane_wr_payload={72'h56780003,72'h56780002,72'h56780001,72'h56780000};
   wire [463:0] lane_status_payload={116'h9abc0003,116'h9abc0002,116'h9abc0001,116'h9abc0000};
   wire [3:0] lane_rd_take,lane_wr_take,lane_status_retire;
   wire rd_valid,wr_valid,status_valid;
@@ -85,6 +85,16 @@ module tb;
     end
     repeat(3) @(negedge clk);
     #1; rst_n=1;
+    #1; lane_rd_valid=15; lane_wr_valid=15; lane_status_valid=15;
+    #1; if (valids!==0) $fatal(1,"SCHEDULER_COMBINATIONAL_BYPASS");
+    @(posedge clk);
+    #1; if (valids!==7) $fatal(1,"SCHEDULER_REGISTERED_PRESENTATION");
+    lane_rd_addr[63:0]=64'hffffffff;
+    lane_wr_payload[71:0]=72'hffffffff;
+    wait(grants[0]>=1 && grants[1]>=1);
+    @(negedge clk);
+    lane_rd_addr[63:0]=64'h12340000;
+    lane_wr_payload[71:0]=72'h56780000;
     wait(grants[0]>=68 && grants[1]>=68 && grants[2]>=68);
     for (integer a=0;a<3;a=a+1) begin
       if (switches[a]<64 || maximum[a]<17) $fatal(1,"SCHEDULER_COVERAGE");
@@ -115,6 +125,7 @@ def execute(run):
     write_json(directory / "compared.json",
                {"three_independent_arbiters": True,
                 "all_eligible_adjacent_switches_each_minimum": 64,
+                "registered_presentation_and_payload_snapshot": True,
                 "four_accepted_grant_fairness": True, "ineligible_skip": True})
 
 

@@ -268,6 +268,8 @@ def prepare(run, kind):
         parent.execute(run, "verilator", full=True, l1=True)
     elif kind == "parent":
         parent.execute(run)
+        if (run.root / "bellows_l2_reference/rtl").is_dir():
+            parent.execute(run, reference=True)
     elif kind == "compact":
         build = compile_bus(run, 33, 3, "icarus")
         simulate(run, build, compact_batches(), 3, 17, "compact-dma-probe", resets=True)
