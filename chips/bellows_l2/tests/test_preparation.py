@@ -1152,6 +1152,48 @@ class ArtifactRetentionTests(unittest.TestCase):
             missing_files=1, missing_bytes=binding["bytes"]))
         self.assertTrue(report["errors"])
 
+    def test_inventory_change_during_final_content_sweep_is_rejected(self):
+        for change in ("added", "removed", "symlink"):
+            with self.subTest(change=change):
+                name, binding = self.artifact("trace.log")
+                reads = 0
+
+                def change_after_recheck(path):
+                    nonlocal reads
+                    result = file_integrity(path)
+                    reads += 1
+                    if reads == 2:
+                        if change == "added":
+                            (self.base / "unexpected.log").write_bytes(b"new artifact")
+                        elif change == "removed":
+                            path.unlink()
+                        else:
+                            path.unlink()
+                            path.symlink_to("missing-target")
+                    return result
+
+                try:
+                    with patch("preparation.file_integrity",
+                               side_effect=change_after_recheck):
+                        report = audit_artifacts(self.bundle, {name: binding})
+                    self.assertEqual(reads, 2)
+                    self.assertFalse(report["inventory_stable"], report)
+                    self.assertTrue(report["errors"], report)
+                    if change == "added":
+                        self.assertEqual(report["unbound_files"], [
+                            (self.bundle / "unexpected.log").as_posix()])
+                    elif change == "removed":
+                        self.assertEqual(report["missing_artifact_bindings"],
+                                         {name: binding})
+                        self.assertEqual(report["missing_bytes"], binding["bytes"])
+                    else:
+                        self.assertTrue(any("symlink" in error.lower()
+                                            for error in report["errors"]), report)
+                finally:
+                    for path in (self.base / "trace.log", self.base / "unexpected.log"):
+                        if path.exists() or path.is_symlink():
+                            path.unlink()
+
     def test_same_bytes_symlink_substitution_is_not_retained_original(self):
         for directory_link in (False, True):
             with self.subTest(directory_link=directory_link):

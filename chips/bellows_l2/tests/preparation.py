@@ -89,6 +89,8 @@ post-settlement retention; a readable bundle never certifies a platform remedy.
 Artifact audits repeat the inventory and re-read initially matching files before
 returning; disappearance or mutation during the audit fails explicitly. This
 bounded stability observation cannot establish persistence after process settlement.
+The closing inventory follows the final content sweep as well, so additions,
+removals and symlink substitutions during that sweep invalidate the observation.
 The artifact sweep follows child, snapshot and current-source inspection, so
 loss of an otherwise-unvisited synthesis artifact during those reads is detected.
 The top-level receipt is separately re-read byte-for-byte before the audit returns;
@@ -333,7 +335,21 @@ def audit_artifacts(bundle, bindings):
                 report["errors"].append(f"Artifact disappeared during audit: {error}")
             except (OSError, ValueError) as error:
                 report["errors"].append(str(error))
+        closing_inventory = inventory()
+        if closing_inventory != final_inventory:
+            report["inventory_stable"] = False
+            report["errors"].append("Artifact inventory changed during final content sweep")
+            for name in sorted(closing_inventory - set(bindings)):
+                if name not in report["unbound_files"]:
+                    report["unbound_files"].append(name)
+                    report["errors"].append(f"Unbound retained artifact: {name}")
+            for name in initially_checked:
+                if name not in closing_inventory and name not in report["missing_files"]:
+                    report["missing_files"].append(name)
+                    report["errors"].append(f"Artifact disappeared during final content sweep: {name}")
+            report["unbound_files"].sort()
     except (OSError, ValueError) as error:
+        report["inventory_stable"] = False
         report["errors"].append(f"Cannot re-inventory retained artifacts: {error}")
     for name in sorted(set(report["missing_files"])):
         binding = validated_bindings.get(name)
