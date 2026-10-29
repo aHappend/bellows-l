@@ -396,6 +396,56 @@ class ArtifactRetentionTests(unittest.TestCase):
             "obj": dict(files=299, bytes=report["missing_bytes"])})
         self.assertEqual(list(self.base.rglob("*.o")), [])
 
+    def test_passing_matrix_cannot_hide_partial_synthesis_retention_loss(self):
+        receipt, sources = self.complete_bundle()
+        bindings = dict(self.artifact(f"matrix/obj/file-{index}.o")
+                        for index in range(299))
+        retained_synthesis = {}
+        for capacity in (1, 5, 13, 257, 4096, 65536):
+            artifacts = dict(self.artifact(
+                f"synthesis-{capacity}/{name}", b"synthetic synthesis artifact\n")
+                for name in ("synthesis.ys", "netlist.json", "structure.json"))
+            if capacity == 257:
+                retained_synthesis.update(artifacts)
+            else:
+                bindings.update(artifacts)
+        record = json.loads(receipt.read_bytes())
+        record["artifact_integrity"].update(bindings)
+        record["artifact_integrity"].update(retained_synthesis)
+        receipt.write_text(json.dumps(record))
+        original = receipt.read_bytes()
+        for name in bindings:
+            (self.root / name).unlink()
+
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with chdir(self.root), patch("preparation.inputs", return_value=sources), \
+                patch("sys.argv", ["preparation.py", "--audit-bundles",
+                                   self.bundle.as_posix()]), \
+                redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main()
+
+        report = json.loads(stdout.getvalue())
+        bundle = report["bundles"][0]
+        inventory = bundle["artifact_integrity"]
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(stderr.getvalue(), "")
+        self.assertEqual(bundle["recorded_outcome"], "passed")
+        self.assertEqual(bundle["matrix_passed"], 18)
+        self.assertTrue(report["current_sources_match"])
+        self.assertFalse(report["retained_files_readable"])
+        self.assertEqual(len(inventory["missing_files"]), 314)
+        self.assertEqual(inventory["missing_artifact_bindings"], bindings)
+        self.assertEqual(inventory["missing_bytes"],
+                         sum(binding["bytes"] for binding in bindings.values()))
+        self.assertEqual(inventory["rechecked_files"],
+                         inventory["expected_files"] - 314)
+        self.assertFalse(bundle["retention_handoff"]["authorizes_staging"])
+        self.assertFalse(report["authorizes_resumption"])
+        self.assertEqual(receipt.read_bytes(), original)
+        for name, binding in retained_synthesis.items():
+            self.assertEqual(file_integrity(self.root / name), binding)
+        self.assertTrue(all(not (self.root / name).exists() for name in bindings))
+
     def test_missing_inventory_preserves_exact_bindings_across_directories(self):
         bindings = dict([
             self.artifact("matrix/obj/model.o", b"object"),

@@ -4,6 +4,7 @@
     python3 tests/preparation.py --subset targeted
     python3 tests/preparation.py --subset backend-focused
     python3 tests/preparation.py --subset output-focused
+    python3 tests/preparation.py --subset harness-focused
     python3 tests/preparation.py --subset ratio-focused --repair-of <receipt>
     python3 tests/preparation.py --audit-receipts <receipt> [<receipt> ...]
     python3 tests/preparation.py --audit-bundles evidence/l1 [<bundle> ...]
@@ -1049,7 +1050,7 @@ def main():
     operation.add_argument("--subset",
                         choices=("targeted", "ratio-focused", "reproduce", "boundary-focused",
                                  "extreme-focused", "final-focused", "overflow-focused",
-                                 "backend-focused", "output-focused"))
+                                 "backend-focused", "output-focused", "harness-focused"))
     operation.add_argument("--audit-receipts", nargs="+", metavar="RECEIPT")
     operation.add_argument("--audit-bundles", nargs="+", metavar="BUNDLE")
     operation.add_argument("--inspect-hil-inputs", action="store_true")

@@ -30,9 +30,14 @@ Executable requirement mapping:
   independently on both simulators, then exact public-trace agreement.
 * occupied_destination: occupied directories/files, dangling output symlinks
   and symlinked or non-directory parents are rejected without changing them.
+* preparation_regressions: synthetic retention, staging and HIL-diagnostic
+  rejection tests; these establish harness behavior, not product acceptance.
 
 The advisory --subset output-focused runs only output-path rejection checks
 and tool-version queries; it establishes no RTL behavior or matrix coverage.
+The advisory --subset harness-focused runs only the synthetic recovery-safety
+regressions and tool-version queries; it never stages the actual project,
+restores historical artifacts or exercises hardware.
 
 Final receipts bind every retained artifact, including compared data and synthesis
 outputs. Before publishing a final receipt, all artifact files and their directory
@@ -928,7 +933,19 @@ def simulator_equivalence(execution):
         trace_integrity=file_integrity(traces[0])))
 
 
+def preparation_regressions(execution):
+    record, _, _ = execution.run(
+        "preparation-regressions",
+        ["python3", "-B", "tests/test_preparation.py"])
+    execution.results.append(dict(
+        kind="synthetic-recovery-safety-regressions", outcome="passed",
+        exit_code=record["exit_code"], receipt=execution.children[-1],
+        product_coverage=False, establishes_platform_retention_remedy=False,
+        establishes_physical_acceptance=False))
+
+
 def full(execution):
+    preparation_regressions(execution)
     unit_pipeline(execution)
     simulator_equivalence(execution)
     for capacity in CAPACITIES:
@@ -973,7 +990,8 @@ def main():
     parser.add_argument("--subset", choices=("all", "reproduce", "ratio-focused", "targeted",
                                             "boundary-focused", "extreme-focused",
                                             "final-focused", "overflow-focused",
-                                            "backend-focused", "output-focused"),
+                                            "backend-focused", "output-focused",
+                                            "harness-focused"),
                         default="all")
     args = parser.parse_args()
     os.chdir(ROOT)
@@ -993,6 +1011,8 @@ def main():
             full(execution)
         elif args.subset == "output-focused":
             occupied_destination(execution)
+        elif args.subset == "harness-focused":
+            preparation_regressions(execution)
         elif args.subset == "backend-focused":
             unit_pipeline(execution)
             simulator_equivalence(execution)
