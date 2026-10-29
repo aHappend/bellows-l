@@ -76,6 +76,8 @@ identifies the mechanism responsible for a missing file.
 Missing artifacts include their validated original sizes and hashes, total byte
 count and bundle-relative directory groups for an authentic-archive recovery
 request. This inventory does not restore files or authorize regeneration.
+Malformed child generated-source indexes fail explicitly without aborting the
+remaining child inspection or the independent artifact-loss inventory.
 Receipt-declared recovery archives are inspected without extraction: every member
 must match the original manifest, with no duplicate, redirected or extra members.
 Matching archived bytes identify a possible recovery source, not historical
@@ -601,7 +603,10 @@ def audit_bundle(name, source_diff=False):
                         report["bound_raw_streams"] += 1
                     else:
                         report["unbound_raw_streams"] += 1
-                for generated, digest in child["generated_source_sha256"].items():
+                generated_sources = child["generated_source_sha256"]
+                if not isinstance(generated_sources, dict):
+                    raise ValueError("Invalid generated source index; expected an object")
+                for generated, digest in generated_sources.items():
                     if generated in sources:
                         if digest != sources[generated]:
                             raise ValueError(f"Inconsistent input binding: {generated}")

@@ -668,6 +668,35 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertTrue(report["receipt_stable"])
         self.assertEqual(receipt.read_bytes(), original)
 
+    def test_malformed_child_source_index_does_not_hide_artifact_loss(self):
+        receipt, sources = self.complete_bundle()
+        original_receipt = receipt.read_bytes()
+        child = self.base / "commands/001/receipt.json"
+        original_child = json.loads(child.read_bytes())
+        missing = self.base / "synthesis/netlist.json"
+        missing_binding = file_integrity(missing)
+        missing.unlink()
+        for invalid in (None, [], "", 0, False):
+            with self.subTest(index=invalid):
+                child.write_text(json.dumps(dict(
+                    original_child, generated_source_sha256=invalid)))
+                original_payload = child.read_bytes()
+                with chdir(self.root), patch("preparation.inputs", return_value=sources):
+                    report = audit_bundle(self.bundle.as_posix())
+                self.assertFalse(report["retained_files_readable"])
+                self.assertFalse(report["artifact_manifest_verified"])
+                self.assertTrue(any("Invalid generated source index" in error
+                                    for error in report["errors"]), report["errors"])
+                self.assertEqual(report["artifact_integrity"]["missing_artifact_bindings"],
+                                 {missing.relative_to(self.root).as_posix(): missing_binding})
+                self.assertEqual(report["artifact_integrity"]["missing_bytes"],
+                                 missing_binding["bytes"])
+                self.assertFalse(report["retention_handoff"]["authorizes_staging"])
+                self.assertFalse(report["retention_handoff"]["authorizes_resumption"])
+                self.assertEqual(receipt.read_bytes(), original_receipt)
+                self.assertEqual(child.read_bytes(), original_payload)
+                self.assertFalse(missing.exists())
+
     def recovery_archive(self, receipt, transform=None):
         record = json.loads(receipt.read_bytes())
         archive = self.base / "retained-artifacts.tar.gz"
