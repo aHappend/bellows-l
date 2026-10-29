@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthetic HIL diagnostic regressions, not physical product verification.
+"""Synthetic retention and HIL regressions, not product verification.
 
 Run: python3 -B tests/test_preparation.py
 No transport commands are executed and no hardware acceptance is established.
@@ -17,7 +17,130 @@ from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from preparation import audit_receipt, diagnose_hil_record, inspect_hil_inputs, main
+from preparation import (audit_artifacts, audit_receipt, diagnose_hil_record,
+                         inspect_hil_inputs, main)
+from verify import file_integrity
+
+
+class ArtifactRetentionTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.bundle = Path("evidence/synthetic")
+        self.base = self.root / self.bundle
+        self.base.mkdir(parents=True)
+        guard = patch("preparation.ROOT", self.root)
+        guard.start()
+        self.addCleanup(guard.stop)
+        guard = patch("subprocess.Popen", side_effect=AssertionError(
+            "Retention audits must not execute or regenerate artifacts"))
+        guard.start()
+        self.addCleanup(guard.stop)
+
+    def artifact(self, name, payload=b"retained original bytes"):
+        path = self.base / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+        return path.relative_to(self.root).as_posix(), file_integrity(path)
+
+    def test_complete_inventory_rechecks_every_bound_file(self):
+        bindings = dict([self.artifact("stdout.log"), self.artifact("obj/model.o")])
+        report = audit_artifacts(self.bundle, bindings)
+        self.assertEqual(report["errors"], [])
+        self.assertEqual(report["expected_files"], 2)
+        self.assertEqual(report["checked_files"], 2)
+        self.assertEqual(report["rechecked_files"], 2)
+        self.assertTrue(report["inventory_stable"])
+
+    def test_missing_compiler_intermediates_are_not_exempted_or_regenerated(self):
+        bindings = dict(self.artifact(f"obj/file-{index}.o") for index in range(299))
+        for name in bindings:
+            (self.root / name).unlink()
+        report = audit_artifacts(self.bundle, bindings)
+        self.assertEqual(report["expected_files"], 299)
+        self.assertEqual(report["checked_files"], 0)
+        self.assertEqual(set(report["missing_files"]), set(bindings))
+        self.assertEqual(len(report["errors"]), 299)
+        self.assertEqual(list(self.base.rglob("*.o")), [])
+
+    def test_same_size_corruption_and_unbound_files_both_fail(self):
+        name, binding = self.artifact("trace.log", b"original")
+        (self.root / name).write_bytes(b"modified")
+        extra, _ = self.artifact("unexpected.log")
+        report = audit_artifacts(self.bundle, {name: binding})
+        self.assertEqual(report["mismatched_files"], [name])
+        self.assertEqual(report["unbound_files"], [extra])
+        self.assertTrue(report["errors"])
+
+    def test_disappearance_after_initial_hash_fails_recheck(self):
+        name, binding = self.artifact("trace.log")
+
+        def disappear_after_read(path):
+            result = file_integrity(path)
+            path.unlink()
+            return result
+
+        with patch("preparation.file_integrity", side_effect=disappear_after_read):
+            report = audit_artifacts(self.bundle, {name: binding})
+        self.assertEqual(report["checked_files"], 1)
+        self.assertEqual(report["rechecked_files"], 0)
+        self.assertFalse(report["inventory_stable"])
+        self.assertEqual(report["missing_files"], [name])
+        self.assertTrue(report["errors"])
+
+    def test_same_bytes_symlink_substitution_is_not_retained_original(self):
+        for directory_link in (False, True):
+            with self.subTest(directory_link=directory_link):
+                original = self.base / "original"
+                original.mkdir(exist_ok=True)
+                target = original / "trace.log"
+                target.write_bytes(b"identical bytes")
+                if directory_link:
+                    link = self.base / "redirect"
+                    link.symlink_to(original, target_is_directory=True)
+                    name = (link / "trace.log").relative_to(self.root).as_posix()
+                else:
+                    link = self.base / "redirect.log"
+                    link.symlink_to(target)
+                    name = link.relative_to(self.root).as_posix()
+                report = audit_artifacts(self.bundle, {
+                    target.relative_to(self.root).as_posix(): file_integrity(target),
+                    name: file_integrity(target)})
+                self.assertTrue(any("symlink" in error.lower()
+                                    for error in report["errors"]), report)
+                self.assertEqual(target.read_bytes(), b"identical bytes")
+                link.unlink()
+
+    def test_bundle_directory_symlink_is_rejected(self):
+        name, binding = self.artifact("trace.log")
+        moved = self.root / "evidence/original"
+        self.base.rename(moved)
+        self.base.symlink_to(moved, target_is_directory=True)
+        report = audit_artifacts(self.bundle, {name: binding})
+        self.assertTrue(any("symlink" in error.lower()
+                            for error in report["errors"]), report)
+
+    def test_symlink_introduced_after_initial_hash_fails_recheck(self):
+        name, binding = self.artifact("trace.log")
+        target_name, target_binding = self.artifact("original.log")
+        changed = False
+
+        def redirect_after_read(path):
+            nonlocal changed
+            result = file_integrity(path)
+            if path == self.root / name and not changed:
+                path.unlink()
+                path.symlink_to(self.root / target_name)
+                changed = True
+            return result
+
+        with patch("preparation.file_integrity", side_effect=redirect_after_read):
+            report = audit_artifacts(self.bundle, {
+                name: binding, target_name: target_binding})
+        self.assertTrue(changed)
+        self.assertTrue(any("symlink" in error.lower()
+                            for error in report["errors"]), report)
 
 
 class ReceiptOutcomeTests(unittest.TestCase):

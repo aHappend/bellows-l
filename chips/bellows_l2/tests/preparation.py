@@ -50,6 +50,10 @@ identifies the mechanism responsible for a missing file.
 Artifact audits repeat the inventory and re-read initially matching files before
 returning; disappearance or mutation during the audit fails explicitly. This
 bounded stability observation cannot establish persistence after process settlement.
+Symlinked artifacts, directories and bundle ancestors are rejected, including
+same-byte substitutions and redirects introduced between the two observations.
+This matches the producer's no-symlink retention contract; it does not identify
+the cause of historical artifact loss or authorize reconstructing missing files.
 The HIL input inspection reads only fpga/board_hil.json, never invokes commands
 from it, and never builds, programs or contacts hardware. Exit zero establishes
 only that a nonempty command is configured without enabled native configuration
@@ -175,9 +179,22 @@ def audit_artifacts(bundle, bindings):
     initially_checked = []
     actual = None
 
+    def reject_symlinks(path):
+        current = ROOT
+        for part in path.relative_to(ROOT).parts:
+            current = current / part
+            if current.is_symlink():
+                raise ValueError(
+                    f"Symlink in retained artifact path: {current.relative_to(ROOT)}")
+
     def inventory():
-        return {path.relative_to(ROOT).as_posix()
-                for path in base.rglob("*") if path.is_file()
+        reject_symlinks(base)
+        paths = list(base.rglob("*"))
+        for path in paths:
+            if path.is_symlink():
+                raise ValueError(
+                    f"Symlink in retained artifact inventory: {path.relative_to(ROOT)}")
+        return {path.relative_to(ROOT).as_posix() for path in paths if path.is_file()
                 and path != base / "receipt.json"}
 
     try:
@@ -185,7 +202,7 @@ def audit_artifacts(bundle, bindings):
         report["unbound_files"] = sorted(actual - set(bindings))
         for name in report["unbound_files"]:
             report["errors"].append(f"Unbound retained artifact: {name}")
-    except OSError as error:
+    except (OSError, ValueError) as error:
         report["errors"].append(f"Cannot inventory retained artifacts: {error}")
     for name, binding in bindings.items():
         try:
@@ -194,9 +211,11 @@ def audit_artifacts(bundle, bindings):
             path = Path(name)
             if (path.is_absolute() or ".." in path.parts
                     or not path.is_relative_to(bundle)
-                    or not (ROOT / path).resolve().is_relative_to(base.resolve())
                     or path == bundle / "receipt.json"):
                 raise ValueError(f"Artifact outside nominated bundle or self-bound: {name}")
+            reject_symlinks(ROOT / path)
+            if not (ROOT / path).resolve().is_relative_to(base.resolve()):
+                raise ValueError(f"Artifact outside nominated bundle: {name}")
             if (not isinstance(binding, dict)
                     or type(binding.get("bytes")) is not int
                     or binding["bytes"] < 0
@@ -220,6 +239,7 @@ def audit_artifacts(bundle, bindings):
             report["errors"].append("Artifact inventory changed during audit")
         for name in initially_checked:
             try:
+                reject_symlinks(ROOT / name)
                 if file_integrity(ROOT / name) != bindings[name]:
                     report["mismatched_files"].append(name)
                     raise ValueError(f"Artifact changed during audit: {name}")
@@ -229,7 +249,7 @@ def audit_artifacts(bundle, bindings):
                 report["errors"].append(f"Artifact disappeared during audit: {error}")
             except (OSError, ValueError) as error:
                 report["errors"].append(str(error))
-    except OSError as error:
+    except (OSError, ValueError) as error:
         report["errors"].append(f"Cannot re-inventory retained artifacts: {error}")
     return report
 
