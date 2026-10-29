@@ -65,6 +65,8 @@ consistent successful runs never establish product traffic or image provenance.
 With --hil-output, also reject an occupied or non-project evidence destination.
 An existing non-directory ancestor, including a dangling symlink, also makes
 the destination unusable; inspection never removes it or creates directories.
+The portable output guard also rejects symlinked parents and runtime-owned
+path components, even when the evidence directory itself redirects elsewhere.
 This only inventories the admitted output contract; it never creates, removes
 or renames that destination, and cannot authorize a different invocation.
 Portable-input inspection compares readable declared files in a nominated
@@ -500,7 +502,6 @@ def inspect_hil_inputs(root=ROOT, output=None):
                     or not (root / destination).resolve().is_relative_to(
                         (root / "evidence").resolve())):
                 raise ValueError("HIL output must be a project-relative path inside evidence/")
-            # A dangling symlink is occupied too; do not follow it or replace it.
             if os.path.lexists(root / destination):
                 raise ValueError(
                     "HIL output is occupied; preserve it and request independently "
@@ -510,6 +511,7 @@ def inspect_hil_inputs(root=ROOT, output=None):
                         and not (root / ancestor).is_dir()):
                     raise ValueError(
                         f"HIL output ancestor is not a directory: {ancestor}")
+            validate_output(destination, root=root)
             contract["fresh"] = True
         except (OSError, ValueError) as error:
             report["errors"].append(str(error))

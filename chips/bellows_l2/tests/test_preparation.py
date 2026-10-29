@@ -238,6 +238,37 @@ class HilDiagnosticTests(unittest.TestCase):
             self.assertFalse((root / "evidence").exists())
             self.assertFalse(result["authorizes_resumption"])
 
+    def test_redirected_or_runtime_owned_output_is_not_fresh(self):
+        for kind in ("evidence-symlink", "nested-symlink", "runtime-owned"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                (root / "fpga").mkdir()
+                (root / "fpga/board_hil.json").write_text(json.dumps(dict(
+                    remote_test_cmd="synthetic-never-execute")))
+                target = root / "preserve"
+                target.mkdir()
+                marker = target / "marker"
+                marker.write_bytes(b"unchanged")
+                if kind == "evidence-symlink":
+                    (root / "evidence").symlink_to(target, target_is_directory=True)
+                    output = "evidence/new.json"
+                else:
+                    (root / "evidence").mkdir()
+                    if kind == "nested-symlink":
+                        (root / "evidence/redirect").symlink_to(
+                            target, target_is_directory=True)
+                        output = "evidence/redirect/new.json"
+                    else:
+                        output = "evidence/.vulcan/new.json"
+                result = inspect_hil_inputs(root=root, output=output)
+                self.assertFalse(result["output_contract"]["fresh"])
+                self.assertTrue(result["errors"])
+                self.assertFalse(result["hardware_executed"])
+                self.assertFalse(result["authorizes_resumption"])
+                self.assertEqual(marker.read_bytes(), b"unchanged")
+                self.assertEqual(list(target.iterdir()), [marker])
+                self.assertFalse((root / output).exists())
+
     def test_three_native_successes_do_not_certify_product(self):
         result = diagnose_hil_record(self.record)
         self.assertTrue(result["three_consecutive_native_successes"])
