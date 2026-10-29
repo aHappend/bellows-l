@@ -1213,6 +1213,33 @@ class ReceiptOutcomeTests(unittest.TestCase):
                 result = self.audit(**metadata)
                 self.assertEqual(result["recorded_execution"]["outcome"], expected)
 
+    def test_failed_probe_does_not_disappear_behind_successful_child(self):
+        result = self.audit(
+            probe_exit_code=1, source_unchanged=False,
+            source_inventory_error="Declared sources changed during probe")
+        self.assertEqual(result["recorded_execution"]["outcome"], "succeeded")
+        self.assertEqual(result["recorded_probe"]["outcome"], "failed")
+        self.assertEqual(result["recorded_probe"]["exit_code"], 1)
+        self.assertEqual(result["recorded_probe"]["source_inventory_error"],
+                         "Declared sources changed during probe")
+
+    def test_probe_success_requires_consistent_child_and_source_results(self):
+        result = self.audit(probe_exit_code=0, source_unchanged=True)
+        self.assertEqual(result["recorded_probe"]["outcome"], "succeeded")
+        for metadata in (
+                dict(probe_exit_code=False, source_unchanged=True),
+                dict(probe_exit_code="0", source_unchanged=True),
+                dict(probe_exit_code=0, source_unchanged=False),
+                dict(probe_exit_code=0),
+                dict(probe_exit_code=0, source_unchanged=True, exit_code=1)):
+            with self.subTest(metadata=metadata):
+                result = self.audit(**metadata)
+                self.assertEqual(result["recorded_probe"]["outcome"], "invalid-result")
+
+    def test_legacy_receipt_does_not_invent_an_enclosing_probe_result(self):
+        result = self.audit()
+        self.assertNotIn("recorded_probe", result)
+
 
 class HilDiagnosticTests(unittest.TestCase):
     def setUp(self):

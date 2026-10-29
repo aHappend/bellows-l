@@ -26,6 +26,10 @@ an audit is not a replacement receipt or permission to resume paused verificatio
 Receipt-audit exit zero means metadata and logs are available, not that the
 recorded commands passed. Each readable receipt separately reports its recorded
 execution outcome; unknown or unsettled outcomes are never labeled successful.
+When probe_exit_code is recorded, the enclosing probe outcome is reported
+separately: a successful child does not hide a failed final source inventory.
+Probe success requires a successful child and an explicitly unchanged inventory;
+legacy receipts without a probe result do not acquire an invented one.
 An optional launch_error must be null/absent for success, or a nonempty string
 for a launch failure; false-valued malformed fields are invalid, not success.
 Receipt audits also report source currency separately from historical execution:
@@ -665,6 +669,22 @@ def audit_receipt(name):
         source_unchanged=record.get("source_unchanged"),
         tool_versions=record["tool_versions"],
         stdout=record["stdout"], stderr=record["stderr"]))
+    if "probe_exit_code" in record:
+        probe_code = record["probe_exit_code"]
+        if probe_code is None:
+            probe_outcome = "unsettled"
+        elif type(probe_code) is not int:
+            probe_outcome = "invalid-result"
+        elif probe_code != 0:
+            probe_outcome = "failed"
+        elif outcome != "succeeded" or record.get("source_unchanged") is not True:
+            probe_outcome = "invalid-result"
+        else:
+            probe_outcome = "succeeded"
+        report["recorded_probe"] = dict(
+            exit_code=probe_code, outcome=probe_outcome,
+            source_unchanged=record.get("source_unchanged"),
+            source_inventory_error=record.get("source_inventory_error"))
     source_errors = source_binding_errors(record["source_sha256"])
     report["current_sources_match"] = not source_errors
     report["source_binding_errors"] = source_errors
