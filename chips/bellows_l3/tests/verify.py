@@ -21,6 +21,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import oracle
+import error_settlement
 import parent
 import protocols
 import mutations
@@ -294,6 +295,8 @@ def prepare(run, kind):
         build = compile_bus(run, 3, 3, "verilator")
         simulate(run, build, scenarios.matrix_batches(3, 89, make_frame),
                  3, 89, "nonpower-seed89", resets=True)
+    elif kind == "hidden-reservation-error-settlement":
+        error_settlement.execute(run)
     else:
         build = compile_bus(run, 255, 16, "verilator")
         batches = (scenarios.boundaries(make_frame) +
@@ -326,6 +329,7 @@ def matrix(run):
     oracle.selftest()
     for tool in ("verilator", "g++", "make"):
         run.tool(tool)
+    settlement = error_settlement.execute(run)
     ledger, combined = [], collections.Counter()
     observed = collections.Counter()
     for block, sg in CELLS:
@@ -438,6 +442,7 @@ def matrix(run):
     parent.execute(run, "verilator", full=True, l1=True)
     write_json(run.path / "matrix-summary.json",
                {"required_runs": 24, "completed_runs": len(ledger), "runs": ledger,
+                "hidden-reservation-error-settlement": settlement,
                 "aggregate_public_dma_coverage": dict(combined),
                 "successfully_compared_content_coverage": dict(observed),
                 "fairness_reference": "smoke scheduler public-input all-eligible experiment"})
@@ -513,7 +518,8 @@ def main():
     parser.add_argument("--prepare", nargs="?", const="compact",
                         choices=("compact", "errors", "synthesis", "parent",
                                  "protocol", "full-parent", "endpoint", "default-synthesis",
-                                 "mutation", "mutation-transfer", "matrix-cell", "portable"),
+                                 "mutation", "mutation-transfer", "matrix-cell", "portable",
+                                 "hidden-reservation-error-settlement"),
                         help="bounded development probe, not acceptance")
     parser.add_argument("--out-root", required=True)
     parser.add_argument("--repair-of")

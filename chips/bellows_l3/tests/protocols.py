@@ -19,6 +19,7 @@ module tb;
   wire [71:0] wr_payload;
   wire [115:0] status_payload;
   reg rd_ready=0,wr_ready=0,status_ready=0;
+  reg rd_available=0,wr_available=0;
   bellows_l3_scheduler dut(.*);
   wire [2:0] valids={status_valid,wr_valid,rd_valid};
   wire [2:0] readies={status_ready,wr_ready,rd_ready};
@@ -87,12 +88,22 @@ module tb;
     #1; rst_n=1;
     #1; lane_rd_valid=15; lane_wr_valid=15; lane_status_valid=15;
     #1; if (valids!==0) $fatal(1,"SCHEDULER_COMBINATIONAL_BYPASS");
+    repeat(3) begin
+      @(posedge clk);
+      #1; if ({lane_rd_take,lane_wr_take,valids[1:0]}!==10'd0)
+        $fatal(1,"SCHEDULER_UNAVAILABLE_ADMISSION");
+    end
+    @(negedge clk); #1; rd_available=1; wr_available=1;
+    #1; if (valids[1:0]!==0) $fatal(1,"SCHEDULER_AVAILABILITY_BYPASS");
     @(posedge clk);
     #1; if (valids!==7) $fatal(1,"SCHEDULER_REGISTERED_PRESENTATION");
+    rd_available=0; wr_available=0;
+    #1; if (valids[1:0]!==3) $fatal(1,"SCHEDULER_AVAILABILITY_WITHDRAWAL");
     lane_rd_addr[63:0]=64'hffffffff;
     lane_wr_payload[71:0]=72'hffffffff;
     wait(grants[0]>=1 && grants[1]>=1);
     @(negedge clk);
+    #1; rd_available=1; wr_available=1;
     lane_rd_addr[63:0]=64'h12340000;
     lane_wr_payload[71:0]=72'h56780000;
     wait(grants[0]>=68 && grants[1]>=68 && grants[2]>=68);
@@ -126,6 +137,7 @@ def execute(run):
                {"three_independent_arbiters": True,
                 "all_eligible_adjacent_switches_each_minimum": 64,
                 "registered_presentation_and_payload_snapshot": True,
+                "unavailable_blocks_only_new_reservations": True,
                 "four_accepted_grant_fairness": True, "ineligible_skip": True})
 
 

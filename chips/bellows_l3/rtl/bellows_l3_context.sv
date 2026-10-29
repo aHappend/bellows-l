@@ -91,6 +91,8 @@ module bellows_l3_context #(
     wire capacity_limit=error_code==0 &&
         ((state==RUN && codec_output_valid && output_count>=destination_capacity) ||
          (state==TRAILER && trailer_sent<4 && output_count>=destination_capacity));
+    wire frame_finished=state==RUN && codec_done && reads_consumed==source_bytes &&
+                        !input_valid && checksum_done;
     reg [3:0] fault;
     always @* begin
         fault=0;
@@ -100,6 +102,8 @@ module bellows_l3_context #(
                 fault={1'b0,codec_status_error};
             else if (output_limit) fault=5;
             else if (capacity_limit) fault=9;
+            else if (frame_finished && decompress && checksum_mode!=0 &&
+                     computed_checksum!=expected_checksum) fault=7;
         end
     end
     wire output_ready=state==RUN && error_code==0 && fault==0 && !output_valid &&
@@ -278,13 +282,8 @@ module bellows_l3_context #(
                     state<=RUN;
                 end
                 RUN: begin
-                    if (codec_done && reads_consumed==source_bytes && !input_valid &&
-                        checksum_done) begin
+                    if (frame_finished) begin
                         if (decompress) begin
-                            if (checksum_mode!=0 && computed_checksum!=expected_checksum) begin
-                                error_code<=7;
-                                output_valid<=0;
-                            end
                             state<=SETTLE;
                         end else if (checksum_mode!=0) state<=TRAILER;
                         else state<=SETTLE;

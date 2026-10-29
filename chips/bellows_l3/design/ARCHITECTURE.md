@@ -57,12 +57,26 @@ The design contains neither a PCIe endpoint nor host-specific cable/BDF data.
 | Shared status slot | scheduler snapshots completed lane | public status handshake |
 
 Scheduler reservations are internal handshakes, distinct from external DMA
-request acceptance. They freeze address/data and mark the lane pending. A
-reservation already loaded into a shared request slot is noncancelable: it
-must preserve valid/payload through an external stall and settle its response,
-even if the other DMA direction subsequently fails. No new reservation is made
-when a current fault is observable. Per-direction global outstanding ownership
-is set only by external acceptance and cleared only by its response.
+request acceptance. They freeze address/data and mark the lane pending. DMA
+exports independent read/write availability from its registered outstanding
+bits, not from external request ready. An empty request arbiter takes a lane
+only while its DMA direction is available. While another transaction is
+outstanding, eligible requests remain in their lanes, where a fault can discard
+them; no hidden shared reservation is created.
+
+At reservation edge E, the direction has no outstanding transaction and the
+shared slot is empty. The registered request therefore becomes publicly valid
+post-E, without waiting behind another transaction. That presentation is
+noncancelable: preserve valid/payload through external stalls and settle any
+accepted response even if the other direction subsequently fails. Current
+faults suppress lane eligibility before reservation, including checksum
+mismatch at frame finalization; earlier DMA/codec/capacity errors retain their
+priority. Availability gates slot loading only, never an occupied slot's valid
+or retirement. Per-direction global outstanding ownership is set only by
+external acceptance and cleared only by its response. A response at Er clears
+that direction's outstanding bit post-Er; a new request can enter its empty
+shared slot at Er+1 and first transfer at Er+2. Read and write scheduling remain
+independent, and round-robin pointers advance only on accepted requests.
 
 ## Context controller and registered paths
 

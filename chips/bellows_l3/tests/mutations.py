@@ -10,7 +10,8 @@ from retention import write_json
 
 DEFECTS = (
     ("suppressed-mismatch", "bellows_l3_context.sv",
-     "error_code<=7;", "error_code<=0;", "status_error"),
+     "computed_checksum!=expected_checksum) fault=7;",
+     "computed_checksum!=expected_checksum) fault=0;", "status_error"),
     ("checksum-arithmetic", "bellows_l3_checksum.sv",
      "P5=32'h165667b1", "P5=32'h165667b0", "status_checksum"),
     ("channel-ownership", "bellows_l3_sg_dma.sv",

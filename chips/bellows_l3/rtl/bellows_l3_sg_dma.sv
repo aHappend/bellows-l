@@ -1,9 +1,9 @@
 module bellows_l3_sg_dma (
     input wire clk, input wire rst_n,
     input wire read_valid, input wire [1:0] read_channel,
-    input wire [63:0] read_addr, output wire read_ready,
+    input wire [63:0] read_addr, output wire read_ready, output wire read_available,
     input wire write_valid, input wire [1:0] write_channel,
-    input wire [71:0] write_payload, output wire write_ready,
+    input wire [71:0] write_payload, output wire write_ready, output wire write_available,
     output wire [3:0] lane_read_response,
     output wire [7:0] lane_read_data, output wire lane_read_error,
     output wire [3:0] lane_write_response, output wire lane_write_error,
@@ -18,6 +18,8 @@ module bellows_l3_sg_dma (
 );
     reg read_pending, write_pending;
     reg [1:0] read_owner, write_owner;
+    assign read_available=rst_n && !read_pending;
+    assign write_available=rst_n && !write_pending;
     assign rd_req_valid=rst_n && !read_pending && read_valid;
     assign rd_req_channel=rd_req_valid ? read_channel : 2'd0;
     assign rd_req_addr=rd_req_valid ? read_addr : 64'd0;

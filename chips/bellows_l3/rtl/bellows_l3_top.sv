@@ -39,6 +39,7 @@ module bellows_l3_top #(
     wire [7:0] lane_read_data;
     wire lane_read_error, lane_write_error;
     wire read_valid, read_ready, write_valid, write_ready;
+    wire read_available, write_available;
     wire [1:0] read_channel, write_channel;
     wire [63:0] read_addr;
     wire [71:0] write_payload;
@@ -81,9 +82,11 @@ module bellows_l3_top #(
         .lane_rd_valid(lane_rd_valid), .lane_rd_addr(lane_rd_addr),
         .lane_rd_take(lane_rd_take), .rd_valid(read_valid),
         .rd_channel(read_channel), .rd_addr(read_addr), .rd_ready(read_ready),
+        .rd_available(read_available),
         .lane_wr_valid(lane_wr_valid), .lane_wr_payload(lane_wr_payload),
         .lane_wr_take(lane_wr_take), .wr_valid(write_valid),
         .wr_channel(write_channel), .wr_payload(write_payload), .wr_ready(write_ready),
+        .wr_available(write_available),
         .lane_status_valid(lane_status_valid), .lane_status_payload(lane_status_payload),
         .lane_status_retire(lane_status_retire), .status_valid(status_valid),
         .status_channel(status_channel), .status_payload(completion_payload),
@@ -92,9 +95,10 @@ module bellows_l3_top #(
     bellows_l3_sg_dma dma (
         .clk(clk), .rst_n(rst_n),
         .read_valid(read_valid), .read_channel(read_channel),
-        .read_addr(read_addr), .read_ready(read_ready),
+        .read_addr(read_addr), .read_ready(read_ready), .read_available(read_available),
         .write_valid(write_valid), .write_channel(write_channel),
         .write_payload(write_payload), .write_ready(write_ready),
+        .write_available(write_available),
         .lane_read_response(lane_read_response), .lane_read_data(lane_read_data),
         .lane_read_error(lane_read_error), .lane_write_response(lane_write_response),
         .lane_write_error(lane_write_error),
