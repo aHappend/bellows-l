@@ -25,6 +25,39 @@ from verify import file_integrity, json_write
 
 
 class PreparationStreamTests(unittest.TestCase):
+    def test_probe_rejects_changed_or_unreadable_final_source_inventory(self):
+        for final_inventory in (
+                {"tests/example.py": "1" * 64},
+                OSError("synthetic source inventory unavailable")):
+            with self.subTest(final_inventory=final_inventory), \
+                    tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                initial = {"tests/example.py": "0" * 64}
+
+                def launch(argv, **kwargs):
+                    kwargs["stdout"].write(b"synthetic successful child\n")
+                    process = unittest.mock.Mock()
+                    process.wait.return_value = 0
+                    return process
+
+                with chdir(root), patch("preparation.ROOT", root), patch(
+                        "preparation.inputs", side_effect=[initial, final_inventory]), patch(
+                        "preparation.subprocess.Popen", side_effect=launch), patch(
+                        "sys.argv", ["preparation.py", "--subset", "harness-focused"]), \
+                        redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                    self.assertEqual(main(), 1)
+                    receipts = list(root.glob("evidence/preparation/*/receipt.json"))
+                    self.assertEqual(len(receipts), 1)
+                    record = json.loads(receipts[0].read_bytes())
+                    self.assertEqual(record["exit_code"], 0)
+                    self.assertFalse(record["source_unchanged"])
+                    self.assertEqual(record["probe_exit_code"], 1)
+                    self.assertIn("source", record["source_inventory_error"].lower())
+                    self.assertIn("source", (root / record["stderr"]).read_text().lower())
+                    for channel in ("stdout", "stderr"):
+                        self.assertEqual(record["stream_integrity"][channel],
+                                         file_integrity(root / record[channel]))
+
     def test_probe_binds_both_raw_streams_and_rejects_later_corruption(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -47,6 +80,9 @@ class PreparationStreamTests(unittest.TestCase):
                 self.assertEqual(len(receipts), 1)
                 receipt = receipts[0]
                 record = json.loads(receipt.read_bytes())
+                self.assertEqual(record["exit_code"], 0)
+                self.assertEqual(record["probe_exit_code"], 0)
+                self.assertTrue(record["source_unchanged"])
                 for channel in ("stdout", "stderr"):
                     stream = root / record[channel]
                     self.assertIn("stream_integrity", record)

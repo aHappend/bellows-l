@@ -47,6 +47,9 @@ The outer bounded-probe receipt also binds both synchronized raw streams,
 including failed children; changed logs cannot serve as repair predecessors.
 Repair-predecessor audits validate any recorded stream bindings as well: a
 present but truncated or changed log is not an available repair predecessor.
+Bounded probes fail if their final declared-source inventory changes or becomes
+unreadable, even when the child exits zero. The receipt preserves the child
+exit_code separately from probe_exit_code and retains the source error in stderr.
 New bundle receipts bind all retained artifacts, not just sources and raw streams.
 The audit checks their exact file inventory, sizes and hashes; legacy bundles
 are explicitly reported as lacking these bindings. Neither kind of receipt
@@ -1211,6 +1214,20 @@ def main():
                     os.killpg(process.pid, signal.SIGKILL)
                     process.wait()
                 record["exit_code"] = process.returncode
+        record["source_unchanged"] = False
+        try:
+            record["source_unchanged"] = inputs() == record["source_sha256"]
+        except (OSError, AssertionError) as error:
+            record["source_inventory_error"] = (
+                f"Final source inventory unavailable: {type(error).__name__}: {error}")
+        else:
+            if not record["source_unchanged"]:
+                record["source_inventory_error"] = "Declared sources changed during probe"
+        if not record["source_unchanged"]:
+            stderr.write((record["source_inventory_error"] + "\n").encode())
+        record["probe_exit_code"] = (
+            1 if record["timed_out"] or "launch_error" in record
+            or not record["source_unchanged"] else record["exit_code"])
         for stream in (stdout, stderr):
             stream.flush()
             os.fsync(stream.fileno())
@@ -1220,7 +1237,6 @@ def main():
     }
     record["end_time"] = datetime.now(timezone.utc).isoformat()
     record["duration_s"] = time.monotonic() - start
-    record["source_unchanged"] = inputs() == record["source_sha256"]
     versions = out / "result/tool-versions.json"
     record["tool_versions"] = json.loads(versions.read_text()) if versions.exists() else {}
     record["child_receipt"] = (out / "result/receipt.json").as_posix()
@@ -1228,7 +1244,7 @@ def main():
     print((out / "receipt.json").as_posix())
     print((out / "stdout.log").read_text(), end="")
     print((out / "stderr.log").read_text(), end="", file=sys.stderr)
-    return 1 if record["timed_out"] or "launch_error" in record else record["exit_code"]
+    return record["probe_exit_code"]
 
 
 if __name__ == "__main__":
