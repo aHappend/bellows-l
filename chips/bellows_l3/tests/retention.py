@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import time
 import uuid
 
@@ -17,7 +18,8 @@ def stamp():
 
 def sources(root):
     paths = sorted([*root.glob("rtl/*.sv"), *root.glob("tests/*.py"),
-                    root / "design/SPEC.md", root / "design/ARCHITECTURE.md"])
+                    root / "design/SPEC.md", root / "design/ARCHITECTURE.md",
+                    *root.glob("bellows_l2_reference/rtl/*.sv")])
     return {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in paths}
 
@@ -42,6 +44,7 @@ class Run:
             "argv": argv, "cwd": ".", "start": stamp(), "end": None,
             "source_hashes": sources(self.root), "exit": None,
             "timed_out": False, "commands": [], "repair_of": repair_of,
+            "python_version": sys.version, "timeout_owner": "shared runtime",
             "stdout": self.relative(self.path / "stdout.txt"),
             "stderr": self.relative(self.path / "stderr.txt"),
         }

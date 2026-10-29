@@ -30,6 +30,47 @@ def structural_rules(root):
     return results
 
 
+def arithmetic_boundaries(modules):
+    """Reject dependent arithmetic after a multiplier without a register."""
+    measurements = {}
+    arithmetic = {"$add", "$sub", "$mul", "$xor", "$shl", "$shr", "$sshl", "$sshr"}
+    for module_name, module in modules.items():
+        cells = module.get("cells", {})
+        combinational = {
+            name: cell for name, cell in cells.items()
+            if cell["type"] not in modules and
+            not any(token in cell["type"].lower() for token in ("dff", "mem", "latch"))
+        }
+        drivers = {}
+        for name, cell in combinational.items():
+            for port, direction in cell["port_directions"].items():
+                if direction == "output":
+                    for bit in cell["connections"][port]:
+                        if isinstance(bit, int):
+                            drivers[bit] = name
+        predecessors = {}
+        for name, cell in combinational.items():
+            predecessors[name] = {
+                drivers[bit]
+                for port, direction in cell["port_directions"].items() if direction == "input"
+                for bit in cell["connections"][port] if bit in drivers
+            }
+        pending, computed = set(combinational), {}
+        while pending:
+            ready = [name for name in pending if predecessors[name] <= computed.keys()]
+            assert ready, ("combinational cycle in synthesized module", module_name)
+            for name in ready:
+                depth = 1 + max((computed[p][0] for p in predecessors[name]), default=0)
+                upstream_multiplier = any(computed[p][1] for p in predecessors[name])
+                kind = combinational[name]["type"]
+                assert not (upstream_multiplier and kind in arithmetic), (
+                    "unregistered dependent multiply/arithmetic", module_name, name, kind)
+                computed[name] = depth, upstream_multiplier or kind == "$mul"
+                pending.remove(name)
+        measurements[module_name] = max((value[0] for value in computed.values()), default=0)
+    return measurements
+
+
 def synthesize(run, top, block=None, sg=None, label=None):
     label = label or f"synth-{top}-{block}-{sg}"
     directory = run.path / label
@@ -52,6 +93,7 @@ def synthesize(run, top, block=None, sg=None, label=None):
     script.write_text("\n".join(commands) + "\n")
     run.command(["yosys", "-s", run.relative(script)], label)
     design = json.loads(netlist.read_text())["modules"]
+    logic_depths = arithmetic_boundaries(design)
     types = collections.Counter()
     memories = 0
     instances = []
@@ -93,6 +135,7 @@ def synthesize(run, top, block=None, sg=None, label=None):
     summary = {"top": top, "MAX_BLOCK_BYTES": block, "SG_DEPTH": sg,
                "sequential_or_memory_cells": sequential, "memory_bits": memories,
                "latches": 0, "cell_types": dict(types), "instances": instances,
+               "generic_combinational_cell_depths_not_physical_timing": logic_depths,
                "netlist": run.relative(netlist), "script": run.relative(script)}
     write_json(directory / "statistics.json", summary)
     return summary

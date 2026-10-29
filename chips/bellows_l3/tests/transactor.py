@@ -72,9 +72,10 @@ module tb;
   integer requested_reads[0:3], consumed_reads[0:3];
   integer requested_writes[0:3], acknowledged_writes[0:3];
   integer cmd_cycle[0:3], desc_cycle[0:3], ack_cycle[0:3];
+  integer seen_source[0:3],seen_dest[0:3];
   reg active[0:3], completed[0:3];
   reg rbusy=0, wbusy=0;
-  integer r_owner, w_owner, r_due, w_due, r_index, w_index;
+  integer r_owner, w_owner, r_due, w_due, r_index, w_index, r_request_cycle;
   reg [7:0] w_data;
   reg [63:0] w_address;
   reg r_error, w_error;
@@ -111,6 +112,11 @@ module tb;
         $fatal(1,"ACTIVE_XZ cycle=%0d outputs=%h",cycle,all_outputs);
       if (err_checksum_mismatch !== (status_valid && status_error==7))
         $fatal(1,"CHECKSUM_FLAG cycle=%0d",cycle);
+      if (cmd_ready && active[cmd_channel]) $fatal(1,"READY_BUSY_CHANNEL");
+      if (sg_ready && (!active[sg_channel] || reject_command[sg_channel] ||
+          (sg_destination ? seen_dest[sg_channel]>=declared_nd[sg_channel] :
+                            seen_source[sg_channel]>=declared_ns[sg_channel])))
+        $fatal(1,"DESCRIPTOR_READY_CONTRACT");
       if (prev_rd_stalled && {rd_req_channel,rd_req_addr} !== held_rd)
         $fatal(1,"READ_STABILITY cycle=%0d",cycle);
       if (prev_rd_stalled && !rd_req_valid) $fatal(1,"READ_VALID_DROPPED");
@@ -145,11 +151,21 @@ module tb;
       if (sg_valid && sg_ready) begin
         if (cycle<=cmd_cycle[sg_channel]) $fatal(1,"DESCRIPTOR_BYPASS");
         desc_cycle[sg_channel]=cycle;
+        if (sg_destination) begin
+          seen_dest[sg_channel]=seen_dest[sg_channel]+1;
+          if (seen_dest[sg_channel]==16) depth16=depth16+1;
+        end else begin
+          seen_source[sg_channel]=seen_source[sg_channel]+1;
+          if (seen_source[sg_channel]==16) depth16=depth16+1;
+        end
       end
       if (rd_req_valid && rd_req_ready) begin
         if (rbusy) $fatal(1,"READ_OUTSTANDING");
         if (!active[rd_req_channel] || completed[rd_req_channel])
           $fatal(1,"READ_INACTIVE channel=%0d",rd_req_channel);
+        if (seen_source[rd_req_channel]!=declared_ns[rd_req_channel] ||
+            seen_dest[rd_req_channel]!=declared_nd[rd_req_channel])
+          $fatal(1,"READ_BEFORE_ALL_DESCRIPTORS");
         if (cycle<desc_cycle[rd_req_channel]+3)
           $fatal(1,"DESCRIPTOR_DMA_LATENCY");
         if (requested_reads[rd_req_channel]>=input_length[rd_req_channel])
@@ -159,14 +175,15 @@ module tb;
           $fatal(1,"READ_ADDRESS ch=%0d index=%0d got=%h expected=%h",
                  rd_req_channel,requested_reads[rd_req_channel],rd_req_addr,
                  sa[rd_req_channel][ri[rd_req_channel]]+ro[rd_req_channel]);
-        if (previous_read>=0 && previous_read!=rd_req_channel)
+        if (previous_read>=0 && previous_read!=rd_req_channel &&
+            (integer'(active[0])+integer'(active[1])+integer'(active[2])+integer'(active[3]))>=2)
           switches=switches+1;
         previous_read=rd_req_channel;
         rbusy=1; r_owner=rd_req_channel;
+        r_request_cycle=cycle;
         r_index=requested_reads[r_owner];
         r_error=(r_index==bad_read[r_owner]);
         r_due=cycle+1+((r_index+seed)%5);
-        if (r_due>cycle+1) response_gaps=response_gaps+1;
         requested_reads[r_owner]=requested_reads[r_owner]+1;
         if (ro[r_owner]+1==sl[r_owner][ri[r_owner]]) begin
           if (ri[r_owner]+1<ns[r_owner]) source_cross[op[r_owner]]=source_cross[op[r_owner]]+1;
@@ -178,6 +195,9 @@ module tb;
         if (wbusy) $fatal(1,"WRITE_OUTSTANDING");
         if (!active[wr_req_channel] || completed[wr_req_channel])
           $fatal(1,"WRITE_INACTIVE");
+        if (seen_source[wr_req_channel]!=declared_ns[wr_req_channel] ||
+            seen_dest[wr_req_channel]!=declared_nd[wr_req_channel])
+          $fatal(1,"WRITE_BEFORE_ALL_DESCRIPTORS");
         if (requested_writes[wr_req_channel]>=capacities[wr_req_channel])
           $fatal(1,"WRITE_BEYOND_CAPACITY");
         if (wr_req_addr !== da[wr_req_channel][wi[wr_req_channel]]+
@@ -199,6 +219,8 @@ module tb;
       end
       if (rd_rsp_valid && rd_rsp_ready) begin
         if (!rbusy) $fatal(1,"UNSOLICITED_READ");
+        if (cycle<=r_request_cycle) $fatal(1,"EARLY_READ_RESPONSE");
+        if (cycle>r_request_cycle+1) response_gaps=response_gaps+1;
         consumed_reads[r_owner]=consumed_reads[r_owner]+1;
         rbusy=0;
       end
@@ -285,11 +307,17 @@ module tb;
   task automatic issue_batch;
     for (integer lane=0;lane<4;lane=lane+1) send_command(lane);
     for (integer seg=0;seg<16;seg=seg+1)
-      for (integer lane=0;lane<4;lane=lane+1)
-        if (!reject_command[lane]) begin
-          if (seg<ns[lane]) send_segment(lane,0,seg);
-          if (seg<nd[lane]) send_segment(lane,1,seg);
+      for (integer slot=0;slot<4;slot=slot+1) begin
+        if (!reject_command[(slot+seed+seg)%4]) begin
+          if ((seed+seg)%2==0) begin
+            if (seg<ns[(slot+seed+seg)%4]) send_segment((slot+seed+seg)%4,0,seg);
+            if (seg<nd[(slot+seed+seg)%4]) send_segment((slot+seed+seg)%4,1,seg);
+          end else begin
+            if (seg<nd[(slot+seed+seg)%4]) send_segment((slot+seed+seg)%4,1,seg);
+            if (seg<ns[(slot+seed+seg)%4]) send_segment((slot+seed+seg)%4,0,seg);
+          end
         end
+      end
   endtask
 
   task automatic clear_environment;
@@ -298,6 +326,7 @@ module tb;
       requested_reads[lane]=0; consumed_reads[lane]=0;
       requested_writes[lane]=0; acknowledged_writes[lane]=0;
       active[lane]=0; completed[lane]=0; cmd_cycle[lane]=0;
+      seen_source[lane]=0; seen_dest[lane]=0;
       desc_cycle[lane]=0; ack_cycle[lane]=0;
       for (integer address=0;address<STORE;address=address+1)
         destination[lane][address]=8'ha5;
@@ -328,8 +357,13 @@ module tb;
     rd_window=-1; wr_window=-1; st_window=-1;
     clear_environment();
     #1; check_reset();
-    repeat(3) @(negedge clk);
-    #1; rst_n=1;
+    if (stage==2) begin
+      #1; rst_n=1;
+      #1; if (cmd_ready !== 1'b1) $fatal(1,"ASYNC_RESET_PULSE_RECOVERY");
+    end else begin
+      repeat(3) @(negedge clk);
+      #1; rst_n=1;
+    end
   endtask
 
   initial begin
@@ -361,7 +395,6 @@ module tb;
             (capacities[ch]>=STORE && error_expected[ch]!=8))
           $fatal(1,"HARNESS storage limit");
         if (ns[ch]>16 || nd[ch]>16) $fatal(1,"HARNESS descriptor storage limit");
-        if (ns[ch]==16 || nd[ch]==16) depth16=depth16+1;
         for (k=0;k<ns[ch];k=k+1) begin
           result=$fscanf(inp,"%h %d",scan_address,scan_length); checked_scan(2);
           sa[ch][k]=scan_address; sl[ch][k]=scan_length;
@@ -378,6 +411,7 @@ module tb;
         requested_reads[ch]=0; consumed_reads[ch]=0;
         requested_writes[ch]=0; acknowledged_writes[ch]=0;
         active[ch]=0; completed[ch]=0; cmd_cycle[ch]=0; desc_cycle[ch]=0;
+        seen_source[ch]=0; seen_dest[ch]=0;
         ack_cycle[ch]=0;
       end
       if (batch==0 && reset_probes) begin

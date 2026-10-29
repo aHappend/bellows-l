@@ -189,8 +189,10 @@ def cases(full=False, l1=False):
                 collection.append(Case(op, content or b"\x00", content,
                                        keeps=[1] * len(content) if content else [0]))
         for data, keeps, error in ((b"ab", [0, 1], 6), (b"ab", [1, 0], 6),
-                                   (b"a" * 65, [1] * 65, 5)):
+                                   (b"a" * 65, [1] * 65, 5),
+                                   (b"a" * 66, [1] * 66, 5)):
             collection.append(Case(0, data, b"", error, keeps))
+        collection.append(Case(0, b"recovered", b"recovered"))
     for content in (b"", b"x", b"abc", bytes(range(64))):
         collection.append(Case(1, oracle.literals(content), content))
     overlap = oracle.periodic_block(b"abc" * 100, 3)
@@ -203,6 +205,7 @@ def cases(full=False, l1=False):
             collection.append(Case(1, data, error.output, error.code))
         else:
             raise AssertionError("malformed fixture is not malformed")
+    collection.append(Case(1, oracle.literals(b"recovered"), b"recovered"))
     if full:
         head = bytes((i * 43 + 19) & 255 for i in range(65535))
         block = oracle.sequence(head, 65535, 1024) + oracle.literals(b"tail!")

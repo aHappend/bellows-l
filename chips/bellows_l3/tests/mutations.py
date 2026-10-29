@@ -4,6 +4,7 @@ import difflib
 import hashlib
 import shutil
 
+import oracle
 from retention import write_json
 
 
@@ -13,7 +14,7 @@ DEFECTS = (
     ("checksum-arithmetic", "bellows_l3_checksum.sv",
      "P5=32'h165667b1", "P5=32'h165667b0", "status_checksum"),
     ("channel-ownership", "bellows_l3_sg_dma.sv",
-     "read_owner<=read_channel;", "read_owner<=read_channel+2'd1;", "READ_ADDRESS"),
+     "read_owner<=read_channel;", "read_owner<=read_channel+2'd1;", "channel_transfer_bytes"),
     ("sg-boundary", "bellows_l3_context.sv",
      "read_address<=source_address[source_index+1'b1];",
      "read_address<=source_address[source_index+1'b1]+64'd1;", "READ_ADDRESS"),
@@ -70,7 +71,22 @@ def execute(run, compile_bus, write_cases, compare_results, make_frame, only=Non
                 compare_results(result_path, [frames])
             except AssertionError as mismatch:
                 diagnosis = str(mismatch)
-                assert observable in diagnosis, ("wrong mutant rejection", label, diagnosis)
+                if label == "channel-ownership":
+                    assert "status_checksum" in diagnosis, (
+                        "wrong mutant rejection", label, diagnosis)
+                    rows = [line.split() for line in result_path.read_text().splitlines()
+                            if line.startswith("FRAME ")]
+                    assert len(rows) == 4, "incomplete ownership counterexample"
+                    for row in rows:
+                        channel = int(row[2])
+                        wire = bytes.fromhex(row[8])
+                        wrong_content = frames[(channel - 1) & 3].content
+                        assert oracle.decode(wire[:-4]) == wrong_content
+                        assert wrong_content != frames[channel].content
+                        assert int(row[7], 16) == oracle.checksum(wrong_content, 1)
+                    diagnosis += "; all four decoded outputs match predecessor-channel content"
+                else:
+                    assert observable in diagnosis, ("wrong mutant rejection", label, diagnosis)
             else:
                 raise AssertionError(f"surviving mutant: {label}")
         else:

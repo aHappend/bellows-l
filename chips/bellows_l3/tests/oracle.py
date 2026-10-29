@@ -148,7 +148,7 @@ def sequence(literal, offset, match_length):
 
 def periodic_block(content, period=1):
     """Encode an intentional overlapping match and five final literals."""
-    if len(content) < period + 9:
+    if len(content) < period + 12:
         return literals(content)
     if any(content[i] != content[i % period] for i in range(len(content))):
         raise ValueError("not periodic")

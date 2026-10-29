@@ -11,7 +11,9 @@ An unfinished verification surface is an explicit failure, never a skipped pass.
 """
 
 import argparse
+import collections
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -24,7 +26,7 @@ import protocols
 import mutations
 import scenarios
 import synthesis
-from retention import Run, write_json
+from retention import Run, sources, write_json
 from transactor import bench
 
 
@@ -53,6 +55,8 @@ class Frame:
     destination_segments: list | None = None
     reject_command: bool = False
     require_matches: bool = False
+    expected_checksum: int | None = None
+    corruption_kind: str | None = None
 
 
 def make_frame(identifier, content, decompress, mode, capacity=None, block=None):
@@ -112,6 +116,7 @@ def write_cases(path, batches, sg, seed):
                              "command_length": source_length, "command_capacity": capacity,
                              "command_ns": count_source, "command_nd": count_destination,
                              "reject_command": frame.reject_command,
+                             "corruption_kind": frame.corruption_kind,
                              "src_segments": src, "dst_segments": dst})
     path.write_text("\n".join(lines) + "\n")
     write_json(path.with_suffix(".json"), manifest)
@@ -182,6 +187,13 @@ def compare_results(path, batches):
             elif error == 8:
                 assert source_count == destination_count == value == 0, (
                     "metadata issued DMA", key)
+            elif expected.decompress:
+                assert actual == expected.content[:len(actual)], ("failure output prefix", key)
+            if error not in (0, 7, 8):
+                expected_checksum = 0 if expected.mode == 0 else expected.expected_checksum
+                assert expected_checksum is not None, ("unscored failure checksum", key)
+                assert value == expected_checksum, (
+                    "failure checksum", key, hex(value), hex(expected_checksum))
             records[key] = {"id": identifier, "error": error, "source_bytes": source_count,
                             "destination_bytes": destination_count,
                             "checksum": value, "output_hex": actual.hex()}
@@ -242,12 +254,16 @@ def compact_batches(block=33):
 def prepare(run, kind):
     """Bounded development probe; not a mandatory check/acceptance substitute."""
     for tool in (("iverilog", "vvp") if kind in ("compact", "parent", "protocol") else
+                 ("iverilog", "vvp", "yosys") if kind == "portable" else
                  ("yosys",) if kind in ("synthesis", "default-synthesis")
                  else ("verilator", "g++", "make")):
         run.tool(tool)
     oracle.selftest()
     if kind == "protocol":
         protocols.execute(run)
+        protocols.serviceability(run)
+    elif kind == "portable":
+        reproduce(run, development=True)
     elif kind == "full-parent":
         parent.execute(run, "verilator", full=True, l1=True)
     elif kind == "parent":
@@ -268,6 +284,14 @@ def prepare(run, kind):
                         (b"Z" * 65536, oracle.periodic_block(b"Z" * 65536)),
                         (b"123456789", None), (b"", None)))]]
         simulate(run, build, batches, 16, 17, "maximum-endpoint")
+    elif kind in ("mutation", "mutation-transfer"):
+        mutations.execute(run, compile_bus, write_cases, compare_results, make_frame,
+                          only=("channel-ownership" if kind == "mutation-transfer"
+                                else "suppressed-mismatch"))
+    elif kind == "matrix-cell":
+        build = compile_bus(run, 3, 3, "verilator")
+        simulate(run, build, scenarios.matrix_batches(3, 89, make_frame),
+                 3, 89, "nonpower-seed89", resets=True)
     else:
         build = compile_bus(run, 255, 16, "verilator")
         batches = (scenarios.boundaries(make_frame) +
@@ -276,9 +300,208 @@ def prepare(run, kind):
         simulate(run, build, batches, 16, 17, "error-and-boundary-probe")
 
 
-def run_check(run, check):
-    raise RuntimeError(f"{check}: verification authoring is incomplete; "
-                       "do not request engineering acceptance")
+def smoke(run):
+    oracle.selftest()
+    for tool in ("iverilog", "vvp"):
+        run.tool(tool)
+    protocols.execute(run)
+    protocols.serviceability(run)
+    ledger = []
+    for block, sg in ((1, 1), (3, 3), (33, 3)):
+        build = compile_bus(run, block, sg, "icarus")
+        records, coverage = simulate(run, build, compact_batches(block), sg, 17,
+                                     "smoke", resets=block == 33)
+        ledger.append({"MAX_BLOCK_BYTES": block, "SG_DEPTH": sg, "seed": 17,
+                       "compared_frames": len(records), "coverage": coverage})
+    parent.execute(run, l1=True)
+    parent.execute(run)
+    if (run.root / "bellows_l2_reference/rtl").is_dir():
+        parent.execute(run, reference=True)
+    write_json(run.path / "smoke-summary.json", ledger)
+
+
+def matrix(run):
+    oracle.selftest()
+    for tool in ("verilator", "g++", "make"):
+        run.tool(tool)
+    ledger, combined = [], collections.Counter()
+    observed = collections.Counter()
+    for block, sg in CELLS:
+        build = compile_bus(run, block, sg, "verilator")
+        for seed in SEEDS:
+            batches = scenarios.matrix_batches(block, seed, make_frame)
+            records, coverage = simulate(run, build, batches, sg, seed,
+                                         f"seed-{seed}", resets=True)
+            combinations = collections.Counter()
+            maximums = set()
+            for (batch, channel), record in records.items():
+                frame = batches[batch][channel]
+                combinations[channel, int(frame.decompress), frame.mode] += 1
+                assert record["error"] == 0
+                observed["compared_content_bytes"] += len(frame.content)
+                if not frame.content:
+                    observed["empty"] += 1
+                if len(frame.content) == 1:
+                    observed["one_byte"] += 1
+                if record["destination_bytes"] == frame.capacity:
+                    observed["exact_fit"] += 1
+                if len(frame.content) > 256 and len({
+                        frame.content[i:i + 4] for i in range(len(frame.content) - 3)}) > 256:
+                    observed["collision_heavy_completed"] += 1
+                if len(frame.content) == block:
+                    maximums.add(int(frame.decompress))
+            assert len(records) >= 48, ("48-frame minimum", block, sg, seed)
+            assert len(combinations) == 24 and min(combinations.values()) >= 2
+            assert maximums == {0, 1}, ("maximum-length endpoints", block, sg, seed)
+            roundtrips = []
+            for batch in range(3):
+                group = []
+                for channel in range(4):
+                    original = batches[batch][channel]
+                    source = bytes.fromhex(records[batch, channel]["output_hex"])
+                    group.append(Frame(8000 + batch * 4 + channel, original.content,
+                                       True, original.mode, source,
+                                       max(1, len(original.content))))
+                roundtrips.append(group)
+            rt_records, rt_coverage = simulate(run, build, roundtrips, sg, seed,
+                                               f"roundtrip-{seed}")
+            for name, value in coverage.items():
+                combined[name] += value
+            for name, value in rt_coverage.items():
+                combined[name] += value
+            row = {"MAX_BLOCK_BYTES": block, "SG_DEPTH": sg, "seed": seed,
+                   "required_frames": 48, "compared_frames": len(records),
+                   "hardware_roundtrip_frames": len(rt_records),
+                   "channel_operation_mode_combinations": len(combinations),
+                   "minimum_frames_per_combination": min(combinations.values()),
+                   "maximum_length_compression_and_decompression": True,
+                   "coverage": coverage, "outcome": "passed",
+                   "results": run.relative(build[0] / f"seed-{seed}.compared.json")}
+            ledger.append(row)
+            write_json(run.path / "matrix-ledger.json", {"required_runs": 24, "runs": ledger})
+        if (block, sg) == (255, 16):
+            extra = (scenarios.boundaries(make_frame) +
+                     scenarios.corruption_batches(make_frame) +
+                     scenarios.errors(block, sg, make_frame))
+            extra_records, extra_coverage = simulate(
+                run, build, extra, sg, 17, "directed-boundaries-errors")
+            corruption = collections.Counter()
+            bits = collections.defaultdict(set)
+            boundary_corruptions = collections.Counter()
+            body_corruptions = collections.Counter()
+            error_codes = collections.Counter()
+            lengths = set()
+            for (batch, channel), record in extra_records.items():
+                f = extra[batch][channel]
+                error_codes[record["error"]] += 1
+                if f.error == 7:
+                    corruption[channel, f.mode] += 1
+                    difference = (int.from_bytes(f.source[-4:], "little") ^
+                                  oracle.checksum(f.content, f.mode))
+                    if f.corruption_kind == "body":
+                        body_corruptions[f.mode] += 1
+                    else:
+                        bits[channel, f.mode].update(bit for bit in range(32)
+                                                    if difference & (1 << bit))
+                    if f.corruption_kind == "trailer" and difference == ((1 << 23) | (1 << 24)):
+                        boundary_corruptions[channel, f.mode] += 1
+                if f.mode == 1 and f.error == 0:
+                    lengths.add(len(f.content))
+            assert len(corruption) == 8 and min(corruption.values()) >= 8
+            assert all(value == set(range(32)) for value in bits.values())
+            assert len(boundary_corruptions) == 8 and min(boundary_corruptions.values()) >= 1
+            assert set(body_corruptions) == {1, 2} and min(body_corruptions.values()) >= 4
+            assert set((0, 1, 3, 4, 15, 16, 17, 31, 32, 33)) <= lengths
+            assert {0, 1, 2, 3, 5, 7, 8, 9, 10} <= set(error_codes)
+            for name, value in extra_coverage.items():
+                combined[name] += value
+            write_json(run.path / "directed-summary.json",
+                       {"otherwise_valid_corruptions": {
+                           f"channel-{c}-mode-{m}": n for (c, m), n in corruption.items()},
+                        "compared_errors": dict(error_codes),
+                        "every_checksum_bit_compared": len(bits) == 8,
+                        "otherwise_valid_body_corruptions": dict(body_corruptions),
+                        "multi_byte_boundary_corruptions": {
+                            f"channel-{c}-mode-{m}": n
+                            for (c, m), n in boundary_corruptions.items()},
+                        "XXH32_lengths": sorted(lengths), "coverage": extra_coverage})
+    assert len(ledger) == 24
+    for name in ("compress_source_cross", "decode_source_cross",
+                 "compress_dest_cross", "decode_dest_cross", "single_segments",
+                 "depth16", "reset_collect", "reset_processing", "reset_status"):
+        assert combined[name] > 0, ("missing measured matrix coverage", name)
+    assert combined["read_switches"] >= 32, combined
+    for event in ("empty", "one_byte", "exact_fit", "collision_heavy_completed"):
+        assert observed[event] > 0, ("missing successfully compared content", event)
+    parent.execute(run, "verilator", full=True, l1=True)
+    write_json(run.path / "matrix-summary.json",
+               {"required_runs": 24, "completed_runs": len(ledger), "runs": ledger,
+                "aggregate_public_dma_coverage": dict(combined),
+                "successfully_compared_content_coverage": dict(observed),
+                "fairness_reference": "smoke scheduler public-input all-eligible experiment"})
+
+
+def reproduce(run, development=False):
+    stage = run.path / "staging"
+    stage.mkdir()
+    manifest = {}
+    for pattern in ("rtl/*.sv", "tests/*.py", "design/SPEC.md", "design/ARCHITECTURE.md"):
+        selected = sorted(run.root.glob(pattern))
+        assert selected, f"empty shipped source selector: {pattern}"
+        for original in selected:
+            relative = original.relative_to(run.root)
+            assert not original.is_symlink(), f"shipped symlink: {relative}"
+            target = stage / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(original, target)
+            digest = hashlib.sha256(original.read_bytes()).hexdigest()
+            assert hashlib.sha256(target.read_bytes()).hexdigest() == digest
+            assert str(run.root).encode() not in target.read_bytes(), (
+                "private project dependency in shipped source", str(relative))
+            manifest[str(relative)] = digest
+    write_json(run.path / "copy-manifest.json", manifest)
+    for check in ("smoke", "synthesis"):
+        selection = (["--prepare", "compact" if check == "smoke" else "synthesis"]
+                     if development else ["--check", check, "--portable-child"])
+        run.command(["python3", "tests/verify.py", *selection, "--out-root",
+                     f"evidence/portable-{check}"], f"portable-{check}", cwd=stage)
+    receipts = sorted(stage.glob("evidence/portable-*/*/receipt.json"))
+    assert len(receipts) == 2, "missing clean-stage receipts"
+    for path in receipts:
+        receipt = json.loads(path.read_text())
+        assert receipt["exit"] == 0
+        assert receipt["cwd"] == "."
+        assert receipt["source_hashes"] == manifest, "staging source closure"
+    write_json(run.path / "reproduction.json",
+               {"scope": "bounded portable reproduction, not hardware qualification",
+                "copied_files": len(manifest), "child_receipts": [
+                    run.relative(p) for p in receipts], "outcome": "passed"})
+
+
+def run_check(run, check, portable_child=False):
+    if check == "smoke":
+        smoke(run)
+    elif check == "matrix":
+        assert not portable_child
+        matrix(run)
+    elif check == "synthesis":
+        if portable_child:
+            run.tool("yosys")
+            synthesis.structural_rules(run.root)
+            synthesis.synthesize(run, "bellows_l3_top", 3, 3)
+        else:
+            synthesis.check(run, CELLS)
+    elif check == "mutations":
+        assert not portable_child
+        oracle.selftest()
+        for tool in ("verilator", "g++", "make"):
+            run.tool(tool)
+        mutations.execute(run, compile_bus, write_cases, compare_results, make_frame)
+    elif check == "reproduce":
+        assert not portable_child
+        reproduce(run)
+    else:
+        raise ValueError(f"unknown check {check}")
 
 
 def main():
@@ -287,30 +510,40 @@ def main():
                                           "mutations", "reproduce"))
     parser.add_argument("--prepare", nargs="?", const="compact",
                         choices=("compact", "errors", "synthesis", "parent",
-                                 "protocol", "full-parent", "endpoint", "default-synthesis"),
+                                 "protocol", "full-parent", "endpoint", "default-synthesis",
+                                 "mutation", "mutation-transfer", "matrix-cell", "portable"),
                         help="bounded development probe, not acceptance")
     parser.add_argument("--out-root", required=True)
     parser.add_argument("--repair-of")
+    parser.add_argument("--portable-child", action="store_true",
+                        help="bounded smoke/representative synthesis in clean staging")
     args = parser.parse_args()
     if bool(args.prepare) == bool(args.check):
         parser.error("select exactly one of --check or --prepare")
-    run = Run(ROOT, args.out_root, args.check or "preparation", sys.argv,
+    run = Run(ROOT, args.out_root, args.check or "preparation", ["python3", *sys.argv],
               repair_of=args.repair_of)
     try:
+        if not __debug__:
+            raise RuntimeError("Python assertion disabling is unsupported for verification")
         if args.prepare:
             prepare(run, args.prepare)
         else:
-            run_check(run, args.check)
+            run_check(run, args.check, args.portable_child)
+        if sources(run.root) != run.receipt["source_hashes"]:
+            raise RuntimeError("declared verification inputs changed during execution")
     except Exception as error:
         run.finish(error)
-        print(f"FAIL: {error}\nReceipt: {run.relative(run.path / 'receipt.json')}",
-              file=sys.stderr)
+        message = f"FAIL: {error}\nReceipt: {run.relative(run.path / 'receipt.json')}\n"
+        (run.path / "stderr.txt").write_text(message)
+        sys.stderr.write(message)
         return 1
     finally:
-        for directory in run.path.glob("bus-*/compile-obj"):
+        for directory in run.path.glob("**/compile-obj"):
             shutil.rmtree(directory)
     run.finish()
-    print(f"Completed; receipt: {run.relative(run.path / 'receipt.json')}")
+    message = f"Completed; receipt: {run.relative(run.path / 'receipt.json')}\n"
+    (run.path / "stdout.txt").write_text(message)
+    sys.stdout.write(message)
     return 0
 
 
