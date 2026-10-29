@@ -1,6 +1,6 @@
 {
   "gate": "quartus-sta",
-  "timestamp_utc": "2026-10-29T14:28:19.431544+00:00",
+  "timestamp_utc": "2026-10-29T14:50:43.044444+00:00",
   "project_dir": "/data/sufeng/bellows-l3-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work",
   "revision": "top",
   "clock_filter": "clk_main",
@@ -28,8 +28,8 @@
         "period_ns": 10.0
       }
     ],
-    "wns_setup_ns": 1.863,
-    "wns_hold_ns": 0.038,
+    "wns_setup_ns": 2.133,
+    "wns_hold_ns": 0.045,
     "unconstrained_setup_paths": 0,
     "unconstrained_functional_endpoints": 0,
     "unapproved_timing_exceptions": 0,
@@ -37,202 +37,153 @@
     "failing_hold_count": 0,
     "setup_paths": [
       {
-        "slack_ns": 1.863,
+        "slack_ns": 2.133,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[1]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[5]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 1.925,
+        "slack_ns": 2.133,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[18]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[7]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 1.961,
+        "slack_ns": 2.135,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "error_code[3]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[5]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 1.981,
+        "slack_ns": 2.135,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[17]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[7]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 1.991,
+        "slack_ns": 2.168,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[13]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[6]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 1.998,
+        "slack_ns": 2.17,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[1]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a27~reg0"
+        "to_node": "output_count[6]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.016,
+        "slack_ns": 2.175,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "destination_capacity[16]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[3]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 2.024,
+        "slack_ns": 2.177,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[15]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[3]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.06,
+        "slack_ns": 2.181,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[18]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a27~reg0"
+        "to_node": "output_count[2]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 2.07,
+        "slack_ns": 2.183,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "destination_capacity[14]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[2]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.086,
+        "slack_ns": 2.199,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[13]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "output_count[20]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 2.096,
+        "slack_ns": 2.201,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "error_code[3]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a27~reg0"
+        "to_node": "output_count[20]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.097,
+        "slack_ns": 2.228,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "error_code[3]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a18~reg0"
+        "to_node": "output_count[5]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.105,
+        "slack_ns": 2.228,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[1]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a24~reg0"
+        "to_node": "output_count[7]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.109,
+        "slack_ns": 2.242,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[0]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "source_bytes[29]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 2.116,
+        "slack_ns": 2.242,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[17]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a27~reg0"
+        "to_node": "destination_capacity[2]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a14~reg0"
       },
       {
-        "slack_ns": 2.117,
+        "slack_ns": 2.244,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[1]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "destination_capacity[2]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.125,
+        "slack_ns": 2.244,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[13]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "to_node": "source_bytes[29]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       },
       {
-        "slack_ns": 2.126,
+        "slack_ns": 2.247,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[13]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a27~reg0"
+        "from_node": "bellows_l3_context:lanes[0].context",
+        "to_node": "state.COMPLETE|bellows_l3_scheduler:scheduler|bellows_l3_arbiter:completion_arbiter|held[112]"
       },
       {
-        "slack_ns": 2.128,
+        "slack_ns": 2.248,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[1].context",
-        "to_node": "output_count[16]|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_1|altsyncram_vvr1:auto_generated|ram_block1a26~reg0"
+        "from_node": "bellows_l3_context:lanes[3].context",
+        "to_node": "output_count[14]|bellows_l3_context:lanes[3].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|altsyncram:memory_rtl_0|altsyncram_vvr1:auto_generated|ram_block1a10~reg0"
       }
     ],
     "hold_paths": [
       {
-        "slack_ns": 0.038,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|a_valid|bellows_l3_context:lanes[2].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_literal_buffer:literal_buffer|a_valid"
-      },
-      {
-        "slack_ns": 0.04,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[3].context",
-        "to_node": "expected_checksum[0]|bellows_l3_context:lanes[3].context|expected_checksum[0]"
-      },
-      {
-        "slack_ns": 0.042,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[3].context",
-        "to_node": "expected_checksum[23]|bellows_l3_context:lanes[3].context|expected_checksum[23]"
-      },
-      {
-        "slack_ns": 0.042,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "state.RUN|bellows_l3_context:lanes[0].context|state.RUN"
-      },
-      {
-        "slack_ns": 0.043,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.DRAIN|bellows_l3_context:lanes[0].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.DRAIN"
-      },
-      {
-        "slack_ns": 0.044,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "trailer_received[0]|bellows_l3_context:lanes[0].context|trailer_received[0]"
-      },
-      {
-        "slack_ns": 0.044,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "destination_seen[3]|bellows_l3_context:lanes[2].context|destination_seen[3]"
-      },
-      {
         "slack_ns": 0.045,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.LITERAL_EXT|bellows_l3_context:lanes[0].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.LITERAL_EXT"
+        "from_node": "bellows_l3_context:lanes[2].context",
+        "to_node": "checksum_finish_sent|bellows_l3_context:lanes[2].context|checksum_finish_sent"
       },
       {
         "slack_ns": 0.046,
@@ -242,93 +193,142 @@
         "to_node": "codec_done|bellows_l3_context:lanes[2].context|codec_done"
       },
       {
+        "slack_ns": 0.046,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[0].context",
+        "to_node": "bellows_l3_checksum:checksum|striped|bellows_l3_context:lanes[0].context|bellows_l3_checksum:checksum|striped"
+      },
+      {
         "slack_ns": 0.047,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "destination_seen[2]|bellows_l3_context:lanes[2].context|destination_seen[2]"
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "empty_sent|bellows_l3_context:lanes[1].context|empty_sent"
       },
       {
         "slack_ns": 0.048,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "destination_seen[1]|bellows_l3_context:lanes[2].context|destination_seen[1]"
-      },
-      {
-        "slack_ns": 0.049,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_sg_dma:dma",
-        "to_node": "read_pending|bellows_l3_sg_dma:dma|read_pending"
-      },
-      {
-        "slack_ns": 0.051,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.OFFSET_LOW|bellows_l3_context:lanes[0].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_emitter:emitter|state.OFFSET_LOW"
-      },
-      {
-        "slack_ns": 0.051,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[3].context",
-        "to_node": "trailer_received[1]|bellows_l3_context:lanes[3].context|trailer_received[1]"
+        "to_node": "checksum_done|bellows_l3_context:lanes[2].context|checksum_done"
       },
       {
         "slack_ns": 0.053,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|state.DONE|bellows_l3_context:lanes[0].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|bellows_l2_hash_match:hash_match|state.DONE"
+        "from_node": "bellows_l3_context:lanes[2].context",
+        "to_node": "empty_sent|bellows_l3_context:lanes[2].context|empty_sent"
+      },
+      {
+        "slack_ns": 0.053,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "bellows_l3_checksum:checksum|state.DONE|bellows_l3_context:lanes[1].context|bellows_l3_checksum:checksum|state.DONE"
+      },
+      {
+        "slack_ns": 0.054,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "codec_done|bellows_l3_context:lanes[1].context|codec_done"
       },
       {
         "slack_ns": 0.054,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "bellows_l3_checksum:checksum|state.DONE|bellows_l3_context:lanes[2].context|bellows_l3_checksum:checksum|state.DONE"
+        "to_node": "state.RUN|bellows_l3_context:lanes[2].context|state.RUN"
       },
       {
         "slack_ns": 0.054,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "source_seen[2]|bellows_l3_context:lanes[2].context|source_seen[2]"
-      },
-      {
-        "slack_ns": 0.054,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[2].context",
-        "to_node": "source_seen[4]|bellows_l3_context:lanes[2].context|source_seen[4]"
-      },
-      {
-        "slack_ns": 0.054,
-        "from_clock": "clk_main",
-        "to_clock": "clk_main",
-        "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "trailer_received[2]|bellows_l3_context:lanes[0].context|trailer_received[2]"
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "state.RUN|bellows_l3_context:lanes[1].context|state.RUN"
       },
       {
         "slack_ns": 0.055,
         "from_clock": "clk_main",
         "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[2].context",
+        "to_node": "trailer_received[1]|bellows_l3_context:lanes[2].context|trailer_received[1]"
+      },
+      {
+        "slack_ns": 0.055,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "trailer_received[2]|bellows_l3_context:lanes[1].context|trailer_received[2]"
+      },
+      {
+        "slack_ns": 0.055,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "trailer_sent[2]|bellows_l3_context:lanes[1].context|trailer_sent[2]"
+      },
+      {
+        "slack_ns": 0.056,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "bellows_l3_checksum:checksum|state.DONE|bellows_l3_context:lanes[1].context|bellows_l3_checksum:checksum|state.DONE~DUPLICATE"
+      },
+      {
+        "slack_ns": 0.056,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
         "from_node": "bellows_l3_context:lanes[0].context",
-        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|presented_valid|bellows_l3_context:lanes[0].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|presented_valid"
+        "to_node": "checksum_done|bellows_l3_context:lanes[0].context|checksum_done"
+      },
+      {
+        "slack_ns": 0.057,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[3].context",
+        "to_node": "bellows_l3_checksum:checksum|fill[2]|bellows_l3_context:lanes[3].context|bellows_l3_checksum:checksum|fill[2]"
+      },
+      {
+        "slack_ns": 0.058,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[0].context",
+        "to_node": "bellows_l3_checksum:checksum|fill[2]|bellows_l3_context:lanes[0].context|bellows_l3_checksum:checksum|fill[2]"
+      },
+      {
+        "slack_ns": 0.058,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[0].context",
+        "to_node": "bellows_l3_checksum:checksum|lane[0]|bellows_l3_context:lanes[0].context|bellows_l3_checksum:checksum|lane[0]"
+      },
+      {
+        "slack_ns": 0.058,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[0].context",
+        "to_node": "bellows_l3_checksum:checksum|lane[1]|bellows_l3_context:lanes[0].context|bellows_l3_checksum:checksum|lane[1]"
+      },
+      {
+        "slack_ns": 0.058,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l3_context:lanes[1].context",
+        "to_node": "bellows_l2_top:codec|bellows_l2_compressor:compressor|state.OUTPUT_HOLD|bellows_l3_context:lanes[1].context|bellows_l2_top:codec|bellows_l2_compressor:compressor|state.OUTPUT_HOLD"
       }
     ],
     "stderr_tail": []
   },
-  "detail": "Timing closed: Setup WNS = 1.863 ns",
+  "detail": "Timing closed: Setup WNS = 2.133 ns",
   "top_module": "bellows_l3_top",
   "clock_port": "clk",
   "clock_period_ns": 10.0,
   "target_frequency_mhz": 100.0,
-  "fmax_mhz": 122.9,
-  "critical_path_delay_ns": 8.137,
+  "fmax_mhz": 127.11,
+  "critical_path_delay_ns": 7.867,
   "parameters": {},
-  "source_sha256": "9e4f325ac726907be2625c1949943bb3cd8335bb2417a499e62d497fd51fa8e0",
+  "source_sha256": "47e804421e87ed067a02123d4475188721057ed920187eabe54bbff8c21dc106",
   "applicable": true
 }
