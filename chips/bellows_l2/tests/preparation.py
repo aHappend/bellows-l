@@ -59,6 +59,8 @@ post-settlement retention; a readable bundle never certifies a platform remedy.
 Artifact audits repeat the inventory and re-read initially matching files before
 returning; disappearance or mutation during the audit fails explicitly. This
 bounded stability observation cannot establish persistence after process settlement.
+The artifact sweep follows child, snapshot and current-source inspection, so
+loss of an otherwise-unvisited synthesis artifact during those reads is detected.
 The top-level receipt is separately re-read byte-for-byte before the audit returns;
 its removal, replacement or symlink redirection invalidates the observation too.
 Symlinked artifacts, directories and bundle ancestors are rejected, including
@@ -312,6 +314,7 @@ def audit_bundle(name, source_diff=False):
     errors = report["errors"]
     receipt_path = None
     receipt_payload = None
+    artifact_receipt = None
     current = None
 
     def local(value):
@@ -366,11 +369,7 @@ def audit_bundle(name, source_diff=False):
             raise ValueError(f"Not a JSON object: {receipt_path}")
         if receipt.get("kind") != "portable-verifier":
             raise ValueError(f"Not a portable-verifier bundle: {name}")
-        artifacts = audit_artifacts(bundle, receipt.get("artifact_integrity"))
-        report["artifact_integrity"] = artifacts
-        report["artifact_integrity_present"] = artifacts["present"]
-        report["bound_artifacts"] = artifacts["checked_files"]
-        errors.extend(artifacts["errors"])
+        artifact_receipt = receipt
         results_path = local(receipt["results"])
         if results_path != bundle / "results.json":
             raise ValueError(f"Results outside nominated bundle: {results_path}")
@@ -462,6 +461,12 @@ def audit_bundle(name, source_diff=False):
                 errors.append(f"{child_name}: {error}")
     except (OSError, ValueError, KeyError, TypeError) as error:
         errors.append(str(error))
+    if artifact_receipt is not None:
+        artifacts = audit_artifacts(bundle, artifact_receipt.get("artifact_integrity"))
+        report["artifact_integrity"] = artifacts
+        report["artifact_integrity_present"] = artifacts["present"]
+        report["bound_artifacts"] = artifacts["checked_files"]
+        errors.extend(artifacts["errors"])
     if receipt_payload is not None:
         try:
             for path in (receipt_path, *receipt_path.parents):

@@ -235,6 +235,7 @@ class ArtifactRetentionTests(unittest.TestCase):
             generated_source_sha256={})).encode())
         self.artifact("commands/001/stdout.log", b"synthetic output\n")
         self.artifact("commands/001/stderr.log", b"")
+        self.artifact("synthesis/netlist.json", b"synthetic retained netlist\n")
         self.artifact("results.json", json.dumps(dict(
             outcome="passed", mandatory_matrix=[
                 dict(capacity=capacity, seed=seed, outcome="passed")
@@ -257,6 +258,49 @@ class ArtifactRetentionTests(unittest.TestCase):
         self.assertTrue(report["retained_files_readable"], report["errors"])
         self.assertTrue(report["receipt_stable"])
         self.assertEqual(receipt.read_bytes(), original)
+
+    def test_artifact_loss_during_child_inspection_is_rejected(self):
+        for change in ("missing", "changed", "unbound"):
+            with self.subTest(change=change):
+                self.bundle = Path("evidence") / f"synthetic-{change}"
+                self.base = self.root / self.bundle
+                self.base.mkdir()
+                receipt, sources = self.complete_bundle()
+                original = receipt.read_bytes()
+                target = self.base / "synthesis/netlist.json"
+                child = self.base / "commands/001/receipt.json"
+                read_bytes = Path.read_bytes
+                affected = False
+
+                def change_during_child_read(path):
+                    nonlocal affected
+                    payload = read_bytes(path)
+                    if path.absolute() == child and not affected:
+                        affected = True
+                        if change == "missing":
+                            target.unlink()
+                        elif change == "changed":
+                            target.write_bytes(b"changed after initial inventory\n")
+                        else:
+                            (target.parent / "unexpected.json").write_bytes(b"unbound\n")
+                    return payload
+
+                with chdir(self.root), patch("preparation.inputs", return_value=sources), \
+                        patch.object(Path, "read_bytes", change_during_child_read):
+                    report = audit_bundle(self.bundle.as_posix())
+                self.assertTrue(affected)
+                self.assertFalse(report["retained_files_readable"], report["errors"])
+                artifacts = report["artifact_integrity"]
+                field = {"missing": "missing_files", "changed": "mismatched_files",
+                         "unbound": "unbound_files"}[change]
+                expected = (target.parent / "unexpected.json"
+                            if change == "unbound" else target)
+                self.assertIn(expected.relative_to(self.root).as_posix(), artifacts[field])
+                self.assertEqual(receipt.read_bytes(), original)
+                self.assertFalse(report["retention_handoff"]["authorizes_resumption"])
+                unexpected = target.parent / "unexpected.json"
+                if unexpected.exists():
+                    unexpected.unlink()
 
     def test_source_change_during_bundle_audit_rejects_current_acceptance(self):
         receipt, sources = self.complete_bundle()
