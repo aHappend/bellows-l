@@ -18,8 +18,68 @@ from unittest.mock import patch
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from preparation import (audit_artifacts, audit_receipt, diagnose_hil_record,
-                         inspect_hil_inputs, main)
+                         inspect_hil_inputs, inspect_portable_inputs, main,
+                         stage_portable_root)
 from verify import file_integrity
+
+
+class PortableRecoveryTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        for name in ("rtl/example.sv", "bellows_l1_reference/rtl/example.sv",
+                     "tests/example.py", "design/SPEC.md", "design/ARCHITECTURE.md"):
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"synthetic declared input\n")
+        self.outputs = (
+            "evidence/l1",
+            "evidence/l1-post-settlement-bundle-audit",
+            "evidence/l1-post-settlement-bundle-audit-after-0621",
+        )
+        guard = patch("subprocess.Popen", side_effect=AssertionError(
+            "Portable preflight and staging must not execute checks"))
+        guard.start()
+        self.addCleanup(guard.stop)
+
+    def test_preflight_accounts_for_every_admitted_output(self):
+        report = inspect_portable_inputs(reference=self.root)
+        self.assertTrue(report["portable_preflight_passed"], report["errors"])
+        self.assertEqual([entry["path"] for entry in report["outputs"]],
+                         list(self.outputs))
+        self.assertTrue(all(entry["fresh"] for entry in report["outputs"]))
+        self.assertFalse(report["authorizes_resumption"])
+
+    def test_each_occupied_mandatory_output_is_preserved_and_rejected(self):
+        for destination in self.outputs:
+            with self.subTest(destination=destination):
+                path = self.root / destination
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"historical output; preserve verbatim")
+                report = inspect_portable_inputs(reference=self.root)
+                self.assertFalse(report["portable_preflight_passed"])
+                self.assertTrue(any("Refusing occupied output destination" in error
+                                    for error in report["errors"]))
+                self.assertEqual(path.read_bytes(), b"historical output; preserve verbatim")
+                path.unlink()
+
+    def test_staging_retains_all_three_unchanged_commands_in_order(self):
+        record = stage_portable_root("evidence/fresh/project", reference=self.root)
+        expected = [["python3", "tests/verify.py", "--output", "evidence/l1"]]
+        for destination in self.outputs[1:]:
+            expected.append([
+                "sh", "-c",
+                f"mkdir {destination} && python3 tests/preparation.py "
+                f"--audit-bundles evidence/l1 > {destination}/stdout.json 2> "
+                f"{destination}/stderr.log"])
+        self.assertEqual(record["mandatory_commands"], expected)
+        self.assertTrue(record["preflight"]["portable_preflight_passed"])
+        self.assertFalse(record["checks_executed"])
+        self.assertFalse(record["hardware_executed"])
+        self.assertFalse(record["acceptance_evidence"])
+        for destination in self.outputs:
+            self.assertFalse((self.root / "evidence/fresh/project" / destination).exists())
 
 
 class ArtifactRetentionTests(unittest.TestCase):

@@ -77,7 +77,7 @@ path components, even when the evidence directory itself redirects elsewhere.
 This only inventories the admitted output contract; it never creates, removes
 or renames that destination, and cannot authorize a different invocation.
 Portable-input inspection compares readable declared files in a nominated
-project-relative execution root with the current sources and checks both
+project-relative execution root with the current sources and checks all three
 mandatory portable destinations for occupation, including dangling symlinks.
 Source identity uses direct byte comparisons; hashes are retained for provenance,
 not used as a substitute for reading and comparing the copied contents.
@@ -89,7 +89,7 @@ availability, functional results, hardware readiness or permission to resume.
 Fresh-root staging copies only the current declared inputs, never historical
 outputs or runtime metadata, and retains a source inventory and root mapping.
 It refuses an occupied root and never launches checks or hardware commands.
-The shared runtime must execute both unchanged mandatory commands in that actual
+The shared runtime must execute all three unchanged mandatory commands in that actual
 source root, in order; a launch-directory change without source copies is not
 sufficient. Staging is preparation, not current portable or physical acceptance.
 HIL receipt inspection diagnoses retained register-only runs without executing
@@ -143,6 +143,13 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from verify import (CAPACITIES, DECLARED, ROOT, SEEDS, file_integrity, inputs,
                     json_write, validate_output)
+
+
+PORTABLE_OUTPUTS = (
+    "evidence/l1",
+    "evidence/l1-post-settlement-bundle-audit",
+    "evidence/l1-post-settlement-bundle-audit-after-0621",
+)
 
 
 def source_binding_errors(sources):
@@ -828,7 +835,7 @@ def inspect_portable_inputs(name=".", reference=ROOT):
         if not report["source_inventory_stable"]:
             errors.append("Declared source inventory changed during inspection")
         report["current_sources_match"] = not errors
-        for destination in ("evidence/l1", "evidence/l1-post-settlement-bundle-audit"):
+        for destination in PORTABLE_OUTPUTS:
             path = root / destination
             occupied = os.path.lexists(path)
             output = dict(path=destination, fresh=not occupied)
@@ -884,10 +891,11 @@ def stage_portable_root(name, reference=ROOT):
         checks_executed=False, hardware_executed=False,
         mandatory_commands=[
             ["python3", "tests/verify.py", "--output", "evidence/l1"],
-            ["sh", "-c", "mkdir evidence/l1-post-settlement-bundle-audit && "
-             "python3 tests/preparation.py --audit-bundles evidence/l1 > "
-             "evidence/l1-post-settlement-bundle-audit/stdout.json 2> "
-             "evidence/l1-post-settlement-bundle-audit/stderr.log"],
+            *[["sh", "-c",
+               f"mkdir {destination} && python3 tests/preparation.py "
+               f"--audit-bundles evidence/l1 > {destination}/stdout.json 2> "
+               f"{destination}/stderr.log"]
+              for destination in PORTABLE_OUTPUTS[1:]],
         ],
         stdout=(relative_root / "staging.stdout.log").as_posix(),
         stderr=(relative_root / "staging.stderr.log").as_posix(),
