@@ -1,6 +1,6 @@
 `default_nettype none
 
-module furnace_crc_linear #(
+module bellows_n1_crc_linear #(
     parameter integer WIDTH = 32,
     parameter integer INPUT_WIDTH = WIDTH,
     parameter [WIDTH-1:0] POLYNOMIAL = 32'h82f63b78,

@@ -1,6 +1,6 @@
 `default_nettype none
 
-module furnace_crc_output_stage #(
+module bellows_n1_crc_output_stage #(
     parameter integer DATA_WIDTH = 512
 ) (
     input  wire clk,

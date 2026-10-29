@@ -1,6 +1,6 @@
 `default_nettype none
 
-module furnace_crc_packet_accumulator #(
+module bellows_n1_crc_packet_accumulator #(
     parameter integer DATA_WIDTH = 512
 ) (
     input  wire clk,
@@ -39,13 +39,13 @@ module furnace_crc_packet_accumulator #(
     wire [63:0] selected_expected64 = packet_open ? packet_expected64 :
                                                 in_meta[LAST_BIT+35 +: 64];
 
-    furnace_crc_linear #(
+    bellows_n1_crc_linear #(
         .WIDTH(32), .POLYNOMIAL(32'h82f63b78),
         .BIT_STEPS(DATA_WIDTH)
     ) advance32 (
         .value_in(state32), .value_out(advanced32)
     );
-    furnace_crc_linear #(
+    bellows_n1_crc_linear #(
         .WIDTH(64), .POLYNOMIAL(64'h9a6c9329ac4bc9b5),
         .BIT_STEPS(DATA_WIDTH)
     ) advance64 (

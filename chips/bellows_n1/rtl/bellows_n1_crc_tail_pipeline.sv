@@ -1,6 +1,6 @@
 `default_nettype none
 
-module furnace_crc_tail_pipeline #(
+module bellows_n1_crc_tail_pipeline #(
     parameter integer DATA_WIDTH = 512
 ) (
     input  wire clk,
@@ -44,13 +44,13 @@ module furnace_crc_tail_pipeline #(
             wire [63:0] inverse64;
             wire correct_tail = stage_meta[stage][LAST_BIT] &&
                                 stage_meta[stage][LAST_BIT+99+stage];
-            furnace_crc_linear #(
+            bellows_n1_crc_linear #(
                 .WIDTH(32), .POLYNOMIAL(32'h82f63b78),
                 .BIT_STEPS(8*(1 << stage)), .INVERSE(1)
             ) undo32 (
                 .value_in(stage32[stage]), .value_out(inverse32)
             );
-            furnace_crc_linear #(
+            bellows_n1_crc_linear #(
                 .WIDTH(64), .POLYNOMIAL(64'h9a6c9329ac4bc9b5),
                 .BIT_STEPS(8*(1 << stage)), .INVERSE(1)
             ) undo64 (

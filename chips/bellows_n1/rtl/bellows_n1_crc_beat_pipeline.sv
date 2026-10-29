@@ -1,6 +1,6 @@
 `default_nettype none
 
-module furnace_crc_beat_pipeline #(
+module bellows_n1_crc_beat_pipeline #(
     parameter integer DATA_WIDTH = 512
 ) (
     input  wire clk,
@@ -27,14 +27,14 @@ module furnace_crc_beat_pipeline #(
                 wire [7:0] byte_value;
                 assign byte_value = in_meta[DATA_WIDTH+position] ?
                                     in_meta[8*position +: 8] : 8'b0;
-                furnace_crc_linear #(
+                bellows_n1_crc_linear #(
                     .WIDTH(32), .INPUT_WIDTH(8),
                     .POLYNOMIAL(32'h82f63b78),
                     .BIT_STEPS(8*(BYTE_LANES-position))
                 ) crc32c_byte (
                     .value_in(byte_value), .value_out(byte_crc[31:0])
                 );
-                furnace_crc_linear #(
+                bellows_n1_crc_linear #(
                     .WIDTH(64), .INPUT_WIDTH(8),
                     .POLYNOMIAL(64'h9a6c9329ac4bc9b5),
                     .BIT_STEPS(8*(BYTE_LANES-position))

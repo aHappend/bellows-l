@@ -72,27 +72,27 @@ module bellows_n1_top #(
             wire [63:0] tail64;
 
             assign s_axis_tready = advance;
-            furnace_crc_beat_pipeline #(.DATA_WIDTH(DATA_WIDTH)) beat_pipeline (
+            bellows_n1_crc_beat_pipeline #(.DATA_WIDTH(DATA_WIDTH)) beat_pipeline (
                 .clk(clk), .rst_n(rst_n), .advance(advance),
                 .in_valid(s_axis_tvalid), .in_meta(input_meta),
                 .out_valid(beat_valid), .out_meta(beat_meta),
                 .out_crc32c(beat32), .out_crc64_nvme(beat64)
             );
-            furnace_crc_packet_accumulator #(.DATA_WIDTH(DATA_WIDTH)) packet_accumulator (
+            bellows_n1_crc_packet_accumulator #(.DATA_WIDTH(DATA_WIDTH)) packet_accumulator (
                 .clk(clk), .rst_n(rst_n), .advance(advance),
                 .in_valid(beat_valid), .in_meta(beat_meta),
                 .in_crc32c(beat32), .in_crc64_nvme(beat64),
                 .out_valid(packet_valid), .out_meta(packet_meta),
                 .out_crc32c(packet32), .out_crc64_nvme(packet64)
             );
-            furnace_crc_tail_pipeline #(.DATA_WIDTH(DATA_WIDTH)) tail_pipeline (
+            bellows_n1_crc_tail_pipeline #(.DATA_WIDTH(DATA_WIDTH)) tail_pipeline (
                 .clk(clk), .rst_n(rst_n), .advance(advance),
                 .in_valid(packet_valid), .in_meta(packet_meta),
                 .in_crc32c(packet32), .in_crc64_nvme(packet64),
                 .out_valid(tail_valid), .out_meta(tail_meta),
                 .out_crc32c(tail32), .out_crc64_nvme(tail64)
             );
-            furnace_crc_output_stage #(.DATA_WIDTH(DATA_WIDTH)) output_stage (
+            bellows_n1_crc_output_stage #(.DATA_WIDTH(DATA_WIDTH)) output_stage (
                 .clk(clk), .rst_n(rst_n), .advance(advance),
                 .in_valid(tail_valid), .in_meta(tail_meta),
                 .in_crc32c(tail32), .in_crc64_nvme(tail64),
