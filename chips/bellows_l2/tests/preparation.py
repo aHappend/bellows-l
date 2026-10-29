@@ -77,6 +77,7 @@ An existing non-directory ancestor, including a dangling symlink, also makes
 the destination unusable; inspection never removes it or creates directories.
 The portable output guard also rejects symlinked parents and runtime-owned
 path components, even when the evidence directory itself redirects elsewhere.
+Existing non-directory parents also fail preflight for every affected output.
 This only inventories the admitted output contract; it never creates, removes
 or renames that destination, and cannot authorize a different invocation.
 Portable-input inspection compares readable declared files in a nominated

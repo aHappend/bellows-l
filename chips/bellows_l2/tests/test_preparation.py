@@ -65,6 +65,19 @@ class PortableRecoveryTests(unittest.TestCase):
                 self.assertEqual(path.read_bytes(), b"historical output; preserve verbatim")
                 path.unlink()
 
+    def test_non_directory_output_ancestor_is_preserved_and_rejected(self):
+        ancestor = self.root / "evidence"
+        ancestor.write_bytes(b"historical file; not an output directory")
+        report = inspect_portable_inputs(reference=self.root)
+        self.assertTrue(report["current_sources_match"])
+        self.assertFalse(report["portable_preflight_passed"])
+        self.assertEqual(len(report["outputs"]), len(self.outputs))
+        self.assertEqual(
+            sum("Refusing non-directory output parent" in error
+                for error in report["errors"]), len(self.outputs))
+        self.assertEqual(ancestor.read_bytes(),
+                         b"historical file; not an output directory")
+
     def test_staging_retains_all_three_unchanged_commands_in_order(self):
         record = stage_portable_root("evidence/fresh/project", reference=self.root)
         expected = [["python3", "tests/verify.py", "--output", "evidence/l1"]]

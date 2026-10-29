@@ -29,7 +29,7 @@ Executable requirement mapping:
 * simulator_equivalence: compact duplex/round-trip/fallback traffic compared
   independently on both simulators, then exact public-trace agreement.
 * occupied_destination: occupied directories/files, dangling output symlinks
-  and symlinked parents are rejected without changing their targets.
+  and symlinked or non-directory parents are rejected without changing them.
 
 The advisory --subset output-focused runs only output-path rejection checks
 and tool-version queries; it establishes no RTL behavior or matrix coverage.
@@ -164,6 +164,9 @@ def validate_output(output, root=ROOT):
             break
         if parent.is_symlink():
             raise ValueError(f"Refusing symlinked output parent: {parent.relative_to(root)}")
+        if parent.exists() and not parent.is_dir():
+            raise ValueError(
+                f"Refusing non-directory output parent: {parent.relative_to(root)}")
     if not destination.resolve().is_relative_to(root.resolve()):
         raise ValueError("Output destination resolves outside the project")
 
