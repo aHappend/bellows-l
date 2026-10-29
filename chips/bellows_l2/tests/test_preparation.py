@@ -224,6 +224,49 @@ class ArtifactProducerTests(unittest.TestCase):
 
 
 class PreparationStreamTests(unittest.TestCase):
+    def test_repair_predecessor_rejects_symlinks_before_reading(self):
+        for replacement in ("receipt", "stdout", "stderr", "directory"):
+            with self.subTest(replacement=replacement), \
+                    tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                bundle = root / "evidence/predecessor"
+                bundle.mkdir(parents=True)
+                record = dict(argv=["synthetic-never-execute"], cwd=".",
+                              source_sha256={}, tool_versions={},
+                              start_time="synthetic", end_time="synthetic",
+                              timed_out=False, exit_code=0,
+                              stdout="evidence/predecessor/stdout.log",
+                              stderr="evidence/predecessor/stderr.log")
+                receipt = bundle / "receipt.json"
+                receipt.write_text(json.dumps(record))
+                for channel in ("stdout", "stderr"):
+                    (root / record[channel]).write_bytes(b"synthetic retained stream\n")
+                if replacement == "directory":
+                    retained = root / "evidence/original"
+                    bundle.rename(retained)
+                    bundle.symlink_to(retained, target_is_directory=True)
+                    forbidden = receipt
+                else:
+                    forbidden = (receipt if replacement == "receipt"
+                                 else root / record[replacement])
+                    retained = bundle / "original.bin"
+                    forbidden.rename(retained)
+                    forbidden.symlink_to(retained)
+                read_bytes = Path.read_bytes
+
+                def guarded_read(path):
+                    if (path if path.is_absolute() else root / path) == forbidden:
+                        self.fail("Redirected predecessor must be rejected before reading")
+                    return read_bytes(path)
+
+                with chdir(root), patch("preparation.ROOT", root), patch.object(
+                        Path, "read_bytes", new=guarded_read):
+                    with self.assertRaisesRegex(ValueError, "Symlink"):
+                        repair_receipt("evidence/predecessor/receipt.json")
+                self.assertTrue(forbidden.is_symlink() if replacement != "directory"
+                                else bundle.is_symlink())
+                self.assertTrue(retained.exists())
+
     def test_probe_rejects_changed_or_unreadable_final_source_inventory(self):
         for final_inventory in (
                 {"tests/example.py": "1" * 64},

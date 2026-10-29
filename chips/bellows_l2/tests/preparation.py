@@ -56,6 +56,9 @@ The outer bounded-probe receipt also binds both synchronized raw streams,
 including failed children; changed logs cannot serve as repair predecessors.
 Repair-predecessor audits validate any recorded stream bindings as well: a
 present but truncated or changed log is not an available repair predecessor.
+Predecessor receipts, streams and their project-local ancestors must not be
+symlinks, including same-byte redirects and legacy streams without bindings.
+Paths are checked before reading; this does not prevent concurrent replacement.
 Bounded probes fail if their final declared-source inventory changes or becomes
 unreadable, even when the child exits zero. The receipt preserves the child
 exit_code separately from probe_exit_code and retains the source error in stderr.
@@ -670,9 +673,18 @@ def audit_bundle(name, source_diff=False):
 
 def repair_receipt(name):
     """Require retained predecessor metadata and streams, not just a filename."""
+    def reject_symlinks(path):
+        current = ROOT
+        for part in path.parts:
+            current = current / part
+            if current.is_symlink():
+                raise ValueError(
+                    f"Symlink in repair predecessor path: {current.relative_to(ROOT)}")
+
     prior = Path(name)
     if prior.is_absolute() or ".." in prior.parts:
         raise ValueError("--repair-of must name a project-relative receipt")
+    reject_symlinks(prior)
     if not prior.resolve().is_relative_to(ROOT):
         raise ValueError("--repair-of must remain inside this project")
     try:
@@ -692,8 +704,10 @@ def repair_receipt(name):
         if not isinstance(value, str) or not value:
             raise ValueError(f"Invalid {channel} path in repair predecessor {name}")
         stream = Path(value)
-        if (stream.is_absolute() or ".." in stream.parts
-                or not stream.resolve().is_relative_to(ROOT)):
+        if stream.is_absolute() or ".." in stream.parts:
+            raise ValueError(f"Non-project {channel} path in repair predecessor {name}")
+        reject_symlinks(stream)
+        if not stream.resolve().is_relative_to(ROOT):
             raise ValueError(f"Non-project {channel} path in repair predecessor {name}")
         if not stream.is_file():
             raise ValueError(f"Repair predecessor raw stream missing: {stream.as_posix()}")
