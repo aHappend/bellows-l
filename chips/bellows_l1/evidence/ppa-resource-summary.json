@@ -1,16 +1,6 @@
 {
   "chip": "Bellows-L1",
-  "fitter_resources": {
-    "alms_used": 237,
-    "alms_total": 427200,
-    "alms_pct": "< 1 %",
-    "total_registers": 165,
-    "block_memory_bits": 524288,
-    "m20k_ram_blocks": 0,
-    "m20k_ram_blocks_total": 2713,
-    "dsp_blocks": 0,
-    "virtual_pins": 29
-  },
+  "fitter_resources": {},
   "timing": {
     "device": "10AX115N2F45E1SG",
     "netlist_mode": "post_map",
