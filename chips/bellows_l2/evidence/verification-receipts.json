@@ -1,0 +1,19 @@
+{
+  "chip": "Bellows-L2",
+  "passed_checks": {
+    "check:portable-l1": {
+      "attempt_id": 621,
+      "duration_s": 471.78203257196583,
+      "stdout_preview": "c12d2ab49631e43662617392b2217a22\", \"design/ARCHITECTURE.md\": \"c8c480ccb325171371bf0ac9a2dde1a635c2c7b4733e7f3620ba807112ecbfdd\", \"design/SPEC.md\": \"29162d9c5de441c0aee0acb7bc4fce64a39ec1d5a3002c9e712b3cb34e6b5bc6\", \"rtl/bellows_l1_history.sv\": \"331986adb15c820df57979f3b741b64286dd409c5cc801712c609706e908c4ad\", \"rtl/bellows_l1_output.sv\": \"d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197\", \"rtl/bellows_l1_top.sv\": \"0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22\", \"rtl/bellows_l2_compressor.sv\": \"b41fb612530f996bac1a8801e3c9e3b59b89b68c2e6597bd210e8b0bb8997307\", \"rtl/bellows_l2_emitter.sv\": \"d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326\", \"rtl/bellows_l2_hash_match.sv\": \"bc6617078c86ef01cce99cd027673e9df1a3d595c2ae84b58585504426b34b42\", \"rtl/bellows_l2_literal_buffer.sv\": \"7ad22eb12de1bd2c934e9c5374efaffc7ff1cab0b018fdcab7bc4fa89cafa59f\", \"rtl/bellows_l2_top.sv\": \"c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b\", \"tests/bench.py\": \"9485c46c89e8eafcf26a9172ef69aa2e03751c3aeb16693c276f1c6ec6ff3530\", \"tests/oracle.py\": \"681dc3f57cbe5f25cedf424319feb7d1b7998f5825795b2c409e217df35e7f18\", \"tests/preparation.py\": \"e62f90413a7d6be20bf8dae0138e868ad84a881f91c5df11de1a1a49243c3640\", \"tests/test_preparation.py\": \"1f16b04147158ac56342edf44f23e0ec3b0fa839329ca7d489c58cecdbe6c35e\", \"tests/verify.py\": \"49eb57d4a27a231cebd9e1544d3efc4b7609f6ff48da225a2e12b7d0cb75c50c\"}}\nPortable verification passed: evidence/l1/results.json\n",
+      "receipt_count": 0,
+      "receipts": []
+    },
+    "check:portable-l1-post-settlement-bundle-audit": {
+      "attempt_id": 473,
+      "duration_s": 4.433458119165152,
+      "stdout_preview": "",
+      "receipt_count": 0,
+      "receipts": []
+    }
+  }
+}
