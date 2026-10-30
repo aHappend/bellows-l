@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Thu Oct 29 07:42:16 2026
+Quartus Prime Version : 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+Revision Name : top
+Top-level Entity Name : bellows_l3_top
+Family : Arria 10
+Logic utilization (in ALMs) : N/A
+Total registers : 17041
+Total pins : 0
+Total virtual pins : 479
+Total block memory bits : 10,490,368
+Total DSP Blocks : 57
+Total HSSI RX channels : 0
+Total HSSI TX channels : 0
+Total PLLs : 0
