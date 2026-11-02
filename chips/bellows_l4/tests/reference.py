@@ -46,13 +46,23 @@ def xxh32(data):
     return (h ^ (h >> 16)) & mask
 
 
+def crc32(data):
+    """Reflected CRC-32/ISO-HDLC with unsigned 32-bit arithmetic."""
+    crc = 0xFFFFFFFF
+    for byte in data:
+        crc ^= byte
+        for _ in range(8):
+            crc = (crc >> 1) ^ (0xEDB88320 if crc & 1 else 0)
+    return crc ^ 0xFFFFFFFF
+
+
 def checksum(data, mode):
     if mode == 0:
         return 0
     if mode == 1:
         return xxh32(data)
     if mode == 2:
-        return zlib.crc32(data) & 0xFFFFFFFF
+        return crc32(data)
     raise ValueError("invalid checksum mode")
 
 
@@ -335,6 +345,8 @@ def self_test():
     assert xxh32(b"a") == 0x550D7456
     assert xxh32(b"abc") == 0x32D153FF
     assert checksum(b"123456789", 2) == 0xCBF43926
+    for data in (b"", b"a", b"abc", b"123456789", bytes(range(256))*3):
+        assert crc32(data) == zlib.crc32(data) & 0xFFFFFFFF
     assert lz4_decode(b"\x00") == b""
     for codec in (1, 2, 3):
         for raw in (b"", b"\0\0", bytes(range(256))):

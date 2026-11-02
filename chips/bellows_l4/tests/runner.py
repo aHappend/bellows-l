@@ -72,7 +72,7 @@ class Simulation:
 
     def top(self, width, block, cases, *, depth=16, simulator="verilator",
             parent=False, generation=4, label="cases", expect_assertion=None):
-        name = f"g{generation}-w{width}-b{block}-sg{depth}-{simulator}"
+        name = f"{'reference-' if parent else ''}g{generation}-w{width}-b{block}-sg{depth}-{simulator}"
         bench = top_bench(width, block, depth, parent=parent or generation == 3)
         binary = self.compile(name, bench, simulator=simulator, parent=parent)
         vectors = self.execution.directory / f"{name}-{label}.vectors.txt"

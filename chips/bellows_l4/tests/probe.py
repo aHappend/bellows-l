@@ -13,6 +13,53 @@ from scenarios import entropy_cases, performance_cases, smoke_cases, write_cases
 from structural import synthesize
 
 
+def authoring_probe(ex, focus):
+    from runner import Simulation
+    from scenarios import descriptor_cases, lz4_negative_cases, malformed_entropy_cases
+    from verify import compact_smoke, invalid_parameters, legacy_streams
+    sim = Simulation(ex)
+    if focus == "reference":
+        from scenarios import lz4_cases
+        from verify import MUTATIONS
+        counts = {"lz4": len(lz4_cases(17)), "malformed": len(malformed_entropy_cases())}
+        for _, filename, old, _, _, _ in MUTATIONS:
+            assert (ROOT / filename).read_text().count(old) == 1
+        assert counts["malformed"] >= 100
+        return counts
+    if focus == "startup":
+        compact_smoke(sim)
+        invalid_parameters(sim)
+        return sim.save_coverage()
+    if focus == "legacy":
+        legacy_streams(sim, simulator="icarus", compact=True)
+        return ex.receipt["legacy_results"]
+    if focus == "negative":
+        cases = lz4_negative_cases(17)[:9]+descriptor_cases(17, 3)
+        sim.top(8, 17, cases, depth=3, simulator="icarus", label="negative")
+        return sim.save_coverage()
+    if focus == "short-header":
+        cases = [case for case in malformed_entropy_cases()
+                 if "short-header" in case.name][:1]
+        sim.top(8, 17, cases, simulator="icarus", label="short-header")
+        return sim.save_coverage()
+    if focus == "table":
+        from leaf_harnesses import TABLE, table_vectors
+        vectors = ex.directory / "table.vectors.txt"
+        fixtures = table_vectors(vectors)
+        binary = sim.compile("table", TABLE,
+                             rtl_files=["rtl/bellows_l4_huffman_table.sv"])
+        text = sim.execute(binary, "table", [f"+vectors={ex.relative(vectors)}"])
+        assert "SUMMARY TABLE cases=12 " in text
+        return {"fixtures": fixtures, "observations": text.splitlines()}
+    if focus == "concurrent":
+        from concurrent import concurrent_bench
+        binary = sim.compile("concurrent", concurrent_bench(8))
+        text = sim.execute(binary, "concurrent")
+        assert "SUMMARY CONCURRENT width=8 completions=8 resets=0 " in text
+        return text.splitlines()
+    raise ValueError(focus)
+
+
 def copy_probe(execution, width, block, simulator):
     name = f"copy-{width}-{block}-{simulator}"
     bench = execution.directory / f"{name}.sv"
@@ -91,8 +138,11 @@ def performance_probe(execution):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--probe", choices=["copy", "top", "performance", "entropy", "synthesis",
-                                          "source-portability"],
+                                          "source-portability", "authoring"],
                         default="copy")
+    parser.add_argument("--focus", choices=["reference", "startup", "legacy", "negative",
+                                          "short-header", "table", "concurrent"],
+                        default="reference")
     parser.add_argument("--simulator", choices=["icarus", "verilator"], default="icarus")
     parser.add_argument("--repair-of")
     args = parser.parse_args()
@@ -100,13 +150,16 @@ def main():
     try:
         self_test()
         simulator = "verilator" if args.probe in ("performance", "entropy") else args.simulator
-        tools = ["python3"] if args.probe == "source-portability" else (
+        tools = ["python3", "iverilog", "vvp", "verilator"] if args.probe == "authoring" else (
+            ["python3"] if args.probe == "source-portability" else (
             ["python3", "yosys"] if args.probe == "synthesis" else (
             ["python3", "iverilog", "vvp"] if simulator == "icarus"
-            else ["python3", "verilator"]))
+            else ["python3", "verilator"])))
         ex.versions(tools)
         records = []
-        if args.probe == "source-portability":
+        if args.probe == "authoring":
+            records = authoring_probe(ex, args.focus)
+        elif args.probe == "source-portability":
             records = ex.run(["python3", "tests/source_portability.py"], "source-portability")
         elif args.probe == "synthesis":
             records = [synthesize(ex, 1, 1, 4)]

@@ -53,6 +53,12 @@ class Execution:
     def run(self, argv, name, *, cwd=ROOT, timeout=2700, expected_exit=0):
         stdout = self.directory / f"{name}.stdout.txt"
         stderr = self.directory / f"{name}.stderr.txt"
+        if stdout.exists() or stderr.exists():
+            name = f"{name}-execution{len(self.receipt['commands'])+1}"
+            stdout = self.directory / f"{name}.stdout.txt"
+            stderr = self.directory / f"{name}.stderr.txt"
+        if stdout.exists() or stderr.exists():
+            raise FileExistsError("refusing to overwrite execution logs")
         command = {
             "argv": [str(a) for a in argv], "cwd": self.relative(cwd) or ".",
             "start_time": now(), "timeout_seconds": timeout,

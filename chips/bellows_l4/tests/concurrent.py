@@ -155,6 +155,7 @@ task abort_epoch;
   rst_n=0; cmd_valid=0; sg_valid=0; pr=0; pw=0; hr=0; hw=0; hs=0;
   rd_rsp_valid=0; w_rd_rsp_valid=0; wr_rsp_valid=0; w_wr_rsp_valid=0;
   admitted=0; validated=0; completed=0;
+  total_status=0; total_reads=0; total_writes=0;
   for(j=0;j<4;j=j+1) begin
    read_bytes[j]=0; write_bytes[j]=0; read_grants[j]=0; write_grants[j]=0;
   end

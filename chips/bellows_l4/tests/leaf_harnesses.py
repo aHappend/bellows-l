@@ -78,9 +78,13 @@ initial begin
  rst_n=0; #0; reset_check(); tick(); tick(); rst_n=1; tick();
  if(!$value$plusargs("vectors=%s",vectors)) $fatal(1,"missing table vectors");
  file=$fopen(vectors,"r"); if(!file) $fatal(1,"table vector open");
+ begin : table_cases
  while(!$feof(file)) begin
   scan=$fscanf(file,"%d %d %d %d",enc,w4,err,fallback);
-  if(scan!=4) $fatal(1,"table record header");
+  if(scan!=4) begin
+   if($feof(file)) disable table_cases;
+   else $fatal(1,"table record header");
+  end
   alphabet=w4 ? 16 : 256;
   start_valid=1; encode=enc; alphabet_w4=w4;
   if(start_ready!==1'b1) $fatal(1,"ASSERT TABLE start ready");
@@ -130,7 +134,7 @@ initial begin
   cases=cases+1;
   $display("CASE TABLE %0d error=%0d fallback=%0d cycles=%0d",cases,err,fallback,wait_cycles);
   clear=1; tick(); clear=0; tick();
-  scan=$fscanf(file,"\n");
+ end
  end
  if(cases!=12 || lookups<1000) $fatal(1,"ASSERT TABLE incomplete comparisons");
  $display("SUMMARY TABLE cases=%0d lookups=%0d",cases,lookups);
@@ -271,7 +275,7 @@ wire [2:0] status_error;
 integer nsource,nexpected;
 @INSTANCE@
 reg [7:0] source[0:131100],expected[0:131100];
-integer file,scan,id,ch,codec,wide,cm,capacity,err,cv,sc,dc,stalls,seed,di,rf,wf;
+integer file,scan,id,ch,codec,wide,cm,capacity,err,checksum_value,sc,dc,stalls,seed,di,rf,wf;
 integer ignored,i,received=0,sent=0,cases=0,bytes=0,cycles=0;
 reg [63:0] address;
 reg done=0,held=0,handshake;
@@ -316,11 +320,15 @@ initial begin
  rst_n=0; #0; reset_check(); tick(); tick(); rst_n=1; tick();
  if(!$value$plusargs("vectors=%s",vectors)) $fatal(1,"legacy vectors missing");
  file=$fopen(vectors,"r"); if(!file) $fatal(1,"legacy vectors open");
+ begin : stream_cases
  while(!$feof(file)) begin
   scan=$fscanf(file,"%d %d %d %d %d %d %d %d %d %d %h %d %d %d %d %d %d %d\n",
-    id,ch,codec,decompress,wide,cm,nsource,nexpected,capacity,err,cv,sc,dc,
+    id,ch,codec,decompress,wide,cm,nsource,nexpected,capacity,err,checksum_value,sc,dc,
     stalls,seed,di,rf,wf);
-  if(scan!=18) $fatal(1,"legacy header");
+  if(scan!=18) begin
+   if($feof(file)) disable stream_cases;
+   else $fatal(1,"legacy header");
+  end
   for(i=0;i<sc+dc;i=i+1) scan=$fscanf(file,"%d",ignored);
   for(i=0;i<sc+dc;i=i+1) scan=$fscanf(file,"%h",address);
   for(i=0;i<nsource;i=i+1) begin
@@ -345,6 +353,7 @@ initial begin
    $fatal(1,"ASSERT LEGACY consumption");
   cases=cases+1; $display("CASE LEGACY %0d bytes=%0d",id,received);
   tick(); tick();
+ end
  end
  if(cases==0) $fatal(1,"ASSERT LEGACY no comparisons");
  $display("SUMMARY LEGACY cases=%0d bytes=%0d",cases,bytes);

@@ -91,6 +91,12 @@ def smoke_cases(block=17):
 def lz4_cases(seed, block=65536):
     rng = random.Random(seed)
     cases = []
+    for data in (b"", b"a", b"abc", b"123456789"):
+        if len(data) <= block:
+            for mode in (1, 2):
+                cases.append(Case(f"known-checksum-{data.hex()}-mode{mode}",
+                                  literal_block(data)+trailer(data, mode), data,
+                                  checksum_mode=mode, checksum_value=checksum(data, mode)))
     for length in (0, 1, 3, 4, 7, 8, 15, 16, 254, 255, 256):
         if length > block:
             continue
