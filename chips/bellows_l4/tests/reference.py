@@ -133,6 +133,43 @@ def literal_block(data):
     return bytes([min(len(data), 15) << 4]) + length_extension(len(data), 15) + data
 
 
+def lz4_compress(raw):
+    """Parent deterministic direct-mapped search, expressed as byte operations.
+
+    Its wire output is also checked by the independent grammar decoder. No RTL
+    transition, cycle count, memory signal or observed output enters this model.
+    """
+    table = {}
+    position = anchor = 0
+    encoded = bytearray()
+    while len(raw) >= 13 and position <= len(raw) - 12:
+        key = raw[position:position + 4]
+        h = 0
+        for shift, b in enumerate(key):
+            h ^= ((b << shift) | (b >> (8 - shift))) & 255 if shift else b
+        previous = table.get(h)
+        table[h] = position
+        if previous is None or not 1 <= position - previous <= 65535 or (
+            raw[previous:previous + 4] != key
+        ):
+            position += 1
+            continue
+        end = position + 4
+        while end < len(raw) - 5 and raw[end] == raw[previous + end - position]:
+            end += 1
+        literals = raw[anchor:position]
+        match_length = end - position
+        encoded.extend(bytes([(min(len(literals), 15) << 4) | min(match_length - 4, 15)])
+                       + length_extension(len(literals), 15) + literals
+                       + struct.pack("<H", position - previous)
+                       + length_extension(match_length, 19))
+        anchor = position = end
+    encoded.extend(literal_block(raw[anchor:]))
+    result = bytes(encoded) if len(encoded) < len(literal_block(raw)) else literal_block(raw)
+    assert lz4_decode(result) == raw
+    return result
+
+
 def match_block(prefix, offset, length, tail=b""):
     if not 1 <= offset <= min(len(prefix), 65535) or length < 4:
         raise ValueError("invalid match fixture")
