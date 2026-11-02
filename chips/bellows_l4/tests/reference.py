@@ -170,7 +170,7 @@ def lz4_compress(raw):
     return result
 
 
-def match_block(prefix, offset, length, tail=b""):
+def match_block(prefix, offset, length, tail=b"", *, limit=65536):
     if not 1 <= offset <= min(len(prefix), 65535) or length < 4:
         raise ValueError("invalid match fixture")
     block = (
@@ -179,7 +179,7 @@ def match_block(prefix, offset, length, tail=b""):
         + struct.pack("<H", offset) + length_extension(length, 19)
         + literal_block(tail)
     )
-    return block, lz4_decode(block)
+    return block, lz4_decode(block, limit)
 
 
 def symbols_and_residuals(raw, codec):

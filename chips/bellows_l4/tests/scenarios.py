@@ -114,8 +114,9 @@ def lz4_cases(seed, block=65536):
         cases.append(Case("full-history-window", encoded, raw))
         # Offset 65535 is legal only with 65535 bytes of private history.
         encoded, raw = match_block(bytes((i * 7) & 255 for i in range(65535)),
-                                   65535, 4)
-        cases.append(Case("offset65535-block-overflow", encoded, b"", error=5))
+                                   65535, 4, limit=65539)
+        cases.append(Case("offset65535-block-overflow", encoded, b"", error=5,
+                          capacity=65539))
     for i in range(64):
         length = rng.randrange(min(block, 4096) + 1)
         raw = bytes(rng.randrange(256) for _ in range(length))
@@ -141,7 +142,7 @@ def lz4_negative_cases(block=65536):
         try:
             lz4_decode(source, block)
         except CodecError as exc:
-            cases.append(Case(name, source, b"", error=exc.code))
+            cases.append(Case(name, source, b"", error=exc.code, capacity=block))
         else:
             raise AssertionError(f"negative reference accepted {name}")
     raw = b"x" * min(17, block)
