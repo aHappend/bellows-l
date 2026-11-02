@@ -33,9 +33,10 @@ pending. The contract in `SPEC.md` is unchanged.
 
 No parent-reference source is edited. Delivered compatibility sources are
 copies of the actual supplied files, not regenerated implementations.
-Missing historical `GENERATIONAL_HANDOFF.md` means parent STA/PPA remains
-unknown. The preserved compatibility ports and data streams still require
-independent differential and numerical checks.
+The supplied `design/GENERATIONAL_HANDOFF.md` records `N/A` for parent
+STA/PPA and physical HIL, so historical measurements remain unknown and
+parent signoff is not established. The preserved compatibility ports and
+data streams still require independent differential and numerical checks.
 
 ## Copy/history pipeline
 

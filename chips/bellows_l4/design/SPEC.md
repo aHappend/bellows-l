@@ -6,10 +6,11 @@ This is an implementation contract, not a verification or timing result.
 The independently admitted work order is authoritative. The supplied
 `bellows_l3_reference/rtl/` is read-only provenance and an executable
 differential baseline, not a passing baseline for L4.
-No repository-intake source index was supplied. The requested
-`design/GENERATIONAL_HANDOFF.md` was not supplied; historical parent Quartus
-frequency, slack and PPA are unknown. Current-product timing and physical
-gates remain mandatory.
+No repository-intake source index was supplied. The supplied
+`design/GENERATIONAL_HANDOFF.md` has been read; its parent Quartus STA,
+frequency, slack, PPA and physical HIL fields are `N/A`, not measured
+results or evidence of parent signoff. Historical parent measurements
+remain unknown. Current-product timing and physical gates remain mandatory.
 
 Designer owns `rtl/*.sv` and `design/*.md`. Independent Verifier owns
 `tests/*.py`, reference models, generated simulation harnesses and all

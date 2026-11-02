@@ -10,6 +10,7 @@ from execution import Execution, ROOT
 from harnesses import copy_bench, top_bench
 from reference import self_test
 from scenarios import entropy_cases, performance_cases, smoke_cases, write_cases
+from structural import synthesize
 
 
 def copy_probe(execution, width, block, simulator):
@@ -89,7 +90,8 @@ def performance_probe(execution):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--probe", choices=["copy", "top", "performance", "entropy"],
+    parser.add_argument("--probe", choices=["copy", "top", "performance", "entropy", "synthesis",
+                                          "source-portability"],
                         default="copy")
     parser.add_argument("--simulator", choices=["icarus", "verilator"], default="icarus")
     parser.add_argument("--repair-of")
@@ -98,10 +100,17 @@ def main():
     try:
         self_test()
         simulator = "verilator" if args.probe in ("performance", "entropy") else args.simulator
-        ex.versions(["python3", "iverilog", "vvp"] if simulator == "icarus"
-                    else ["python3", "verilator"])
+        tools = ["python3"] if args.probe == "source-portability" else (
+            ["python3", "yosys"] if args.probe == "synthesis" else (
+            ["python3", "iverilog", "vvp"] if simulator == "icarus"
+            else ["python3", "verilator"]))
+        ex.versions(tools)
         records = []
-        if args.probe == "performance":
+        if args.probe == "source-portability":
+            records = ex.run(["python3", "tests/source_portability.py"], "source-portability")
+        elif args.probe == "synthesis":
+            records = [synthesize(ex, 1, 1, 4)]
+        elif args.probe == "performance":
             records = performance_probe(ex)
         elif args.probe == "entropy":
             cases = entropy_cases(17)

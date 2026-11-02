@@ -93,11 +93,13 @@ bellows_l4_top #(.MAX_BLOCK_BYTES(BLOCK),.SG_DEPTH(DEPTH),.COPY_BYTES(WIDTH)) du
  @EXTENSION@ );
 @PARENT_TIE@
 reg [7:0] source[0:263171], expected[0:263171], destination[0:263171];
-integer source_sizes[0:15], dest_sizes[0:15];
+integer source_sizes[0:31], dest_sizes[0:31];
+reg [63:0] source_addresses[0:31], dest_addresses[0:31];
 integer file, scan, test_id, total_cases=0, compared_bytes=0;
 integer nsource, nexpected, capacity, expected_error, checksum_value;
 integer channel_value, codec_value, decompress_value, wide_value, checksum_mode_value;
 integer source_count, dest_count, stalls, seed, i, j, boundary, cursor, wait_count;
+integer descriptors_invalid, read_fault, write_fault;
 integer cycles=0, command_cycle, acked=0, consumed=0, issued_reads=0, issued_writes=0;
 integer command_handshake, descriptor_handshake;
 reg done_status=0, pending_read=0, pending_write=0, pending_read_wide, pending_write_wide;
@@ -105,8 +107,8 @@ integer read_index, read_count, write_index, write_count, read_delay, write_dela
 reg [63:0] read_data, write_data;
 reg [31:0] random_state;
 reg held_read=0, held_write=0, held_status=0;
-reg [68:0] held_read_payload;
-reg [136:0] held_write_payload;
+reg [70:0] held_read_payload;
+reg [138:0] held_write_payload;
 reg [118:0] held_status_payload;
 wire read_valid=rd_req_valid || w_rd_req_valid;
 wire write_valid=wr_req_valid || w_wr_req_valid;
@@ -147,10 +149,10 @@ task tick;
    if ((^{cmd_ready,sg_ready,rd_req_valid,rd_rsp_ready,wr_req_valid,wr_rsp_ready,
      w_rd_req_valid,w_rd_rsp_ready,w_wr_req_valid,w_wr_rsp_ready,status_valid})
        === 1'bx) $fatal(1,"ASSERT TOP XZ control");
-   if (held_read && {read_valid,read_wide,request_read_addr,request_read_count}
+   if (held_read && {read_valid,request_read_channel,read_wide,request_read_addr,request_read_count}
        !== {1'b1,held_read_payload})
     $fatal(1,"ASSERT TOP READ STABILITY case=%0d",test_id);
-   if (held_write && {write_valid,write_wide,request_write_addr,
+   if (held_write && {write_valid,request_write_channel,write_wide,request_write_addr,
         request_write_data,request_write_strobe}
        !== {1'b1,held_write_payload})
     $fatal(1,"ASSERT TOP WRITE STABILITY case=%0d",test_id);
@@ -159,9 +161,9 @@ task tick;
        !== {1'b1,held_status_payload})
     $fatal(1,"ASSERT TOP STATUS STABILITY case=%0d",test_id);
    held_read=read_valid && !read_ready;
-   held_read_payload={read_wide,request_read_addr,request_read_count};
+   held_read_payload={request_read_channel,read_wide,request_read_addr,request_read_count};
    held_write=write_valid && !write_ready;
-   held_write_payload={write_wide,request_write_addr,request_write_data,request_write_strobe};
+   held_write_payload={request_write_channel,write_wide,request_write_addr,request_write_data,request_write_strobe};
    held_status=status_valid && !status_ready;
    held_status_payload={status_channel,status_id,status_error,status_src_bytes,
        status_dst_bytes,status_checksum,err_checksum_mismatch};
@@ -173,6 +175,7 @@ task tick;
    if(wr_rsp_valid && wr_rsp_ready || w_wr_rsp_valid && w_wr_rsp_ready) begin
     if(!pending_write) $fatal(1,"ASSERT TOP unexpected write response");
     pending_write=0;
+    if (!(wr_rsp_error || w_wr_rsp_error)) begin
     for(idx=0;idx<write_count;idx=idx+1) begin
      destination[write_index+idx]=write_data[idx*8 +: 8];
      if(expected_error==0 &&
@@ -183,6 +186,7 @@ task tick;
         expected[write_index+idx],write_data[idx*8 +: 8]);
     end
     acked=acked+write_count;
+    end
    end
    if(read_valid && read_ready) begin
     if(pending_read || rd_req_valid && w_rd_req_valid)
@@ -266,15 +270,19 @@ task tick;
   rd_rsp_valid=pending_read && !pending_read_wide && read_delay==0;
   w_rd_rsp_valid=pending_read && pending_read_wide && read_delay==0;
   rd_rsp_data=read_data[7:0]; w_rd_rsp_data=read_data;
+  rd_rsp_error=pending_read && !pending_read_wide && issued_reads==read_fault;
+  w_rd_rsp_error=pending_read && pending_read_wide && issued_reads==read_fault;
   wr_rsp_valid=pending_write && !pending_write_wide && write_delay==0;
   w_wr_rsp_valid=pending_write && pending_write_wide && write_delay==0;
+  wr_rsp_error=pending_write && !pending_write_wide && issued_writes==write_fault;
+  w_wr_rsp_error=pending_write && pending_write_wide && issued_writes==write_fault;
   if(read_delay>0) read_delay=read_delay-1;
   if(write_delay>0) write_delay=write_delay-1;
   @(negedge clk);
  end
 endtask
 task descriptor;
- input integer destination_kind; input integer address; input integer bytes_count;
+ input integer destination_kind; input [63:0] address; input integer bytes_count;
  begin
   sg_valid=1; sg_destination=destination_kind; sg_addr=address; sg_bytes=bytes_count;
   descriptor_handshake=0;
@@ -284,22 +292,28 @@ task descriptor;
 endtask
 initial begin
  rst_n=0; random_state=17; read_delay=0; write_delay=0; stalls=0;
- #1; reset_outputs(); tick(); tick(); rst_n=1; tick();
+ #0; reset_outputs(); #1; reset_outputs(); tick(); tick(); rst_n=1; tick();
  if(!$value$plusargs("vectors=%s",vectors)) $fatal(1,"missing vectors");
  file=$fopen(vectors,"r"); if(file==0) $fatal(1,"cannot open vectors");
  while(!$feof(file)) begin
-  scan=$fscanf(file,"%d %d %d %d %d %d %d %d %d %d %h %d %d %d %d\n",
+  scan=$fscanf(file,"%d %d %d %d %d %d %d %d %d %d %h %d %d %d %d %d %d %d\n",
    test_id,channel_value,codec_value,decompress_value,wide_value,checksum_mode_value,
    nsource,nexpected,capacity,expected_error,checksum_value,
-   source_count,dest_count,stalls,seed);
+   source_count,dest_count,stalls,seed,descriptors_invalid,read_fault,write_fault);
   if(scan==0 && $feof(file)) begin end
   else begin
-   if(scan!=15) $fatal(1,"malformed vector record %0d",scan);
+   if(scan!=18) $fatal(1,"malformed vector record %0d",scan);
    for(i=0;i<source_count;i=i+1) begin
     scan=$fscanf(file,"%d",source_sizes[i]); if(scan!=1) $fatal(1,"source descriptor vector");
    end
    for(i=0;i<dest_count;i=i+1) begin
     scan=$fscanf(file,"%d",dest_sizes[i]); if(scan!=1) $fatal(1,"destination descriptor vector");
+   end
+   for(i=0;i<source_count;i=i+1) begin
+    scan=$fscanf(file,"%h",source_addresses[i]); if(scan!=1) $fatal(1,"source address vector");
+   end
+   for(i=0;i<dest_count;i=i+1) begin
+    scan=$fscanf(file,"%h",dest_addresses[i]); if(scan!=1) $fatal(1,"destination address vector");
    end
    for(i=0;i<nsource;i=i+1) begin
     scan=$fscanf(file,"%h",source[i]); if(scan!=1) $fatal(1,"source byte vector");
@@ -317,14 +331,14 @@ initial begin
    command_handshake=0;
    while(!command_handshake) tick();
    cmd_valid=0;
-   if(expected_error!=8) begin
+   if(expected_error!=8 || descriptors_invalid) begin
     cursor=4099;
     for(i=0;i<source_count;i=i+1) begin
-     descriptor(0,cursor,source_sizes[i]); cursor=cursor+source_sizes[i];
+     descriptor(0,source_addresses[i],source_sizes[i]); cursor=cursor+source_sizes[i];
     end
     cursor=1048579;
     for(i=0;i<dest_count;i=i+1) begin
-     descriptor(1,cursor,dest_sizes[i]); cursor=cursor+dest_sizes[i];
+     descriptor(1,dest_addresses[i],dest_sizes[i]); cursor=cursor+dest_sizes[i];
     end
    end
    wait_count=0;
@@ -369,7 +383,7 @@ integer i, j, repeat_index, count, distance, first_retire, last_retire;
 integer before_bytes, steady_bytes;
 reg [63:0] assembled, held_data;
 reg [3:0] held_count;
-reg held=0;
+reg held=0, exact_latency=1;
 task reset_outputs;
  begin
   if ({op_ready,m_valid,m_data,m_count} !== 70'd0)
@@ -398,6 +412,8 @@ task tick;
      $fatal(1,"ASSERT COPY LATENCY earliest retirement E+2");
    end
    if (m_valid && m_ready) begin
+    if(exact_latency && cycles!=accepted_cycle[head]+2)
+     $fatal(1,"ASSERT COPY LATENCY unstalled retirement must equal E+2");
     if (first_retire<0) first_retire=cycles;
     last_retire=cycles;
     compared=compared+1; compared_bytes=compared_bytes+m_count; head=head+1;
@@ -442,7 +458,7 @@ endtask
 initial begin
  rst_n=0;
  first_retire=-1; last_retire=-1;
- #1; reset_outputs();
+ #0; reset_outputs(); #1; reset_outputs();
  tick(); tick(); rst_n=1; tick();
  clear=1; op_valid=1; op_count=1; tick();
  if (op_ready !== 1'b0) $fatal(1,"ASSERT COPY clear acceptance");
@@ -469,6 +485,7 @@ initial begin
  end
  // Directed stalls and short tails exercise the same reference scoreboard.
  if (position+32<BLOCK) begin
+  exact_latency=0;
   m_ready=0; send(0,1,0,64'h55); send(1,WIDTH,1,0);
   op_valid=0;
   repeat(9) tick();

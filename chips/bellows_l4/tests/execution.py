@@ -102,6 +102,16 @@ class Execution:
         self.save()
 
     def finish(self, outcome, **details):
+        generated = {}
+        for p in self.directory.rglob("*"):
+            if p.is_file() and p.suffix in (".sv", ".txt", ".ys", ".patch"):
+                generated[p.relative_to(self.directory).as_posix()] = {
+                    "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
+                    "bytes": p.stat().st_size,
+                }
+            if p.is_file() and p.suffix in (".o", ".a", ".gch", ".d"):
+                p.unlink()
+        self.receipt["retained_artifacts"] = generated
         self.receipt.update(end_time=now(), outcome=outcome, **details)
         self.save()
         print(json.dumps({"outcome": outcome, "receipt":
