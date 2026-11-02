@@ -209,6 +209,14 @@ first addresses and starts the checksum unit. The cycle/degenerate table
 in `SPEC.md` applies to these transitions, including singleton descriptors
 and explicit non-power-of-two index bounds.
 
+Short entropy frames are not rejected by command-field validation. After
+descriptor validation, the entropy unit rejects a declared payload shorter
+than its 20-byte header with code 11, including an empty payload. The context
+guards checksum-trailer subtraction when the source is shorter than four
+bytes; it passes zero payload bytes rather than a wrapped length. This error
+uses the existing bus-first sticky fault and SETTLE path, which drains any
+already reserved transactions. Mode-0 command-length validation is unchanged.
+
 The 16-byte input queue accepts only returned bytes. A request reserves
 enough free queue space for its entire response, requests the minimum of
 transport width, validated remaining source bytes and current segment

@@ -107,7 +107,7 @@ module bellows_l4_entropy #(
             (codec!=4 && input_bytes!=raw_bytes) ||
             (codec==4 && input_bytes>SYMBOL_BYTES) ||
             (codec==2 && raw_bytes[0]))) ||
-        (decompress && (input_bytes<20 || input_bytes>FRAME_LIMIT));
+        (decompress && input_bytes>FRAME_LIMIT);
     wire [4:0] next_depth=decode_depth+5'd1;
     wire [15:0] next_decode_code={decode_code[14:0],payload_byte[7]};
     wire [15:0] selected_first=next_depth<=15 ?
@@ -230,6 +230,7 @@ module bellows_l4_entropy #(
                 packed_byte<=0; payload_byte<=0; output_data<=0;
                 pack_fill<=0; payload_left<=0; output_valid<=0;
                 if (command_bad) reject(8);
+                else if (decompress && input_bytes<20) reject(11);
                 else if (decompress) state<=D_HEADER;
                 else state<=E_INIT;
             end else begin

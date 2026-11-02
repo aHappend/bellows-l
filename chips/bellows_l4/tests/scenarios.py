@@ -202,10 +202,11 @@ def descriptor_cases(block=65536, depth=16):
     if depth >= 3 and block >= 17:
         cases.append(Case("non-power-two-segments", encoded, raw, stalls=1,
                           source_sizes=[3, 7, len(encoded)-10], dest_sizes=[3, 7, 7]))
-    if depth == 16 and block >= 15:
-        data = bytes(range(15))
-        cases.append(Case("sixteen-single-byte-source-segments", literal_block(data), data,
-                          source_sizes=[1]*16, dest_sizes=[1]*15, stalls=1))
+    if depth == 16 and block >= 16:
+        source, data = match_block(bytes(range(12)), 1, 4)
+        assert len(source) == 16 and lz4_decode(source, block) == data
+        cases.append(Case("sixteen-single-byte-source-segments", source, data,
+                          source_sizes=[1]*16, dest_sizes=[1]*16, stalls=1))
         data = bytes(range(16))
         cases.append(Case("sixteen-single-byte-destination-segments", literal_block(data), data,
                           dest_sizes=[1]*16, stalls=1))

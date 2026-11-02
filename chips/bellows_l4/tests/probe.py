@@ -42,6 +42,19 @@ def authoring_probe(ex, focus):
                  if "short-header" in case.name][:1]
         sim.top(8, 17, cases, simulator="icarus", label="short-header")
         return sim.save_coverage()
+    if focus == "sg16":
+        cases = [case for case in descriptor_cases(17, 16)
+                 if case.name.startswith("sixteen-single-byte-")]
+        if len(cases) != 2:
+            raise AssertionError("missing maximum-depth descriptor fixtures")
+        for simulator in ("icarus", "verilator"):
+            for width in (4, 8):
+                block = 17 if simulator == "icarus" else 65536
+                selected = cases if simulator == "icarus" else (
+                    lz4_negative_cases()+descriptor_cases())
+                sim.top(width, block, selected, depth=16, simulator=simulator,
+                        label="sg16")
+        return sim.save_coverage()
     if focus == "table":
         from leaf_harnesses import TABLE, table_vectors
         vectors = ex.directory / "table.vectors.txt"
@@ -141,7 +154,7 @@ def main():
                                           "source-portability", "authoring"],
                         default="copy")
     parser.add_argument("--focus", choices=["reference", "startup", "legacy", "negative",
-                                          "short-header", "table", "concurrent"],
+                                          "short-header", "sg16", "table", "concurrent"],
                         default="reference")
     parser.add_argument("--simulator", choices=["icarus", "verilator"], default="icarus")
     parser.add_argument("--repair-of")

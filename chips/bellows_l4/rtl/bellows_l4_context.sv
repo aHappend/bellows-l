@@ -76,8 +76,8 @@ module bellows_l4_context #(
         cmd_dst_capacity==0 || ((cmd_src_bytes==0)!=(cmd_src_segments==0)) ||
         (!cmd_decompress && (cmd_src_bytes>BLOCK ||
             (cmd_codec==2 && cmd_src_bytes[0]))) ||
-        (cmd_decompress && (cmd_src_bytes<command_trailer+
-            (cmd_codec==0 ? 32'd1 : 32'd20) ||
+        (cmd_decompress && ((cmd_codec==0 &&
+            cmd_src_bytes<command_trailer+32'd1) ||
             cmd_src_bytes>command_trailer+
             (cmd_codec==0 ? INTER_LIMIT : FRAME_LIMIT)));
     wire [64:0] descriptor_end={1'b0,sg_addr}+{33'd0,sg_bytes-32'd1};
@@ -474,7 +474,9 @@ module bellows_l4_context #(
                     identifier<=cmd_id; decoding<=cmd_decompress; wide<=cmd_wide;
                     codec<=cmd_codec; checksum_mode<=cmd_checksum_mode;
                     source_bytes<=cmd_src_bytes; capacity<=cmd_dst_capacity;
-                    payload_bytes<=cmd_decompress ? cmd_src_bytes-command_trailer : cmd_src_bytes;
+                    payload_bytes<=cmd_decompress ?
+                        (cmd_src_bytes>=command_trailer ?
+                            cmd_src_bytes-command_trailer : 32'd0) : cmd_src_bytes;
                     source_segments<=cmd_src_segments; destination_segments<=cmd_dst_segments;
                     source_seen<=0; destination_seen<=0; source_sum<=0; destination_sum<=0;
                     descriptor_bad<=0; source_segment<=0; destination_segment<=0;

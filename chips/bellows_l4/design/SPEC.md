@@ -197,6 +197,13 @@ The first fault is sticky through completion. Corresponding simultaneous
 faults use bus-before-codec-before-block-before-capacity-before-checksum
 priority. `err_checksum_mismatch` is high only with valid code-7 completion.
 
+For structurally valid entropy decompression commands, fewer than 20 payload
+bytes is a malformed frame (11), not an invalid command (8). Descriptor
+validation still precedes codec startup. If the source is shorter than the
+required checksum trailer, the payload length is zero without unsigned
+subtraction wraparound and the entropy decoder reports 11. Invalid command
+fields or descriptors retain code 8; legacy mode-0 length rejection is unchanged.
+
 ## Acceptance and reproduction
 
 Independent Verifier supplies `tests/verify.py`; the mandatory portable
