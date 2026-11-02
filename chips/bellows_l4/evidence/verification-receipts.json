@@ -1,12 +1,362 @@
 {
   "chip": "Bellows-L4",
   "passed_checks": {
+    "check:entropy-lossless-compression": {
+      "attempt_id": 12,
+      "duration_s": 1602.7594227029476,
+      "stdout_preview": "b65536-sg16-verilator-entropy-seed17: 150 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 180 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 210 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 240 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 270 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 300 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 330 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 360 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 390 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed17: 420 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed89: 30 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed89: 60 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed89: 90 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed89: 120 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed203: 30 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed203: 60 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed203: 90 seconds\nprogress g4-w8-b65536-sg16-verilator-entropy-seed203: 120 seconds\n{\"outcome\": \"passed\", \"receipt\": \"evidence/l1-979aa688c2f041bd/receipt.json\", \"suites\": {\"entropy\": {\"compared_transactions\": 1496, \"successful_transactions\": 1208, \"negative_transactions\": 288, \"compared_bytes\": 5247980, \"codecs\": [0, 1, 2, 3, 4], \"channels\": [0, 1, 2, 3], \"transports\": [0, 1], \"checksums\": [0, 1, 2], \"seeds\": [17, 89, 203]}}}\n",
+      "receipt_count": 3,
+      "receipts": [
+        {
+          "path": "evidence/l1-c57655a84fe7496d/receipt.json",
+          "data": {
+            "cwd": ".",
+            "start_time": "2026-11-02T19:30:07.847742+00:00",
+            "source_hashes": {
+              "bellows_l3_reference/rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "bellows_l3_reference/rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "bellows_l3_reference/rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "bellows_l3_reference/rtl/bellows_l2_compressor.sv": "b41fb612530f996bac1a8801e3c9e3b59b89b68c2e6597bd210e8b0bb8997307",
+              "bellows_l3_reference/rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "bellows_l3_reference/rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "bellows_l3_reference/rtl/bellows_l2_literal_buffer.sv": "745e7beed343cb97c583ef220c033bfaf2c884e96915d741454f777f177f924b",
+              "bellows_l3_reference/rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "bellows_l3_reference/rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "bellows_l3_reference/rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "bellows_l3_reference/rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "bellows_l3_reference/rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "bellows_l3_reference/rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "design/ARCHITECTURE.md": "b8f757879f85e33151220c0c30c939419d11e73fb899c461c4e8568ca3dfabe1",
+              "design/GENERATIONAL_HANDOFF.md": "f683c1cbb7168b09d1802ba5f3fb9513baa1ebc8b7a51118a3ec4eee95484d89",
+              "design/SPEC.md": "5405ecc5cf5f1e55191024015c8bad5f1b7245048a1b6cf9d55fca02c2ad167c",
+              "rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "rtl/bellows_l2_compressor.sv": "b41fb612530f996bac1a8801e3c9e3b59b89b68c2e6597bd210e8b0bb8997307",
+              "rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "rtl/bellows_l2_literal_buffer.sv": "745e7beed343cb97c583ef220c033bfaf2c884e96915d741454f777f177f924b",
+              "rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "rtl/bellows_l4_context.sv": "2e36bb3c160fada5780c3d40172817a468555fdb005443de0b33126967090cc9",
+              "rtl/bellows_l4_copy_engine.sv": "657cddec9ee78a9ed768e3f357820856ca1f6216cbfda1311cb6941b09f25e73",
+              "rtl/bellows_l4_entropy.sv": "0525f4ce1241793e3a9f190c9be23f14403f3d977d99e57ae71299af11406f69",
+              "rtl/bellows_l4_huffman_table.sv": "b57cc93a9bed3c06e8e171101505025808eafb0ee7ba67d041656484964a11c1",
+              "rtl/bellows_l4_intermediate.sv": "6b5dc9dca4bf85ddc61a339228521a338ee45205153fe38fd0273171f1a64ac5",
+              "rtl/bellows_l4_lz4_decoder.sv": "0bbeb8d40edc21bff4d398b79d780b9f210446c0e1a6e764b18788c06860c106",
+              "rtl/bellows_l4_scheduler.sv": "1ec37b8f8dd80aeeacf9305c9ae05dc31d32874a568f4095f9d50bda13ab8aa6",
+              "rtl/bellows_l4_sg_dma.sv": "ece225761028ef8e39f92818b46d90fab0d5d9827927b40859d181bf36c75141",
+              "rtl/bellows_l4_top.sv": "e069e4fc025002ccef4936068cb9220e95f2cc8683a7719bf826ec9a08fdc9bf",
+              "tests/concurrent.py": "b4c825ff8be7abed1eaf967e63dde5c17b2c6dce62ec01fc15482c7a457df2b7",
+              "tests/execution.py": "39350a41a9263620e3ca478e45c427e4dc12a10831cdfa049dba2b81a8fc3dfc",
+              "tests/harnesses.py": "cc0fb5f6054ba118c1c9d7e9f75eef1319d3490aaf06c4bbcab4842ecfba479d",
+              "tests/leaf_harnesses.py": "773cd76a594d5e235ebf79f123ff1461b11185c0607efc953265a6f9b5afddf1",
+              "tests/probe.py": "c97f515c3273b7b6757e9e8263f1045abdf85d2009b16abf1bcca3f5b9d26c17",
+              "tests/reference.py": "05678b1334778732c541a4345ca6bf51ca663cf07d512b35611fde8db95b8ae9",
+              "tests/runner.py": "96ddd4af4de007b76a5bcb2810d058a053ad97fbb9647fd4d7041ab731b1f762",
+              "tests/scenarios.py": "875057c062db4ec1accf5e08b147199af5983c87504b042e5db3f7a90759b694",
+              "tests/source_portability.py": "44183b5a484ff242dff38327927d8e839b3b7a08c371188c27a7dc832d700ce7",
+              "tests/structural.py": "65ce68e2cf1f72ec2b31b46cbc3dcb0b38a2ba517c4881bd983230c69a247d9b",
+              "tests/verify.py": "4ae352a52a01584bfa444100e44dac77b378ff3977ee5884697e74b644cf0d3c"
+            },
+            "commands": [
+              {
+                "argv": [
+                  "python3",
+                  "--version"
+                ],
+                "cwd": ".",
+                "start_time": "2026-11-02T19:30:07.864068+00:00",
+                "timeout_seconds": 2700,
+                "stdout": "evidence/l1-c57655a84fe7496d/version-python3.stdout.txt",
+                "stderr": "evidence/l1-c57655a84fe7496d/version-python3.stderr.txt",
+                "end_time": "2026-11-02T19:30:07.869305+00:00",
+                "exit_code": 0,
+                "timed_out": false
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": ".",
+                "start_time": "2026-11-02T19:30:07.869935+00:00",
+                "timeout_seconds": 2700,
+                "stdout": "evidence/l1-c57655a84fe7496d/version-verilator.stdout.txt",
+                "stderr": "evidence/l1-c57655a84fe7496d/version-verilator.stderr.txt",
+                "end_time": "2026-11-02T19:30:07.984887+00:00",
+                "exit_code": 0,
+                "timed_out": false
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-j",
+                  "2",
+                  "--top-module",
+                  "tb",
+                  "--Mdir",
+                  "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-obj",
+                  "-o",
+                  "simulation",
+                  "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-verilator.sv",
+                  "rtl/bellows_l4_copy_engine.sv"
+                ],
+                "cwd": ".",
+                "start_time": "2026-11-02T19:30:07.986400+00:00",
+                "timeout_seconds": 2700,
+                "stdout": "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-compile.stdout.txt",
+                "stderr": "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-compile.stderr.txt"
+              }
+            ],
+            "tool_versions": {
+              "python3": "Python 3.12.3",
+              "verilator": "Verilator 5.020 2024-01-01 rev (Debian 5.020-1)"
+            },
+            "repair_of": null
+          }
+        },
+        {
+          "path": "evidence/l1-979aa688c2f041bd/coverage.json",
+          "data": {
+            "compared_transactions": 1496,
+            "successful_transactions": 1208,
+            "negative_transactions": 288,
+            "compared_bytes": 5247980,
+            "codecs": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "channels": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "transports": [
+              0,
+              1
+            ],
+            "checksums": [
+              0,
+              1,
+              2
+            ],
+            "seeds": [
+              17,
+              89,
+              203
+            ]
+          }
+        },
+        {
+          "path": "evidence/l1-20afc231dcce4c79/coverage.json",
+          "data": {
+            "compared_transactions": 1650,
+            "successful_transactions": 1438,
+            "negative_transactions": 212,
+            "compared_bytes": 2294234,
+            "codecs": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "channels": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "transports": [
+              0,
+              1
+            ],
+            "checksums": [
+              0,
+              1,
+              2
+            ],
+            "seeds": [
+              17,
+              18,
+              19,
+              20,
+              89,
+              203
+            ]
+          }
+        }
+      ]
+    },
     "check:lz4-compatibility-throughput": {
       "attempt_id": 11,
       "duration_s": 1029.1591530581936,
       "stdout_preview": "running independent lz4 verification\nprogress concurrent-w4-resetNone-compile: 30 seconds\nprogress concurrent-w4-reset0-compile: 30 seconds\nprogress concurrent-w4-reset1-compile: 30 seconds\nprogress concurrent-w4-reset2-compile: 30 seconds\nprogress concurrent-w4-reset3-compile: 30 seconds\nprogress concurrent-w4-reset4-compile: 30 seconds\nprogress concurrent-w4-reset5-compile: 30 seconds\nprogress concurrent-w8-resetNone-compile: 30 seconds\nprogress concurrent-w8-reset0-compile: 30 seconds\nprogress concurrent-w8-reset1-compile: 30 seconds\nprogress concurrent-w8-reset2-compile: 30 seconds\nprogress concurrent-w8-reset3-compile: 30 seconds\nprogress concurrent-w8-reset4-compile: 30 seconds\nprogress concurrent-w8-reset5-compile: 30 seconds\n{\"outcome\": \"passed\", \"receipt\": \"evidence/l1-20afc231dcce4c79/receipt.json\", \"suites\": {\"lz4\": {\"compared_transactions\": 1650, \"successful_transactions\": 1438, \"negative_transactions\": 212, \"compared_bytes\": 2294234, \"codecs\": [0, 1, 2, 3], \"channels\": [0, 1, 2, 3], \"transports\": [0, 1], \"checksums\": [0, 1, 2], \"seeds\": [17, 18, 19, 20, 89, 203]}}}\n",
-      "receipt_count": 1,
+      "receipt_count": 3,
       "receipts": [
+        {
+          "path": "evidence/l1-c57655a84fe7496d/receipt.json",
+          "data": {
+            "cwd": ".",
+            "start_time": "2026-11-02T19:30:07.847742+00:00",
+            "source_hashes": {
+              "bellows_l3_reference/rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "bellows_l3_reference/rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "bellows_l3_reference/rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "bellows_l3_reference/rtl/bellows_l2_compressor.sv": "b41fb612530f996bac1a8801e3c9e3b59b89b68c2e6597bd210e8b0bb8997307",
+              "bellows_l3_reference/rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "bellows_l3_reference/rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "bellows_l3_reference/rtl/bellows_l2_literal_buffer.sv": "745e7beed343cb97c583ef220c033bfaf2c884e96915d741454f777f177f924b",
+              "bellows_l3_reference/rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "bellows_l3_reference/rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "bellows_l3_reference/rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "bellows_l3_reference/rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "bellows_l3_reference/rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "bellows_l3_reference/rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "design/ARCHITECTURE.md": "b8f757879f85e33151220c0c30c939419d11e73fb899c461c4e8568ca3dfabe1",
+              "design/GENERATIONAL_HANDOFF.md": "f683c1cbb7168b09d1802ba5f3fb9513baa1ebc8b7a51118a3ec4eee95484d89",
+              "design/SPEC.md": "5405ecc5cf5f1e55191024015c8bad5f1b7245048a1b6cf9d55fca02c2ad167c",
+              "rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "rtl/bellows_l2_compressor.sv": "b41fb612530f996bac1a8801e3c9e3b59b89b68c2e6597bd210e8b0bb8997307",
+              "rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "rtl/bellows_l2_literal_buffer.sv": "745e7beed343cb97c583ef220c033bfaf2c884e96915d741454f777f177f924b",
+              "rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "rtl/bellows_l4_context.sv": "2e36bb3c160fada5780c3d40172817a468555fdb005443de0b33126967090cc9",
+              "rtl/bellows_l4_copy_engine.sv": "657cddec9ee78a9ed768e3f357820856ca1f6216cbfda1311cb6941b09f25e73",
+              "rtl/bellows_l4_entropy.sv": "0525f4ce1241793e3a9f190c9be23f14403f3d977d99e57ae71299af11406f69",
+              "rtl/bellows_l4_huffman_table.sv": "b57cc93a9bed3c06e8e171101505025808eafb0ee7ba67d041656484964a11c1",
+              "rtl/bellows_l4_intermediate.sv": "6b5dc9dca4bf85ddc61a339228521a338ee45205153fe38fd0273171f1a64ac5",
+              "rtl/bellows_l4_lz4_decoder.sv": "0bbeb8d40edc21bff4d398b79d780b9f210446c0e1a6e764b18788c06860c106",
+              "rtl/bellows_l4_scheduler.sv": "1ec37b8f8dd80aeeacf9305c9ae05dc31d32874a568f4095f9d50bda13ab8aa6",
+              "rtl/bellows_l4_sg_dma.sv": "ece225761028ef8e39f92818b46d90fab0d5d9827927b40859d181bf36c75141",
+              "rtl/bellows_l4_top.sv": "e069e4fc025002ccef4936068cb9220e95f2cc8683a7719bf826ec9a08fdc9bf",
+              "tests/concurrent.py": "b4c825ff8be7abed1eaf967e63dde5c17b2c6dce62ec01fc15482c7a457df2b7",
+              "tests/execution.py": "39350a41a9263620e3ca478e45c427e4dc12a10831cdfa049dba2b81a8fc3dfc",
+              "tests/harnesses.py": "cc0fb5f6054ba118c1c9d7e9f75eef1319d3490aaf06c4bbcab4842ecfba479d",
+              "tests/leaf_harnesses.py": "773cd76a594d5e235ebf79f123ff1461b11185c0607efc953265a6f9b5afddf1",
+              "tests/probe.py": "c97f515c3273b7b6757e9e8263f1045abdf85d2009b16abf1bcca3f5b9d26c17",
+              "tests/reference.py": "05678b1334778732c541a4345ca6bf51ca663cf07d512b35611fde8db95b8ae9",
+              "tests/runner.py": "96ddd4af4de007b76a5bcb2810d058a053ad97fbb9647fd4d7041ab731b1f762",
+              "tests/scenarios.py": "875057c062db4ec1accf5e08b147199af5983c87504b042e5db3f7a90759b694",
+              "tests/source_portability.py": "44183b5a484ff242dff38327927d8e839b3b7a08c371188c27a7dc832d700ce7",
+              "tests/structural.py": "65ce68e2cf1f72ec2b31b46cbc3dcb0b38a2ba517c4881bd983230c69a247d9b",
+              "tests/verify.py": "4ae352a52a01584bfa444100e44dac77b378ff3977ee5884697e74b644cf0d3c"
+            },
+            "commands": [
+              {
+                "argv": [
+                  "python3",
+                  "--version"
+                ],
+                "cwd": ".",
+                "start_time": "2026-11-02T19:30:07.864068+00:00",
+                "timeout_seconds": 2700,
+                "stdout": "evidence/l1-c57655a84fe7496d/version-python3.stdout.txt",
+                "stderr": "evidence/l1-c57655a84fe7496d/version-python3.stderr.txt",
+                "end_time": "2026-11-02T19:30:07.869305+00:00",
+                "exit_code": 0,
+                "timed_out": false
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": ".",
+                "start_time": "2026-11-02T19:30:07.869935+00:00",
+                "timeout_seconds": 2700,
+                "stdout": "evidence/l1-c57655a84fe7496d/version-verilator.stdout.txt",
+                "stderr": "evidence/l1-c57655a84fe7496d/version-verilator.stderr.txt",
+                "end_time": "2026-11-02T19:30:07.984887+00:00",
+                "exit_code": 0,
+                "timed_out": false
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-j",
+                  "2",
+                  "--top-module",
+                  "tb",
+                  "--Mdir",
+                  "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-obj",
+                  "-o",
+                  "simulation",
+                  "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-verilator.sv",
+                  "rtl/bellows_l4_copy_engine.sv"
+                ],
+                "cwd": ".",
+                "start_time": "2026-11-02T19:30:07.986400+00:00",
+                "timeout_seconds": 2700,
+                "stdout": "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-compile.stdout.txt",
+                "stderr": "evidence/l1-c57655a84fe7496d/copy-8-65536-verilator-compile.stderr.txt"
+              }
+            ],
+            "tool_versions": {
+              "python3": "Python 3.12.3",
+              "verilator": "Verilator 5.020 2024-01-01 rev (Debian 5.020-1)"
+            },
+            "repair_of": null
+          }
+        },
+        {
+          "path": "evidence/l1-979aa688c2f041bd/coverage.json",
+          "data": {
+            "compared_transactions": 1496,
+            "successful_transactions": 1208,
+            "negative_transactions": 288,
+            "compared_bytes": 5247980,
+            "codecs": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "channels": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "transports": [
+              0,
+              1
+            ],
+            "checksums": [
+              0,
+              1,
+              2
+            ],
+            "seeds": [
+              17,
+              89,
+              203
+            ]
+          }
+        },
         {
           "path": "evidence/l1-20afc231dcce4c79/coverage.json",
           "data": {
