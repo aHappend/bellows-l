@@ -21,19 +21,25 @@ module bellows_l4_arbiter #(parameter integer WIDTH=69) (
             end
         end
     end
-    assign valid=rst_n && occupied;
-    assign channel=valid ? owner : 2'd0;
-    assign payload=valid ? held : {WIDTH{1'b0}};
+    wire offered=admit && !occupied && found;
+    assign valid=rst_n && (occupied || offered);
+    assign channel=valid ? (occupied ? owner : choice) : 2'd0;
+    assign payload=valid ? (occupied ? held : lane_payload[choice*WIDTH +: WIDTH]) :
+        {WIDTH{1'b0}};
     assign lane_take=rst_n && admit && !occupied && found ?
         (4'b0001<<choice) : 4'd0;
-    assign lane_retire=valid && ready ? (4'b0001<<owner) : 4'd0;
+    assign lane_retire=valid && ready ? (4'b0001<<channel) : 4'd0;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             occupied<=0; owner<=0; pointer<=0; held<=0;
         end else begin
             if (admit && !occupied && found) begin
-                occupied<=1; owner<=choice;
-                held<=lane_payload[choice*WIDTH +: WIDTH];
+                owner<=choice;
+                if (ready) begin
+                    occupied<=0; pointer<=choice+2'd1;
+                end else begin
+                    occupied<=1; held<=lane_payload[choice*WIDTH +: WIDTH];
+                end
             end else if (valid && ready) begin
                 occupied<=0; pointer<=owner+2'd1;
             end
