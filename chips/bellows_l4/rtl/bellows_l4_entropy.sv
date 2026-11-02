@@ -85,6 +85,30 @@ module bellows_l4_entropy #(
         selected_codec==3 ? {4'd0,s_data[3:0]} : s_data;
     wire collect_symbol=source_accept && state==E_COLLECT &&
         (selected_codec!=2 || input_index[0]);
+    wire histogram_read_en=collect_symbol || state==E_HIGH_REQ ||
+        state==E_HIST_REQ || state==E_SUM_REQ;
+    wire [7:0] histogram_read_addr=collect_symbol ? input_symbol :
+        state==E_HIGH_REQ ? {4'd0,high_nibble[3:0]} : table_index;
+    wire histogram_write_en=state==E_INIT || state==E_HIST_UPDATE ||
+        state==E_HIGH_UPDATE;
+    wire [7:0] histogram_write_addr=state==E_INIT ? table_index :
+        state==E_HIGH_UPDATE ? {4'd0,high_nibble[3:0]} : histogram_symbol;
+    wire [31:0] histogram_write_data=state==E_INIT ? 32'd0 :
+        histogram_q+32'd1;
+    wire symbol_write_en=collect_symbol || state==E_HIGH_REQ;
+    wire [7:0] symbol_write_data=state==E_HIGH_REQ ?
+        {4'd0,high_nibble[3:0]} : input_symbol;
+    wire residual_write_encode=collect_symbol && selected_codec==2;
+    wire residual_write_en=residual_write_encode ||
+        (state==D_RES && source_accept);
+    wire [RESIDUAL_BITS-1:0] residual_write_addr=residual_write_encode ?
+        input_index[RESIDUAL_BITS:1] : residual_index[RESIDUAL_BITS-1:0];
+    wire [7:0] residual_write_data=residual_write_encode ?
+        {s_data[7],low_byte[6:0]} : s_data;
+    wire residual_decode_read=decode_request && selected_codec==2;
+    wire residual_read_en=state==E_RES_REQ || residual_decode_read;
+    wire [RESIDUAL_BITS-1:0] residual_read_addr=residual_decode_read ?
+        emitted_symbols[RESIDUAL_BITS-1:0] : residual_index[RESIDUAL_BITS-1:0];
     wire header_bad=(header_index==0 && s_data!=8'h42) ||
         (header_index==1 && s_data!=8'h4c) ||
         (header_index==2 && s_data!=8'h34) ||
@@ -166,31 +190,26 @@ module bellows_l4_entropy #(
 
     always @(posedge clk) begin
         if (rst_n) begin
-            if (state==E_INIT) histogram[table_index]<=0;
-            if (collect_symbol) begin
-                histogram_q<=histogram[input_symbol];
-                symbols[symbol_index[SYMBOL_BITS-1:0]]<=input_symbol;
-                if (selected_codec==2)
-                    residuals[input_index>>1]<={s_data[7],low_byte[6:0]};
-            end
-            if (state==E_HIST_UPDATE)
-                histogram[histogram_symbol]<=histogram_q+32'd1;
-            if (state==E_HIGH_REQ) begin
-                histogram_q<=histogram[{4'd0,high_nibble[3:0]}];
-                symbols[symbol_index[SYMBOL_BITS-1:0]]<={4'd0,high_nibble[3:0]};
-            end
-            if (state==E_HIGH_UPDATE)
-                histogram[{4'd0,high_nibble[3:0]}]<=histogram_q+32'd1;
-            if (state==E_HIST_REQ || state==E_SUM_REQ)
-                histogram_q<=histogram[table_index];
+            if (histogram_write_en)
+                histogram[histogram_write_addr]<=histogram_write_data;
+            if (histogram_read_en)
+                histogram_q<=histogram[histogram_read_addr];
+        end
+    end
+    always @(posedge clk) begin
+        if (rst_n) begin
+            if (symbol_write_en)
+                symbols[symbol_index[SYMBOL_BITS-1:0]]<=symbol_write_data;
             if (state==E_SYMBOL_REQ)
                 symbol_q<=symbols[symbol_index[SYMBOL_BITS-1:0]];
-            if (state==E_RES_REQ)
-                residual_q<=residuals[residual_index[RESIDUAL_BITS-1:0]];
-            if (state==D_RES && source_accept)
-                residuals[residual_index[RESIDUAL_BITS-1:0]]<=s_data;
-            if (decode_request && selected_codec==2)
-                residual_q<=residuals[emitted_symbols[RESIDUAL_BITS-1:0]];
+        end
+    end
+    always @(posedge clk) begin
+        if (rst_n) begin
+            if (residual_write_en)
+                residuals[residual_write_addr]<=residual_write_data;
+            if (residual_read_en)
+                residual_q<=residuals[residual_read_addr];
         end
     end
 

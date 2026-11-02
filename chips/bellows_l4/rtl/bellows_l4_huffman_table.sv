@@ -54,7 +54,7 @@ module bellows_l4_huffman_table (
     reg [39:0] frequency_q;
     reg [7:0] minimum_q;
     reg [8:0] parent_q;
-    reg [3:0] length_q, lookup_length_q;
+    reg [3:0] length_q;
     reg [14:0] lookup_code_q;
     reg [7:0] decode_symbol_q;
 
@@ -73,6 +73,33 @@ module bellows_l4_huffman_table (
     wire lookup_accept=lookup_valid && table_valid && error_code==0 &&
         (!nibble_alphabet || lookup_symbol<16);
     wire decode_accept=decode_read && table_valid && error_code==0;
+    wire node_write_en=state==MERGE ||
+        (histogram_accept && (!nibble_alphabet || hist_symbol<16));
+    wire [8:0] node_write_addr=state==MERGE ? next_node : {1'b0,hist_symbol};
+    wire [39:0] node_write_frequency=state==MERGE ?
+        first_frequency+second_frequency : {8'd0,hist_frequency};
+    wire [7:0] node_write_minimum=state==MERGE ?
+        (first_minimum<second_minimum ? first_minimum : second_minimum) :
+        hist_symbol;
+    wire parent_write_en=state==MERGE;
+    wire parent_read_en=state==DEPTH_REQ && has_parent[walk_node];
+    wire [8:0] parent_port_a_addr=parent_write_en ? first_node : walk_node;
+    wire absent_leaf=state==DEPTH_BEGIN && !active[{1'b0,leaf}] &&
+        !has_parent[{1'b0,leaf}];
+    wire frame_length_write=length_accept &&
+        (!nibble_alphabet || length_symbol<16) && length_value<=15;
+    wire length_write_en=frame_length_write || state==DEPTH_STORE ||
+        absent_leaf || state==FALLBACK;
+    wire [7:0] length_write_addr=state==DEPTH_STORE || absent_leaf ||
+        state==FALLBACK ? leaf : length_symbol;
+    wire [3:0] length_write_data=state==FALLBACK ?
+        (nibble_alphabet ? 4'd4 : 4'd8) :
+        absent_leaf ? 4'd0 :
+        state==DEPTH_STORE ? (depth==0 ? 4'd1 : depth[3:0]) :
+        length_value[3:0];
+    wire length_read_en=state==COUNT_REQ || state==CODE_REQ || lookup_accept;
+    wire [7:0] length_read_addr=lookup_accept ? lookup_symbol :
+        state==CODE_REQ ? symbol_index : leaf;
 
     assign start_ready=rst_n && !clear && (state==IDLE || state==DONE);
     assign hist_ready=rst_n && !clear && state==LOAD && encoder && !build_valid;
@@ -82,8 +109,8 @@ module bellows_l4_huffman_table (
     assign table_error=table_valid ? error_code : 4'd0;
     assign depth_fallback=table_valid && fallback;
     assign lookup_result_valid=rst_n && !clear && lookup_pending;
-    assign lookup_length=lookup_result_valid ? lookup_length_q : 4'd0;
-    assign lookup_code=lookup_result_valid && lookup_length_q!=0 ?
+    assign lookup_length=lookup_result_valid ? length_q : 4'd0;
+    assign lookup_code=lookup_result_valid && length_q!=0 ?
         lookup_code_q : 15'd0;
     assign decode_result_valid=rst_n && !clear && decode_pending;
     assign decode_symbol=decode_result_valid ? decode_symbol_q : 8'd0;
@@ -103,54 +130,62 @@ module bellows_l4_huffman_table (
     // per-command leaf loading protect all reads of uninitialized storage.
     always @(posedge clk) begin
         if (rst_n && !clear) begin
-            if (histogram_accept && (!nibble_alphabet || hist_symbol<16)) begin
-                frequency[{1'b0,hist_symbol}]<={8'd0,hist_frequency};
-                minimum_symbol[{1'b0,hist_symbol}]<=hist_symbol;
+            if (node_write_en) begin
+                frequency[node_write_addr]<=node_write_frequency;
+                minimum_symbol[node_write_addr]<=node_write_minimum;
             end
-            if (length_accept && (!nibble_alphabet || length_symbol<16) &&
-                length_value<=15)
-                lengths[length_symbol]<=length_value[3:0];
             if (state==SCAN_REQ) begin
                 frequency_q<=frequency[scan_node];
                 minimum_q<=minimum_symbol[scan_node];
             end
-            if (state==MERGE) begin
-                frequency[next_node]<=first_frequency+second_frequency;
-                minimum_symbol[next_node]<=first_minimum<second_minimum ?
-                    first_minimum : second_minimum;
-                parent[first_node]<=next_node;
+        end
+    end
+    // Merge uses both write ports; walks use port A only, on separate cycles.
+    always @(posedge clk) begin
+        if (rst_n && !clear) begin
+            if (parent_write_en)
+                parent[parent_port_a_addr]<=next_node;
+            else if (parent_read_en)
+                parent_q<=parent[parent_port_a_addr];
+        end
+    end
+    always @(posedge clk) begin
+        if (rst_n && !clear) begin
+            if (parent_write_en)
                 parent[second_node]<=next_node;
-            end
-            if (state==DEPTH_REQ && has_parent[walk_node])
-                parent_q<=parent[walk_node];
-            if (state==DEPTH_STORE)
-                lengths[leaf]<=depth==0 ? 4'd1 : depth[3:0];
-            if (state==DEPTH_BEGIN && !active[{1'b0,leaf}] &&
-                !has_parent[{1'b0,leaf}])
-                lengths[leaf]<=0;
-            if (state==FALLBACK)
-                lengths[leaf]<=nibble_alphabet ? 4'd4 : 4'd8;
+        end
+    end
+    always @(posedge clk) begin
+        if (rst_n && !clear) begin
+            if (length_write_en)
+                lengths[length_write_addr]<=length_write_data;
+            if (length_read_en)
+                length_q<=lengths[length_read_addr];
+        end
+    end
+    always @(posedge clk) begin
+        if (rst_n && !clear) begin
             if (state==CLEAR_COUNTS) begin
                 counts[metric_length]<=0;
                 first_code[metric_length]<=0;
                 first_index[metric_length]<=0;
             end
-            if (state==COUNT_REQ) length_q<=lengths[leaf];
             if (state==COUNT_USE && length_q!=0)
                 counts[length_q]<=counts[length_q]+10'd1;
             if (state==KRAFT) begin
                 first_code[metric_length]<=canonical_code;
                 first_index[metric_length]<=prefix_count;
             end
-            if (state==CODE_REQ) length_q<=lengths[symbol_index];
+        end
+    end
+    always @(posedge clk) begin
+        if (rst_n && !clear) begin
             if (state==CODE_USE && length_q==code_length) begin
                 codes[symbol_index]<=canonical_code[14:0];
                 sorted_symbols[sorted_count[7:0]]<=symbol_index;
             end
-            if (lookup_accept) begin
-                lookup_length_q<=lengths[lookup_symbol];
+            if (lookup_accept)
                 lookup_code_q<=codes[lookup_symbol];
-            end
             if (decode_accept) decode_symbol_q<=sorted_symbols[decode_index];
         end
     end

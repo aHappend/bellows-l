@@ -1,0 +1,53 @@
+{
+  "gate": "quartus-sta",
+  "timestamp_utc": "2026-11-02T20:36:17.183731+00:00",
+  "project_dir": "/data/sufeng/bellows-l4-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work",
+  "revision": "top",
+  "clock_filter": "clk_main",
+  "min_setup_slack_ns": 0.0,
+  "min_hold_slack_ns": 0.0,
+  "status": "failed",
+  "map_summary": {
+    "exists": false,
+    "errors": [],
+    "lpm_divide_errors": [],
+    "warning_10268": [],
+    "uninferred_rams": []
+  },
+  "sta_summary": {
+    "exit_code": 3,
+    "netlist_mode": null,
+    "clocks": [],
+    "wns_setup_ns": null,
+    "wns_hold_ns": null,
+    "unconstrained_setup_paths": 0,
+    "unconstrained_functional_endpoints": 0,
+    "unapproved_timing_exceptions": 0,
+    "failing_setup_count": 0,
+    "failing_hold_count": 0,
+    "setup_paths": [],
+    "hold_paths": [],
+    "stderr_tail": [
+      "------------------------------------------------",
+      "ERROR: Can't run TimeQuest Timing Analyzer (quartus_sta) -- Analysis and Synthesis (quartus_map) failed or was not run. Run Analysis and Synthesis (quartus_map) successfully before running the TimeQuest analyzer (create_timing_netlist -post_map).",
+      "",
+      "    while executing",
+      "\"create_timing_netlist -post_map\"",
+      "    (file \"vulcan_sta_dlh584g9.tcl\" line 2)",
+      "------------------------------------------------"
+    ]
+  },
+  "detail": "quartus_map timed out after 3600s (check for uninferred large RAM arrays; split byte-enabled 1D RAMs into byte-lane arrays in a single always @(posedge clk) block).",
+  "quartus_slot_telemetry": {
+    "slot_index": 1,
+    "max_slots": 6,
+    "slot_wait_s": 0.002
+  },
+  "top_module": "bellows_l4_top",
+  "clock_port": "clk",
+  "clock_period_ns": 10.0,
+  "target_frequency_mhz": 100.0,
+  "parameters": {},
+  "source_sha256": "d94506ae864db0c01757233f7f546374ed860fd58247b3ae64d41fa96186e5b9",
+  "applicable": true
+}

@@ -17,7 +17,9 @@ module bellows_l2_literal_buffer #(
         (MAX_BLOCK_BYTES >= 1 && MAX_BLOCK_BYTES <= 65536) ?
         MAX_BLOCK_BYTES : 1;
     (* ramstyle = "M20K", nomem2reg *)
-    reg [7:0] memory [0:STORAGE_BYTES-1];
+    reg [7:0] memory_a [0:STORAGE_BYTES-1];
+    (* ramstyle = "M20K", nomem2reg *)
+    reg [7:0] memory_b [0:STORAGE_BYTES-1];
     reg [7:0] a_read, b_read;
     reg a_valid, b_valid;
     assign a_data = rst_n && a_valid ? a_read : 8'd0;
@@ -31,11 +33,15 @@ module bellows_l2_literal_buffer #(
 
     always @(posedge clk) begin
         if (rst_n && write_en)
-            memory[write_addr] <= write_data;
+            memory_a[write_addr] <= write_data;
         if (rst_n && a_en)
-            a_read <= memory[a_addr];
+            a_read <= memory_a[a_addr];
+    end
+    always @(posedge clk) begin
+        if (rst_n && write_en)
+            memory_b[write_addr] <= write_data;
         if (rst_n && b_en)
-            b_read <= memory[b_addr];
+            b_read <= memory_b[b_addr];
     end
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin a_valid<=0; b_valid<=0; end
