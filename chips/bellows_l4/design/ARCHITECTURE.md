@@ -31,8 +31,10 @@ pending. The contract in `SPEC.md` is unchanged.
 | `bellows_l4_scheduler` | Independent rotating read/write/completion reservations | Hold each lane request until reservation; do not reuse context before completion |
 | `bellows_l4_sg_dma` | Shared outstanding ownership across byte/wide ports | Descriptor-validated addresses/counts/strobes from context; bridge discards old reset responses |
 
-No parent-reference source is edited. Delivered compatibility sources are
-copies of the actual supplied files, not regenerated implementations.
+No parent-reference source is edited. Delivered compatibility sources derive
+from the actual supplied files, not regenerated implementations. The literal
+buffer's physical storage is replicated as described below; its ports,
+read latency and old-data collision semantics are unchanged.
 The supplied `design/GENERATIONAL_HANDOFF.md` records `N/A` for parent
 STA/PPA and physical HIL, so historical measurements remain unknown and
 parent signoff is not established. The preserved compatibility ports and
@@ -125,6 +127,59 @@ The construction deliberately trades entropy codebook latency for bounded
 between-register logic. There is no software-supplied encoder codebook.
 Frequency sums use 40 bits, accommodating the full 256-leaf sum of 32-bit
 input frequencies. This is storage/arithmetic sizing, not a timing result.
+
+## Device RAM port normalization
+
+The native mapper previously timed out after 3600 seconds before producing
+a mapped netlist. This is not evidence of timing failure or proof of the
+timeout's cause; no device utilization, M20K placement or WNS result was
+obtained. The following source repair removes behavioral RAM port patterns
+that require more ports than their intended physical memories support.
+Fresh mandatory checks and native mapping/STA/HIL remain required.
+
+`bellows_l2_literal_buffer` now has two byte-wide storage replicas, each
+with one synchronous write and one synchronous read. Both receive every
+enabled write at the same address and edge. The matcher can still read
+independent A/B addresses simultaneously without serializing its extension
+comparison. This doubles literal storage from `MAX_BLOCK_BYTES` to
+`2*MAX_BLOCK_BYTES` physical bytes per compressor, but does not change
+logical capacity, cycle count or the deterministic compressor algorithm.
+No write-through bypass is added: a same-edge read/write collision returns
+the old byte, as in the supplied parent's nonblocking RAM process.
+
+Entropy histogram, symbol and BF16 residual memories each have one write
+expression and one synchronous read expression. State-dependent enables,
+addresses and write data are selected before those accesses. In particular,
+encode-residual output and decode-residual reconstruction share the same
+read port and existing read register; their state-machine phases cannot
+overlap. W4 low/high symbol and histogram operations retain their existing
+separate cycles.
+
+Codebook node frequency/minimum writes similarly select histogram loading
+or merging before one access. Code lengths use one write port and one
+registered read port, shared between construction and completed-table
+lookup. Construction and lookup occur in disjoint states, so the same
+read register serves both without a pipeline change. Parent links use
+two M20K-targeted ports: merge writes the two distinct child addresses
+simultaneously; depth walks read through port A on non-merge cycles.
+The small 16-entry canonical metadata tables remain control storage.
+
+| RAM event | Pre-edge sampling | Post-edge behavior |
+| --- | --- | --- |
+| Enabled read at E | Selected address and enable | Read register holds the pre-write byte/entry after E; existing consumer samples it at E+1 |
+| Read disabled | Enable low | Read register holds; no new result-valid event |
+| Literal write with A/B reads | Common write and independent read addresses | Both replicas update; colliding reads retain old-data semantics |
+| Parent merge | Two selected children, same parent value | Both links written at E, with no walk read that cycle |
+| Reset/clear | Existing RAM access gates | No array reset; architectural validity suppresses stale data |
+| Block sizes 1, 17, 65536 | Existing validated logical indices | Capacities and synchronous latency unchanged, including non-power-of-two tails |
+
+The copy/history and mode-4 intermediate memories already have one
+synchronous read and one write per byte bank and are unchanged. Encoded
+compressor storage and L1 history also retain their existing single
+read/write expressions. These byte-wide arrays do not need byte-lane
+splitting. The bounded descriptor tables retain their existing control
+semantics, not a new bulk-memory implementation. RAM attributes and these
+port shapes express inference intent, not measured physical resource use.
 
 ## Entropy stream codec
 
@@ -250,7 +305,8 @@ keep=false/last=true for empty input, and framed last on the final raw
 byte. No recompression heuristic or output rewrite is applied to its
 deterministic byte stream. Mode-0 decompression uses the new integrated
 operation parser and copy engine. The preserved legacy tops remain
-separate, byte-identical compatibility implementations.
+separate compatibility implementations; only the literal RAM replication
+changes their physical storage, not their interfaces or algorithms.
 
 ## Mode-4 routing and checksum lifetime
 
@@ -338,8 +394,15 @@ The integrated source-only Icarus 12.0 elaboration exited zero at all six
 admitted legal geometry tuples. Its retained source hashes, exact commands,
 tool version and raw logs are indexed by
 `evidence/preparation/integrated-static-elaboration-4075d73cb6244b2e/receipt.json`.
-That receipt also records byte-identical copies of all 13 supplied parent
-sources. The earlier partial-source static receipt remains at
+That historical receipt records byte-identical copies of all 13 supplied
+parent sources before the RAM-port repair; it does not cover the changed
+literal buffer. The earlier partial-source static receipt remains at
 `evidence/preparation/static-elaboration-8f4caadab8054f5b/receipt.json`.
 Neither diagnostic ran a simulation or synthesis experiment; no failed
 diagnostic or measured functional/performance result is claimed.
+
+The RAM-port repair's source-only diagnostic is retained separately at
+`evidence/preparation/ram-port-static-elaboration-7e121f18e1784df6/receipt.json`,
+with pre-repair snapshots, current source hashes, exact commands and raw
+logs. It links the preserved native mapping failure and does not replace
+any mandatory functional, synthesis or hardware check.

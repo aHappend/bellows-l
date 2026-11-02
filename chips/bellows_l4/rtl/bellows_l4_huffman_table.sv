@@ -44,7 +44,7 @@ module bellows_l4_huffman_table (
 
     (* ramstyle="MLAB", nomem2reg *) reg [39:0] frequency [0:511];
     (* ramstyle="MLAB", nomem2reg *) reg [7:0] minimum_symbol [0:511];
-    (* ramstyle="MLAB", nomem2reg *) reg [8:0] parent [0:511];
+    (* ramstyle="M20K", nomem2reg *) reg [8:0] parent [0:511];
     (* ramstyle="MLAB", nomem2reg *) reg [3:0] lengths [0:255];
     (* ramstyle="MLAB", nomem2reg *) reg [14:0] codes [0:255];
     (* ramstyle="MLAB", nomem2reg *) reg [7:0] sorted_symbols [0:255];
