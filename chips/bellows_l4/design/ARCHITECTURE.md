@@ -21,6 +21,7 @@ pending. The contract in `SPEC.md` is unchanged.
 | Original `bellows_l1_*` | Parent byte LZ4 decoding and history/output staging | Parent stream protocol |
 | Original `bellows_l2_*` | Parent deterministic compressor and compatibility wrapper | Parent framing/keep protocol |
 | Original `bellows_l3_*` | Parent four-channel byte SG subsystem | Parent descriptor/nonaliasing contract |
+| `bellows_byte_ram` | Separately elaborated byte-wide synchronous one-read/one-write RAM | Depth-bounded addresses and externally gated enables; caller owns validity/reset |
 | `bellows_l4_copy_engine` | Two registered stages, synchronous banked history, overlap forwarding | Valid bounded operations; clear only after drain |
 | `bellows_l4_lz4_decoder` | Beat queue, LZ4 parsing, validated literal/match operations | Input counts 1 through COPY_BYTES, ordered input, clear before command |
 | `bellows_l4_huffman_table` | Deterministic frequency tree, depth fallback, canonical validation/lookup | Load code lengths or histogram before build; observe ready/valid |
@@ -173,13 +174,53 @@ The small 16-entry canonical metadata tables remain control storage.
 | Reset/clear | Existing RAM access gates | No array reset; architectural validity suppresses stale data |
 | Block sizes 1, 17, 65536 | Existing validated logical indices | Capacities and synchronous latency unchanged, including non-power-of-two tails |
 
-The copy/history and mode-4 intermediate memories already have one
-synchronous read and one write per byte bank and are unchanged. Encoded
-compressor storage and L1 history also retain their existing single
-read/write expressions. These byte-wide arrays do not need byte-lane
-splitting. The bounded descriptor tables retain their existing control
-semantics, not a new bulk-memory implementation. RAM attributes and these
-port shapes express inference intent, not measured physical resource use.
+### Separately elaborated bulk RAM leaves
+
+A subsequent current-source native mapping attempt also reached its
+3600-second deadline without a mapped netlist or setup/hold result.
+The retained diagnostic at
+`evidence/preparation/coordinator-native-map-audit-3383e9b4f5f04424/receipt.json`
+identifies about 2.1 million pre-map hierarchy lines per intermediate-buffer
+instance, including 1,048,704 array clock connections. This localizes an
+elaboration-scalability target; it does not prove a final register
+implementation, resource overflow or timing failure.
+
+Each of the eight mode-4 intermediate banks now instantiates
+`bellows_byte_ram`, a separately elaborated leaf containing only an 8-bit
+array, one write enable/address/data port and one synchronous read
+enable/address/result port. Addresses are explicitly `ROW_BITS` wide.
+Bank selection, row increment, output rotation and elastic occupancy remain
+in `bellows_l4_intermediate`; no extra register or queue stage is introduced.
+The default bank depth remains 16386 bytes, including the original final
+partial row, not a rounded-down power-of-two capacity.
+
+The large entropy symbol and BF16 residual arrays and the compressor's
+encoded-output array use the same leaf with their original exact depths.
+Each instance has its own storage; no logical buffers or channels are
+shared. Compressor address ports use the depth-derived width, with enabled
+accesses still bounded by the existing encoded-capacity and output-count
+control. The literal buffer already has two separate single-read replicas;
+its storage, the successfully recognized copy-history banks, and L1 history
+are unchanged. Histogram and codebook arrays have bounded 8/9-bit addresses
+and normalized synchronous ports; their existing implementations remain.
+
+| Leaf/buffer boundary | Pre-edge condition | Post-edge effect |
+| --- | --- | --- |
+| Read accepted at E | Read enable and bounded address | RAM result updates after E; existing consumer samples at E+1 |
+| Read stalled/disabled | Read enable low | Result holds, including intermediate output backpressure |
+| Read and write collide | Both enabled at the same address | Result captures old data; storage captures the new byte |
+| Reset/clear | Caller gates access and clears architectural valid state | No RAM reset or read-result reset; stale data remains unobservable |
+| Intermediate clear with write | Existing write enable remains asserted | Write still occurs; occupancy clears and no read is accepted |
+| Minimum/non-power-of-two depth | Existing logical bounds | Exact depths retained; no new wrapping or clamping |
+| Partial last intermediate beat | Existing read count below eight | Only requested rotated lanes are exposed; upper output lanes remain zero |
+
+Compile all `rtl/*.sv`, including `bellows_byte_ram.sv`, for the L2/L3/L4
+hierarchies. The leaf has no behavioral bypass, initialization, vendor
+primitive or extra pipeline stage. Its memory and read-data register use
+only `posedge clk`, with nonblocking assignments and no asynchronous reset.
+The bounded descriptor tables retain their existing control semantics.
+These changes express RAM inference intent; actual M20K inference, resource
+fit and timing still require fresh native mapping and STA.
 
 ## Entropy stream codec
 

@@ -20,6 +20,7 @@ module bellows_l2_compressor #(
         MAX_BLOCK_BYTES >= 1 && MAX_BLOCK_BYTES <= 65536;
     localparam integer STORAGE_BYTES = LEGAL_PARAMETER ? MAX_BLOCK_BYTES : 1;
     localparam integer ENCODED_BYTES = 2 * STORAGE_BYTES + 16;
+    localparam integer ENCODED_BITS = $clog2(ENCODED_BYTES);
     localparam [16:0] CAPACITY = STORAGE_BYTES;
     localparam [17:0] ENCODED_CAPACITY = ENCODED_BYTES;
     localparam [4:0]
@@ -43,9 +44,7 @@ module bellows_l2_compressor #(
     reg presented_valid;
     reg presented_last;
 
-    (* ramstyle = "M20K", nomem2reg *)
-    reg [7:0] encoded_memory [0:ENCODED_BYTES-1];
-    reg [7:0] encoded_read_data;
+    wire [7:0] encoded_read_data;
 
     wire input_transfer = s_valid && s_ready;
     wire raw_write = rst_n && state == COLLECT && input_transfer &&
@@ -123,12 +122,12 @@ module bellows_l2_compressor #(
         .byte_ready(emitter_byte_ready), .done(emitter_done)
     );
 
-    always @(posedge clk) begin
-        if (rst_n && encoded_write)
-            encoded_memory[encoded_count] <= emitter_byte_data;
-        if (rst_n && state == OUTPUT_REQ)
-            encoded_read_data <= encoded_memory[output_index];
-    end
+    bellows_byte_ram #(.DEPTH(ENCODED_BYTES), .ADDR_BITS(ENCODED_BITS)) encoded_storage (
+        .clk(clk), .write_en(rst_n && encoded_write),
+        .write_addr(encoded_count[ENCODED_BITS-1:0]), .write_data(emitter_byte_data),
+        .read_en(rst_n && state == OUTPUT_REQ),
+        .read_addr(output_index[ENCODED_BITS-1:0]), .read_data(encoded_read_data)
+    );
 
     // synthesis translate_off
     always @(posedge clk) begin

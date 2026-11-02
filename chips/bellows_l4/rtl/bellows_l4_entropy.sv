@@ -52,10 +52,8 @@ module bellows_l4_entropy #(
     reg output_valid;
 
     (* ramstyle="MLAB", nomem2reg *) reg [31:0] histogram [0:255];
-    (* ramstyle="M20K", nomem2reg *) reg [7:0] symbols [0:SYMBOL_BYTES-1];
-    (* ramstyle="M20K", nomem2reg *) reg [7:0] residuals [0:RESIDUAL_BYTES-1];
     reg [31:0] histogram_q;
-    reg [7:0] symbol_q, residual_q;
+    wire [7:0] symbol_q, residual_q;
 
     wire table_start_ready, hist_ready, length_ready, build_ready;
     wire table_valid;
@@ -196,22 +194,18 @@ module bellows_l4_entropy #(
                 histogram_q<=histogram[histogram_read_addr];
         end
     end
-    always @(posedge clk) begin
-        if (rst_n) begin
-            if (symbol_write_en)
-                symbols[symbol_index[SYMBOL_BITS-1:0]]<=symbol_write_data;
-            if (state==E_SYMBOL_REQ)
-                symbol_q<=symbols[symbol_index[SYMBOL_BITS-1:0]];
-        end
-    end
-    always @(posedge clk) begin
-        if (rst_n) begin
-            if (residual_write_en)
-                residuals[residual_write_addr]<=residual_write_data;
-            if (residual_read_en)
-                residual_q<=residuals[residual_read_addr];
-        end
-    end
+    bellows_byte_ram #(.DEPTH(SYMBOL_BYTES), .ADDR_BITS(SYMBOL_BITS)) symbol_storage (
+        .clk(clk), .write_en(rst_n && symbol_write_en),
+        .write_addr(symbol_index[SYMBOL_BITS-1:0]), .write_data(symbol_write_data),
+        .read_en(rst_n && state==E_SYMBOL_REQ),
+        .read_addr(symbol_index[SYMBOL_BITS-1:0]), .read_data(symbol_q)
+    );
+    bellows_byte_ram #(.DEPTH(RESIDUAL_BYTES), .ADDR_BITS(RESIDUAL_BITS)) residual_storage (
+        .clk(clk), .write_en(rst_n && residual_write_en),
+        .write_addr(residual_write_addr), .write_data(residual_write_data),
+        .read_en(rst_n && residual_read_en), .read_addr(residual_read_addr),
+        .read_data(residual_q)
+    );
 
     task reject;
         input [3:0] code;

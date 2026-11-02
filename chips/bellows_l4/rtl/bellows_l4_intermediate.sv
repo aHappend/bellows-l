@@ -28,16 +28,16 @@ module bellows_l4_intermediate #(
             initial $fatal(1,"PARAMETER ERROR: MAX_BLOCK_BYTES=1..65536");
         end
         for (bank=0;bank<8;bank=bank+1) begin : banks
-            (* ramstyle="M20K", nomem2reg *) reg [7:0] memory [0:ROWS-1];
-            reg [7:0] q;
+            wire [7:0] q;
             wire [31:0] read_row=(read_index>>3)+
                 (read_index[2:0]>bank ? 32'd1 : 32'd0);
-            always @(posedge clk) begin
-                if (rst_n && LEGAL && write_valid && write_index[2:0]==bank)
-                    memory[write_index[ROW_BITS+2:3]]<=write_data;
-                if (accept)
-                    q<=memory[read_row[ROW_BITS-1:0]];
-            end
+            bellows_byte_ram #(.DEPTH(ROWS), .ADDR_BITS(ROW_BITS)) storage (
+                .clk(clk),
+                .write_en(rst_n && LEGAL && write_valid && write_index[2:0]==bank),
+                .write_addr(write_index[ROW_BITS+2:3]), .write_data(write_data),
+                .read_en(accept), .read_addr(read_row[ROW_BITS-1:0]),
+                .read_data(q)
+            );
             assign bank_data[bank*8 +: 8]=q;
         end
     endgenerate
