@@ -47,7 +47,8 @@ module bellows_l4_context #(
     (* ramstyle="MLAB", nomem2reg *) reg [31:0] source_size [0:DEPTH-1];
     (* ramstyle="MLAB", nomem2reg *) reg [31:0] destination_size [0:DEPTH-1];
     reg [4:0] source_segment, destination_segment;
-    reg [31:0] source_offset, destination_offset;
+    reg [31:0] source_segment_remaining, destination_segment_remaining;
+    reg [3:0] read_limit, write_limit;
     reg [63:0] read_address, write_address;
     reg [31:0] reads_consumed, writes_acked, writes_reserved, feed_index;
     reg read_pending, write_pending;
@@ -129,22 +130,33 @@ module bellows_l4_context #(
     reg [63:0] write_data, decoder_data;
     reg [7:0] write_strobe;
     integer i;
-    wire [31:0] source_remaining=source_bytes-reads_consumed;
-    wire [31:0] source_segment_remaining=source_size[source_segment]-source_offset;
-    wire [31:0] destination_remaining=capacity-writes_reserved;
-    wire [31:0] destination_segment_remaining=
-        destination_size[destination_segment]-destination_offset;
+    function [3:0] transfer_limit;
+        input [31:0] remaining;
+        input wide_transfer;
+        begin
+            if (remaining==0) transfer_limit=0;
+            else if (!wide_transfer) transfer_limit=1;
+            else if (remaining<WIDTH) transfer_limit=remaining[3:0];
+            else transfer_limit=WIDTH;
+        end
+    endfunction
+    wire [31:0] source_after_response=
+        source_segment_remaining-{28'd0,reserved_read_count};
+    wire [31:0] destination_after_take=
+        destination_segment_remaining-{28'd0,write_size};
+    wire [31:0] next_source_size=source_size[source_segment+5'd1];
+    wire [31:0] next_destination_size=destination_size[destination_segment+5'd1];
+    wire [3:0] first_read_limit=transfer_limit(source_size[0],wide);
+    wire [3:0] first_write_limit=transfer_limit(destination_size[0],wide);
+    wire [3:0] next_read_limit=transfer_limit(next_source_size,wide);
+    wire [3:0] next_write_limit=transfer_limit(next_destination_size,wide);
+    wire [3:0] remaining_read_limit=transfer_limit(source_after_response,wide);
+    wire [3:0] remaining_write_limit=transfer_limit(destination_after_take,wide);
     wire [31:0] payload_remaining=payload_bytes-feed_index;
     wire [31:0] inter_remaining=intermediate_count-intermediate_read;
     always @* begin
-        read_size=wide ? WIDTH : 1;
-        if (source_remaining<read_size) read_size=source_remaining[3:0];
-        if (source_segment_remaining<read_size)
-            read_size=source_segment_remaining[3:0];
-        write_size=wide ? WIDTH : 1;
-        if (destination_remaining<write_size) write_size=destination_remaining[3:0];
-        if (destination_segment_remaining<write_size)
-            write_size=destination_segment_remaining[3:0];
+        read_size=read_limit;
+        write_size=write_limit;
         if ((state==TRAILER || state==SETTLE || state==FINISH) && output_fill<write_size)
             write_size=output_fill[3:0];
         write_data=0; write_strobe=0;
@@ -368,7 +380,8 @@ module bellows_l4_context #(
             source_segments<=0; destination_segments<=0;
             source_seen<=0; destination_seen<=0; source_sum<=0; destination_sum<=0;
             descriptor_bad<=0; source_segment<=0; destination_segment<=0;
-            source_offset<=0; destination_offset<=0; read_address<=0; write_address<=0;
+            source_segment_remaining<=0; destination_segment_remaining<=0;
+            read_limit<=0; write_limit<=0; read_address<=0; write_address<=0;
             reads_consumed<=0; writes_acked<=0; writes_reserved<=0; feed_index<=0;
             read_pending<=0; write_pending<=0;
             reserved_read_count<=0; reserved_write_count<=0;
@@ -395,28 +408,34 @@ module bellows_l4_context #(
             if (rd_response) begin
                 read_pending<=0;
                 reads_consumed<=reads_consumed+{28'd0,reserved_read_count};
-                if (source_offset+{28'd0,reserved_read_count}==source_size[source_segment]) begin
-                    source_offset<=0;
+                if (source_segment_remaining=={28'd0,reserved_read_count}) begin
+                    source_segment_remaining<=0; read_limit<=0;
                     if (source_segment+5'd1<source_segments) begin
                         source_segment<=source_segment+5'd1;
                         read_address<=source_address[source_segment+5'd1];
+                        source_segment_remaining<=next_source_size;
+                        read_limit<=next_read_limit;
                     end
                 end else begin
-                    source_offset<=source_offset+{28'd0,reserved_read_count};
+                    source_segment_remaining<=source_after_response;
+                    read_limit<=remaining_read_limit;
                     read_address<=read_address+{60'd0,reserved_read_count};
                 end
             end
             if (wr_take) begin
                 write_pending<=1; reserved_write_count<=write_size;
                 writes_reserved<=writes_reserved+{28'd0,write_size};
-                if (destination_offset+{28'd0,write_size}==destination_size[destination_segment]) begin
-                    destination_offset<=0;
+                if (destination_segment_remaining=={28'd0,write_size}) begin
+                    destination_segment_remaining<=0; write_limit<=0;
                     if (destination_segment+5'd1<destination_segments) begin
                         destination_segment<=destination_segment+5'd1;
                         write_address<=destination_address[destination_segment+5'd1];
+                        destination_segment_remaining<=next_destination_size;
+                        write_limit<=next_write_limit;
                     end
                 end else begin
-                    destination_offset<=destination_offset+{28'd0,write_size};
+                    destination_segment_remaining<=destination_after_take;
+                    write_limit<=remaining_write_limit;
                     write_address<=write_address+{60'd0,write_size};
                 end
             end
@@ -480,7 +499,8 @@ module bellows_l4_context #(
                     source_segments<=cmd_src_segments; destination_segments<=cmd_dst_segments;
                     source_seen<=0; destination_seen<=0; source_sum<=0; destination_sum<=0;
                     descriptor_bad<=0; source_segment<=0; destination_segment<=0;
-                    source_offset<=0; destination_offset<=0; read_address<=0; write_address<=0;
+                    source_segment_remaining<=0; destination_segment_remaining<=0;
+                    read_limit<=0; write_limit<=0; read_address<=0; write_address<=0;
                     reads_consumed<=0; writes_acked<=0; writes_reserved<=0; feed_index<=0;
                     read_pending<=0; write_pending<=0;
                     reserved_read_count<=0; reserved_write_count<=0;
@@ -521,8 +541,15 @@ module bellows_l4_context #(
                     end else state<=ARM;
                 end
                 ARM: begin
-                    if (source_segments!=0) read_address<=source_address[0];
-                    write_address<=destination_address[0]; state<=RUN;
+                    if (source_segments!=0) begin
+                        read_address<=source_address[0];
+                        source_segment_remaining<=source_size[0];
+                        read_limit<=first_read_limit;
+                    end
+                    write_address<=destination_address[0];
+                    destination_segment_remaining<=destination_size[0];
+                    write_limit<=first_write_limit;
+                    state<=RUN;
                 end
                 RUN: begin
                     if (phase==POST_LZ_ENCODE && c_status_valid && c_status_error==0) begin

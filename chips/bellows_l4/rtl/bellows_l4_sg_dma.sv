@@ -45,13 +45,18 @@ module bellows_l4_sg_dma (
         (write_wide ? w_wr_rsp_valid : wr_rsp_valid);
     wire [63:0] response_data=read_wide ? w_rd_rsp_data : {56'd0,rd_rsp_data};
     reg [63:0] masked_data;
-    reg [3:0] requested_write_count;
+    wire [1:0] strobe_count_01={1'b0,write_payload[0]}+{1'b0,write_payload[1]};
+    wire [1:0] strobe_count_23={1'b0,write_payload[2]}+{1'b0,write_payload[3]};
+    wire [1:0] strobe_count_45={1'b0,write_payload[4]}+{1'b0,write_payload[5]};
+    wire [1:0] strobe_count_67={1'b0,write_payload[6]}+{1'b0,write_payload[7]};
+    wire [2:0] strobe_count_low={1'b0,strobe_count_01}+{1'b0,strobe_count_23};
+    wire [2:0] strobe_count_high={1'b0,strobe_count_45}+{1'b0,strobe_count_67};
+    wire [3:0] requested_write_count={1'b0,strobe_count_low}+{1'b0,strobe_count_high};
     integer i;
     always @* begin
-        masked_data=0; requested_write_count=0;
+        masked_data=0;
         for (i=0;i<8;i=i+1) begin
             if (i<read_count) masked_data[i*8 +: 8]=response_data[i*8 +: 8];
-            requested_write_count=requested_write_count+{3'd0,write_payload[i]};
         end
     end
 
