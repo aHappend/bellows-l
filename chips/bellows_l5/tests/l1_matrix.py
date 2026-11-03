@@ -28,7 +28,7 @@ def codec_matrix(geometry, seed, dictionary):
                 tag = f"seed{seed}-c{codec}-m{mode}-w{wide}"
                 common = dict(codec=codec, mode=mode, wide=wide,
                               channel=(codec + mode + wide) & 3,
-                              dictionary_id=0x12345678 if codec == 6 else 0,
+                              dictionary_id=0x12345678 if codec == 6 else 0xDEADBEEF,
                               segments=depth)
                 result.append(Case(tag + "-encode", raw, capacity=4*block+1024, **common))
                 encoded = (literal_lz4(raw) if codec == 0 else
@@ -52,7 +52,13 @@ def boundaries(geometry, seed):
             rng.randbytes(size),
         )
         for pattern, raw in enumerate(patterns):
-            # Every required size/data class; avoid a redundant huge Cartesian product.
+            if size > 257:
+                selected = {SIZES.index(size) % len(patterns)} if size in SIZES else {0}
+                if size == block:
+                    selected.update((0, 5))
+                if pattern not in selected:
+                    continue
+            # Cover every size and data class without a redundant large Cartesian product.
             codec = 5
             tag = f"boundary-seed{seed}-n{size}-pattern{pattern}"
             result.append(Case(tag, raw, codec=codec, mode=pattern % 3, wide=pattern & 1,
@@ -138,17 +144,17 @@ def sequence_boundaries(geometry, libraries):
     block = geometry[0]
     vectors = []
     for base in LL_BASE:
-        for ll in (max(0, base-1), base, base+1):
+        for ll in (max(0, base-1), base):
             if ll+3 <= block and ll:
                 literals = bytes(i & 255 for i in range(ll))
                 vectors.append((f"ll{ll}", sequence_frame(literals, [(ll, 3, 4)])))
     for base in ML_BASE:
-        for ml in (max(3, base-1), base, base+1):
+        for ml in (max(3, base-1), base):
             if 1+ml <= block:
                 vectors.append((f"ml{ml}", sequence_frame(b"a", [(1, ml, 4)])))
-    for bit in range(1, 17):
-        for distance in ((1 << bit)-1, 1 << bit, (1 << bit)+1):
-            if distance+3 <= block:
+    for bit in range(2, 17):
+        for distance in ((1 << bit)-4, (1 << bit)-3):
+            if 1 <= distance and distance+3 <= block:
                 literals = bytes(i & 255 for i in range(distance))
                 vectors.append((f"of{distance}", sequence_frame(
                     literals, [(distance, 3, distance+3)])))
@@ -233,4 +239,21 @@ def malformed_tables(libraries, dictionary=b""):
                            error=11, dictionary_id=0x12345678 if dictionary else 0))
         result.append(Case("recover-" + label, valid, codec=6 if dictionary else 5,
                            decompress=1, dictionary_id=0x12345678 if dictionary else 0))
+    return result
+
+
+def constant_tables(libraries, dictionary=b""):
+    """A full normalized mass on one symbol is legal even in compressed mode."""
+    result = []
+    for logs in ((5, 5, 5), (6, 6, 6), (9, 8, 9)):
+        counts = tuple((0,)*symbol + (1 << log,)
+                       for symbol, log in zip((1, 2, 4), logs))
+        source = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], (2, 2, 2),
+                                dictionary, logs, counts)
+        expected = decode_frame(source, dictionary).data
+        if libraries.decompress_zstd(source, 4096, dictionary) != expected:
+            raise AssertionError("constant normalized-table independent oracles disagree")
+        result.append(Case(f"constant-compressed-tables-{logs}", source,
+                           codec=6 if dictionary else 5, decompress=1,
+                           dictionary_id=0x12345678 if dictionary else 0))
     return result

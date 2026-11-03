@@ -141,7 +141,7 @@ def build_table(counts, log):
     size = 1 << log
     if not 5 <= log <= 9 or any(c < -1 for c in counts):
         raise FrameError("invalid FSE distribution")
-    if sum(abs(c) for c in counts) != size or sum(c != 0 for c in counts) < 2:
+    if sum(abs(c) for c in counts) != size:
         raise FrameError("invalid FSE normalized mass")
     symbols = [None] * size
     reserved = size
@@ -362,12 +362,14 @@ def length_code(length, match=False):
     raise ValueError("length has no RFC sequence code")
 
 
-def sequence_frame(literals, sequences, modes=(0, 0, 0), dictionary=b"", logs=(6, 5, 6)):
+def sequence_frame(literals, sequences, modes=(0, 0, 0), dictionary=b"", logs=(6, 5, 6),
+                   distributions=None):
     """Construct independent supported frames with actual inverse FSE transforms.
 
     Each tuple is (literal length, match length, RFC offset value), not distance.
-    RLE selections require constant codes; compressed selections use two-symbol
-    distributions. All state inverses are searched in independent model rows.
+    RLE selections require constant codes. Compressed selections accept explicit
+    counts or construct distributions covering all used symbols plus one other.
+    All state inverses are searched in independent model rows.
     """
     if not sequences or len(sequences) >= 128:
         raise ValueError("fixture requires 1..127 sequences")
@@ -392,12 +394,15 @@ def sequence_frame(literals, sequences, modes=(0, 0, 0), dictionary=b"", logs=(6
             table, log = ((present[0], 0, 0),), 0
         elif mode == 2:
             log = logs[alphabet]
-            other = next(s for s in range(MAX_SYMBOL[alphabet] + 1) if s not in present)
-            symbols = sorted(set(present + [other]))
-            counts = [0] * (symbols[-1] + 1)
-            for symbol in symbols[:-1]:
-                counts[symbol] = 1
-            counts[symbols[-1]] = (1 << log) - len(symbols) + 1
+            if distributions is not None:
+                counts = distributions[alphabet]
+            else:
+                other = next(s for s in range(MAX_SYMBOL[alphabet] + 1) if s not in present)
+                symbols = sorted(set(present + [other]))
+                counts = [0] * (symbols[-1] + 1)
+                for symbol in symbols[:-1]:
+                    counts[symbol] = 1
+                counts[symbols[-1]] = (1 << log) - len(symbols) + 1
             descriptions.extend(encode_counts(counts, log))
             table = build_table(counts, log)
         else:

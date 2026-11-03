@@ -115,6 +115,7 @@ integer input_fd,tc,tokens,tn,ts,tcodec,td,tm,tw,tch,tcap,total_cases;
 integer tp,tsegments,tbad,tfault,read_fault=0,write_fault=0;
 integer treset=0,pinned_size=0;
 integer first_fault=0;
+integer descriptors_complete=0;
 integer source_ends[0:15], destination_ends[0:15], ns, nd;
 reg [31:0] tid;
 reg [63:0] held_read, held_write;
@@ -195,6 +196,7 @@ always @(posedge clk) begin
   if (w_pending && w_delay>0) w_delay=w_delay-1;
   if ((rd_req_valid && rd_req_ready)||(w_rd_req_valid && w_rd_req_ready)) begin
     if(first_fault) $fatal(1,"read issued after DMA error");
+    if(!descriptors_complete) $fatal(1,"read before complete descriptors");
     if (r_pending || !case_active) $fatal(1,"unexpected/duplicate read");
     if (cycles<descriptor_edge+2) $fatal(1,"early DMA before D+2");
     r_wide=w_rd_req_valid; r_count=r_wide ? w_rd_req_bytes : 1;
@@ -213,6 +215,7 @@ always @(posedge clk) begin
   end
   if ((wr_req_valid && wr_req_ready)||(w_wr_req_valid && w_wr_req_ready)) begin
     if(first_fault) $fatal(1,"write issued after DMA error");
+    if(!descriptors_complete) $fatal(1,"write before complete descriptors");
     if (w_pending || !case_active) $fatal(1,"unexpected/duplicate write");
     w_wide=w_wr_req_valid; held_strobe=w_wide ? w_wr_req_strb : 8'd1;
     held_write=w_wide ? w_wr_req_data : {56'd0,wr_req_data};
@@ -307,7 +310,7 @@ begin
  // Architecture's conservative operation bounds, plus fair DMA service.
  operation_limit=64'd64*((codec==6 ? pinned_size : 0)+2)*(BLOCK_BOUND+1)*(BLOCK_BOUND+1)
                  +64'd8192*(BLOCK_BOUND+1)+65536+64'd32*(size+capacity+1);
- read_fault=0; write_fault=0; first_fault=0;
+ read_fault=0; write_fault=0; first_fault=0; descriptors_complete=0;
  ns=size==0 ? 0 : (size<tsegments ? size:tsegments);
  nd=capacity<tsegments ? capacity:tsegments;
  for(i=0;i<MEM;i=i+1) begin source[i]=0; destination[i]=8'hcd; end
@@ -337,6 +340,7 @@ begin
    send_descriptor(1,count+(tbad==2 && k==nd-1),64'h100000+offset);
    offset=offset+count;
   end
+  descriptors_complete=1;
  end
  n=0;
  while(!status_valid) begin

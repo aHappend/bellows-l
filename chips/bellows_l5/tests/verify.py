@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from l1_fse import table_testbench
 from l1_dictionary import dictionary_testbench
-from l1_matrix import (SEEDS, boundaries, codec_matrix, dictionary_edges, errors,
+from l1_matrix import (SEEDS, boundaries, codec_matrix, constant_tables, dictionary_edges, errors,
                       malformed_tables, sequence_boundaries)
 from l1_oracle import Libraries, frame, rle_sequence_frame
 from l1_protocol import concurrent_testbench, lifecycle_testbench
@@ -217,6 +217,8 @@ def behavior(experiment, configuration):
                                dictionary=dictionary)
                 simulation.run("malformed-tables-" + str(pinned),
                                malformed_tables(libraries, dictionary), dictionary=dictionary)
+                simulation.run("constant-tables-" + str(pinned),
+                               constant_tables(libraries, dictionary), dictionary=dictionary)
                 corrupt, manifest = corruption_cases(libraries, dictionary)
                 run = simulation.run("short-corruption-" + str(pinned), corrupt,
                                      dictionary=dictionary)

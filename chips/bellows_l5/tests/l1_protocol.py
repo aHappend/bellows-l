@@ -29,16 +29,20 @@ def concurrent_testbench(cases, geometry, directory, seed=17, dictionary=b""):
     monitor = monitor.replace(
         'if ((w_wide ? w_wr_req_channel : wr_req_channel)!==expected_channel[1:0])\n'
         '      $fatal(1,"write channel misassociation");', "")
-    monitor = monitor.replace("    if (r_pending ||",
+    monitor = monitor.replace('    if(first_fault) $fatal(1,"read issued',
                               "    r_owner=w_rd_req_valid ? w_rd_req_channel : rd_req_channel;\n"
-                              "    if (r_pending ||")
-    monitor = monitor.replace("    if (w_pending ||",
+                              '    if(first_fault) $fatal(1,"read issued')
+    monitor = monitor.replace('    if(first_fault) $fatal(1,"write issued',
                               "    w_owner=w_wr_req_valid ? w_wr_req_channel : wr_req_channel;\n"
-                              "    if (w_pending ||")
+                              '    if(first_fault) $fatal(1,"write issued')
     monitor = monitor.replace("-64'h10000;", "-64'h10000-r_owner*64'h100000;")
     monitor = monitor.replace("-64'h100000;", "-64'h800000-w_owner*64'h100000;")
     monitor = monitor.replace("expected_source", "sizes[r_owner]")
     monitor = monitor.replace("expected_capacity", "capacities[w_owner]")
+    monitor = monitor.replace('!descriptors_complete) $fatal(1,"read before',
+                              '!descriptor_done[r_owner]) $fatal(1,"read before')
+    monitor = monitor.replace('!descriptors_complete) $fatal(1,"write before',
+                              '!descriptor_done[w_owner]) $fatal(1,"write before')
     monitor = monitor.replace("source[age+j]", "sources[r_owner][age+j]")
     monitor = monitor.replace("destination[age+j]", "destinations[w_owner][age+j]")
     monitor = monitor.replace("status_channel!==expected_channel[1:0] || ", "")
@@ -62,6 +66,7 @@ end
     extra = """
 reg [7:0] sources[0:3][0:MEM-1],destinations[0:3][0:MEM-1];
 integer sizes[0:3],capacities[0:3],descriptor_edges[0:3];
+integer descriptor_done[0:3];
 integer lane_reads[0:3],lane_writes[0:3],active[0:3],done[0:3];
 integer r_owner=0,w_owner=0,four_active=0,lane=0,st=0;
 """
@@ -77,6 +82,7 @@ integer r_owner=0,w_owner=0,four_active=0,lane=0,st=0;
         body += f"""
  sizes[{lane}]={len(case.source)}; capacities[{lane}]={case.capacity};
  lane_reads[{lane}]=0; lane_writes[{lane}]=0; active[{lane}]=1; done[{lane}]=0;
+ descriptor_done[{lane}]=0;
  $readmemh("source-{lane}.hex",source,0,{len(case.source)-1});
  for(i=0;i<{len(case.source)};i=i+1) sources[{lane}][i]=source[i];
  cmd_channel={lane}; cmd_id=16'h5a5a; cmd_codec={case.codec};
@@ -103,6 +109,7 @@ integer r_owner=0,w_owner=0,four_active=0,lane=0,st=0;
  send_descriptor(0,{len(case.source)},64'h10000+{lane}*64'h100000);
  send_descriptor(1,{case.capacity},64'h800000+{lane}*64'h100000);
  descriptor_edges[{lane}]=descriptor_edge;
+ descriptor_done[{lane}]=1;
 """
     body += """
  st=0; while(!status_valid) begin step(); st=st+1;
@@ -186,6 +193,7 @@ integer n;
 begin
  case_active=1; expected_source=1; expected_capacity=64; expected_channel=0;
  read_bytes=0; write_bytes=0; ns=1; nd=1; tfault=0;
+ descriptors_complete=0;
  source[0]=8'h78;
  cmd_channel=0; sg_channel=0; cmd_codec=5; cmd_id=16'h5a5a;
  cmd_decompress=0; cmd_checksum_mode=0; cmd_wide=0;
@@ -195,6 +203,7 @@ begin
   if(n>1000) $fatal(1,"reset command admission"); end
  step(); cmd_valid=0;
  send_descriptor(0,1,64'h10000); send_descriptor(1,64,64'h100000);
+ descriptors_complete=1;
  n=0;
  if(held_completion) begin
   while(!status_valid) begin step(); n=n+1;

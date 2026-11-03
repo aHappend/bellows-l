@@ -442,7 +442,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="nonpower")
     parser.add_argument("--simulator", choices=("icarus", "verilator"), default="icarus")
-    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis", "errors", "matrix", "boundaries", "protocol", "parameters", "parent", "defects", "portable", "smoke", "tables", "sequence-boundaries"), default="transport")
+    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis", "errors", "matrix", "boundaries", "protocol", "parameters", "parent", "defects", "portable", "smoke", "tables", "sequence-boundaries", "constant-table", "dictionary-edges"), default="transport")
     parser.add_argument("--pinned-dictionary", action="store_true")
     parser.add_argument("--seed", type=int, choices=(17, 89, 2026), default=17)
     parser.add_argument("--repair-of", help="Project-relative retained failure receipt")
@@ -499,30 +499,30 @@ def main():
         elif args.suite == "legacy":
             cases = legacy_cases(geometry)
         elif args.suite == "protocol":
-            from l1_protocol import concurrent_testbench, lifecycle_testbench
-            from l1_runner import custom_simulation
-            raw = b"ab"[:geometry[0]]
-            cases = [Case("concurrent-"+str(i), raw, codec=(0, 1, 5, 6)[i],
-                          channel=i, wide=i&1, capacity=1024,
-                          dictionary_id=0x12345678 if i==3 else 0) for i in range(4)]
-            dictionary = bytes(range(min(geometry[3], 7)))
-            custom_simulation(experiment, "concurrent", concurrent_testbench, cases, geometry,
-                              libraries, dictionary=dictionary, concurrent=True)
-            custom_simulation(experiment, "lifecycle",
-                              lambda c,g,d,s,b: lifecycle_testbench(g,d),
-                              [Case("recovery", b"x", capacity=64)], geometry, libraries,
-                              simulator=args.simulator)
+            from verify import protocol
+            protocol(experiment, geometry, libraries, args.seed, args.simulator)
             experiment.finish(0)
             return 0
-        elif args.suite in ("errors", "matrix", "boundaries", "tables", "sequence-boundaries"):
-            from l1_matrix import boundaries, codec_matrix, errors, malformed_tables, sequence_boundaries
+        elif args.suite in ("errors", "matrix", "boundaries", "tables", "sequence-boundaries", "constant-table", "dictionary-edges"):
+            from l1_matrix import boundaries, codec_matrix, dictionary_edges, errors, malformed_tables, sequence_boundaries
             from l1_runner import Simulation
             dictionary = random.Random(args.seed).randbytes(min(geometry[3], 1024))
+            def constant_table():
+                source = sequence_frame(
+                    b"aa", [(1, 7, 4), (1, 7, 4)], (2, 2, 2), logs=(5, 5, 5),
+                    distributions=((0, 32), (0, 0, 32), (0, 0, 0, 0, 32)))
+                expected = decode_frame(source).data
+                if libraries.decompress_zstd(source, 4096) != expected:
+                    raise AssertionError("constant normalized-table independent oracles disagree")
+                return [Case("legal-single-symbol-compressed-tables", source,
+                             decompress=1, capacity=4096)]
             builder = {"errors": lambda: errors(geometry, dictionary),
                        "matrix": lambda: codec_matrix(geometry, args.seed, dictionary),
                        "boundaries": lambda: boundaries(geometry, args.seed),
                        "tables": lambda: malformed_tables(libraries, dictionary),
-                       "sequence-boundaries": lambda: sequence_boundaries(geometry, libraries)}[args.suite]
+                       "sequence-boundaries": lambda: sequence_boundaries(geometry, libraries),
+                       "dictionary-edges": lambda: dictionary_edges(geometry, dictionary, libraries),
+                       "constant-table": constant_table}[args.suite]
             simulation = Simulation(experiment, geometry, libraries)
             try:
                 simulation.run(args.suite, builder(), args.seed, dictionary)

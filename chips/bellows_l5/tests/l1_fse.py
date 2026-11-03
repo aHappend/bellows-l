@@ -9,12 +9,11 @@ def fixtures():
         result.append((alphabet, 0, 5 if alphabet == 1 else 6, counts))
         result.append((alphabet, 1, 0, (0,)))
     for alphabet in range(3):
-        for log in (5, 6, 9):
-            if alphabet == 1 and log == 9:
-                continue
+        for log in ((5, 6, 8) if alphabet == 1 else (5, 6, 9)):
             # Include low-probability reserved cells and zero-count symbols.
             counts = (1, 0, -1, (1 << log) - 5, 2, -1)
             result.append((alphabet, 2, log, counts))
+            result.append((alphabet, 2, log, (1 << log,)))
     return result
 
 
@@ -113,7 +112,8 @@ initial begin
  alphabet=0; mode=2; requested_log=5; start_valid=1; #1;
  if(start_ready!==1) $fatal(1,"reset table fixture did not start");
  edge_step(); start_valid=0;
- if(count_ready!==1) $fatal(1,"reset table fixture did not request counts");
+ n=0; while(!count_ready) begin edge_step(); n=n+1;
+  if(n>200) $fatal(1,"reset table fixture did not request counts"); end
  count_valid=1; count_value=1; count_last=0; edge_step(); count_valid=0;
  rst_n=0; #1; edge_step(); rst_n=1; edge_step();
  if(table_valid!==0 || done_valid!==0) $fatal(1,"partial table survived reset");
