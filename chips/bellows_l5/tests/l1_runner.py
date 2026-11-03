@@ -98,7 +98,7 @@ class Simulation:
             batches = []
             for worker in range(4):
                 indices = list(range(worker, len(cases), 4))
-                batch = run / f"batch-{worker}"
+                batch = run / f"batch-{worker}-{uuid4().hex[:8]}"
                 batch.mkdir()
                 generated = self.testbench([cases[i] for i in indices], batch, seed, dictionary)
                 if generated != self.template:
