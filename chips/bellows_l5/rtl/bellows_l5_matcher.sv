@@ -24,20 +24,28 @@ module bellows_l5_matcher #(
     localparam [4:0] IDLE=0, SEED_REQ=1, SEED_WAIT=2, SEED_STORE=3,
         CHECK=4, KEY_REQ=5, KEY_WAIT=6, HASH=7, LOOKUP=8, CANDIDATE=9,
         COMPARE_REQ=10, COMPARE_WAIT=11, COMPARE=12, RESULT=13,
-        INSERT=14, DONE=15;
+        INSERT=14, DONE=15, CANDIDATE_DONE=16, DICT_LOOKUP=17, SELECT_RESULT=18;
     reg [4:0] phase;
     reg awake, dict_q, seed_present, old_valid, updating, a_seen, b_seen;
+    reg checking_dictionary;
     reg [14:0] dictionary_size;
-    reg [16:0] size, position, resume, length, offset, old_position, seed_q;
+    reg [16:0] size, position, resume, length, offset, seed_q;
+    reg [16:0] local_position_q;
+    reg [13:0] dictionary_position_q;
+    reg [16:0] best_length, best_offset;
     reg [9:0] seed_cursor, hash_q;
     reg [1:0] key_index;
     reg [31:0] prefix;
     reg [7:0] compare_a, compare_b;
     reg [3:0] error_code;
-    reg [1023:0] index_owned;
+    reg [1023:0] index_owned, dictionary_owned;
     (* ramstyle="M20K", nomem2reg *) reg [7:0] index_lo [0:1023];
     (* ramstyle="M20K", nomem2reg *) reg [7:0] index_mid [0:1023];
     (* ramstyle="MLAB", nomem2reg *) reg index_hi [0:1023];
+    (* ramstyle="M20K", nomem2reg *) reg [7:0] dictionary_lo [0:1023];
+    (* ramstyle="M20K", nomem2reg *) reg [7:0] dictionary_hi [0:1023];
+    wire [16:0] old_position=checking_dictionary ?
+        {3'd0,dictionary_position_q} : local_position_q;
     wire [17:0] virtual_position={3'd0,dictionary_size}+{1'b0,position};
     wire [17:0] candidate_address={1'b0,old_position}+{1'b0,length};
     wire candidate_dictionary=candidate_address<{3'd0,dictionary_size};
@@ -48,10 +56,10 @@ module bellows_l5_matcher #(
     wire [7:0] h2={prefix[21:16],prefix[23:22]};
     wire [7:0] h3={prefix[28:24],prefix[31:29]};
     wire [9:0] prefix_hash={prefix[9:8]^prefix[25:24],h0^h1^h2^h3};
-    wire [16:0] write_position=phase==SEED_STORE ? seed_q : virtual_position[16:0];
-    wire [9:0] write_index=phase==SEED_STORE ? seed_cursor : hash_q;
     wire write_enable=rst_n && !clear &&
-        ((phase==SEED_STORE && seed_present) || phase==LOOKUP || phase==INSERT);
+        (phase==LOOKUP || phase==INSERT);
+    wire better_match=length>=4 &&
+        (length>best_length || (length==best_length && offset<best_offset));
     assign start_ready=rst_n && awake && LEGAL && !clear && phase==IDLE;
     assign seed_en=rst_n && !clear && phase==SEED_REQ;
     assign seed_addr=seed_en ? seed_cursor : 10'd0;
@@ -76,30 +84,43 @@ module bellows_l5_matcher #(
     endgenerate
     always @(posedge clk) begin
         if (write_enable) begin
-            index_lo[write_index]<=write_position[7:0];
-            index_mid[write_index]<=write_position[15:8];
-            index_hi[write_index]<=write_position[16];
+            index_lo[hash_q]<=virtual_position[7:0];
+            index_mid[hash_q]<=virtual_position[15:8];
+            index_hi[hash_q]<=virtual_position[16];
         end
+        if (rst_n && !clear && phase==SEED_STORE && seed_present) begin
+            dictionary_lo[seed_cursor]<=seed_q[7:0];
+            dictionary_hi[seed_cursor]<={2'd0,seed_q[13:8]};
+        end
+        // LOOKUP captures the previous local entry before installing this position.
         if (rst_n && !clear && phase==LOOKUP)
-            old_position<={index_hi[hash_q],index_mid[hash_q],index_lo[hash_q]};
+            local_position_q<={index_hi[hash_q],index_mid[hash_q],index_lo[hash_q]};
+        if (rst_n && !clear && phase==DICT_LOOKUP)
+            dictionary_position_q<={dictionary_hi[hash_q][5:0],dictionary_lo[hash_q]};
     end
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             phase<=IDLE; awake<=0; dict_q<=0; seed_present<=0; old_valid<=0;
             updating<=0; a_seen<=0; b_seen<=0; dictionary_size<=0;
+            checking_dictionary<=0; best_length<=0; best_offset<=0;
             size<=0; position<=0; resume<=0; length<=0; offset<=0; seed_q<=0;
             seed_cursor<=0; hash_q<=0; key_index<=0; prefix<=0;
             compare_a<=0; compare_b<=0; error_code<=0; index_owned<=0;
+            dictionary_owned<=0;
         end else begin
             awake<=1;
-            if (clear) begin phase<=IDLE; index_owned<=0; error_code<=0; end
+            if (clear) begin
+                phase<=IDLE; index_owned<=0; dictionary_owned<=0; error_code<=0;
+                checking_dictionary<=0; best_length<=0; best_offset<=0;
+            end
             else case (phase)
                 IDLE: if (start_valid && start_ready) begin
                     size<=block_bytes; position<=0; resume<=0; length<=0; offset<=0;
                     dict_q<=use_dictionary;
                     dictionary_size<=use_dictionary ? dictionary_bytes : 15'd0;
-                    index_owned<=0; seed_cursor<=0; error_code<=0;
+                    index_owned<=0; dictionary_owned<=0; seed_cursor<=0; error_code<=0;
                     updating<=0; old_valid<=0; seed_present<=0;
+                    checking_dictionary<=0; best_length<=0; best_offset<=0;
                     if (block_bytes>MAX_BLOCK_BYTES ||
                         (use_dictionary && (dictionary_bytes==0 || dictionary_bytes>DICT_BYTES))) begin
                         error_code<=8; phase<=DONE;
@@ -114,12 +135,13 @@ module bellows_l5_matcher #(
                     end else phase<=SEED_STORE;
                 end
                 SEED_STORE: begin
-                    index_owned[seed_cursor]<=seed_present;
+                    dictionary_owned[seed_cursor]<=seed_present;
                     if (seed_cursor==1023) phase<=CHECK;
                     else begin seed_cursor<=seed_cursor+10'd1; phase<=SEED_REQ; end
                 end
                 CHECK: begin
                     length<=0; offset<=0; key_index<=0;
+                    checking_dictionary<=0; best_length<=0; best_offset<=0;
                     if (position>=size) phase<=DONE;
                     else if ({1'b0,position}+18'd4>{1'b0,size}) begin
                         if (position<resume) position<=position+17'd1;
@@ -141,11 +163,15 @@ module bellows_l5_matcher #(
                     old_valid<=index_owned[hash_q];
                     index_owned[hash_q]<=1; phase<=CANDIDATE;
                 end
+                DICT_LOOKUP: begin
+                    old_valid<=dictionary_owned[hash_q];
+                    checking_dictionary<=1; phase<=CANDIDATE;
+                end
                 CANDIDATE: begin
                     if (!old_valid || {1'b0,old_position}>=virtual_position ||
                         distance==0 || distance>18'd81920 ||
                         (!dict_q && old_position<{2'd0,dictionary_size})) begin
-                        length<=1; phase<=RESULT;
+                        length<=0; phase<=CANDIDATE_DONE;
                     end else begin offset<=distance[16:0]; length<=0; phase<=COMPARE_REQ; end
                 end
                 COMPARE_REQ: begin a_seen<=0; b_seen<=0; phase<=COMPARE_WAIT; end
@@ -159,13 +185,21 @@ module bellows_l5_matcher #(
                 end
                 COMPARE: begin
                     if (compare_a!=compare_b) begin
-                        if (length<4) length<=1;
-                        phase<=RESULT;
+                        phase<=CANDIDATE_DONE;
                     end else begin
                         length<=length+17'd1;
-                        if (source_address+18'd1=={1'b0,size}) phase<=RESULT;
+                        if (source_address+18'd1=={1'b0,size}) phase<=CANDIDATE_DONE;
                         else phase<=COMPARE_REQ;
                     end
+                end
+                CANDIDATE_DONE: begin
+                    if (better_match) begin best_length<=length; best_offset<=offset; end
+                    if (dict_q && !checking_dictionary) phase<=DICT_LOOKUP;
+                    else phase<=SELECT_RESULT;
+                end
+                SELECT_RESULT: begin
+                    length<=best_length>=4 ? best_length : 17'd1;
+                    offset<=best_offset; phase<=RESULT;
                 end
                 RESULT: if (m_ready) begin
                     resume<=position+length; position<=position+17'd1; phase<=CHECK;

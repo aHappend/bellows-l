@@ -229,10 +229,26 @@ H[9:8] = prefix[9:8] XOR prefix[25:24]
 ```
 
 The matcher queries each prepared dictionary seed once per dictionary-assisted
-block and copies the valid positions into its private index. No dictionary
-content from a preceding block becomes local history. Local updates overwrite
-older virtual positions, naturally preferring the nearest candidate in a hash
-collision. A virtual position addresses dictionary||current-input.
+block and copies the valid positions into a private, dictionary-only 1024-entry
+bank. A separate 1024-entry local bank starts unowned for every block. Both
+banks use synchronous reads and unreset storage; their ownership metadata is
+invalidated on reset, clear and command start. Dictionary preparation preserves
+the most recent dictionary position per hash. Local updates replace only local
+positions, including insertions at skipped positions after a match: they cannot
+evict a dictionary candidate. No preceding page becomes local history.
+A virtual position addresses dictionary||current-input.
+
+At LOOKUP edge E, capture the old local candidate and its ownership while
+installing the current local position (read-before-write). CANDIDATE after E
+validates its positive distance before issuing any byte reads. After comparing
+that candidate, a separate DICT_LOOKUP edge synchronously captures the pinned
+candidate and ownership for the same hash; codec 5 skips this step entirely.
+Each candidate is extended through registered byte requests/comparisons. A
+candidate-completion stage retains the longer verified match, choosing the
+smaller positive offset on equal lengths. A separate result-selection stage
+then publishes the winning token, or one literal if neither length reaches
+four. A rejected local hash collision therefore never suppresses a pinned
+dictionary search. No new requests occur while the final token is stalled.
 
 Every candidate byte is compared, including all four prefix bytes. The local
 input image is fully available before matching. Comparing an overlapping
@@ -243,6 +259,13 @@ Matcher output is one token: position, length and distance; a literal token has
 length one and m_match=0, a match has length>=4. Tokens are held under stalls.
 After a match, every skipped position with a complete four-byte prefix is
 inserted before searching at the resume position.
+
+This separation repairs the destructive dictionary/local replacement exposed
+by `evidence/preparation/l5-dictionary-page16k-verilator-20261103T043535Z-b185db0e/receipt.json`.
+That retained run failed the unchanged gain thresholds (aggregate frame/raw-LZ4
+bytes 28723/28790). Independent same-seed rerun and all nine gain cases remain
+required; the RTL repair and static elaboration do not establish compression
+gain, round-trip correctness or physical timing.
 
 ## FSE construction, decoding and encoding
 
