@@ -7,41 +7,69 @@ module bellows_l4_arbiter #(parameter integer WIDTH=69) (
     output wire [WIDTH-1:0] payload, input wire ready
 );
     reg occupied;
-    reg [1:0] owner, pointer;
-    reg [WIDTH-1:0] held;
-    reg found;
-    reg [1:0] choice, index;
-    integer i;
-    always @* begin
-        found=0; choice=0; index=0;
-        for (i=0;i<4;i=i+1) begin
-            index=pointer+i;
-            if (!found && lane_valid[index]) begin
-                found=1; choice=index;
-            end
-        end
-    end
+    reg [3:0] owner, pointer;
+    reg [4*WIDTH-1:0] held;
+    wire [3:0] priority_0={
+        lane_valid[3] && !(|lane_valid[2:0]),
+        lane_valid[2] && !(|lane_valid[1:0]),
+        lane_valid[1] && !lane_valid[0],
+        lane_valid[0]};
+    wire [3:0] priority_1={
+        lane_valid[3] && !(|lane_valid[2:1]),
+        lane_valid[2] && !lane_valid[1],
+        lane_valid[1],
+        lane_valid[0] && !(|lane_valid[3:1])};
+    wire [3:0] priority_2={
+        lane_valid[3] && !lane_valid[2],
+        lane_valid[2],
+        lane_valid[1] && !(|{lane_valid[3:2],lane_valid[0]}),
+        lane_valid[0] && !(|lane_valid[3:2])};
+    wire [3:0] priority_3={
+        lane_valid[3],
+        lane_valid[2] && !(|{lane_valid[3],lane_valid[1:0]}),
+        lane_valid[1] && !(|{lane_valid[3],lane_valid[0]}),
+        lane_valid[0] && !lane_valid[3]};
+    wire [3:0] choice=(priority_0 & {4{pointer[0]}}) |
+        (priority_1 & {4{pointer[1]}}) |
+        (priority_2 & {4{pointer[2]}}) |
+        (priority_3 & {4{pointer[3]}});
+    wire found=|lane_valid;
+    wire [3:0] selected_owner=occupied ? owner : choice;
+    wire [WIDTH-1:0] selected_payload=
+        ((lane_payload[0*WIDTH +: WIDTH] & {WIDTH{choice[0]}}) |
+         (lane_payload[1*WIDTH +: WIDTH] & {WIDTH{choice[1]}})) |
+        ((lane_payload[2*WIDTH +: WIDTH] & {WIDTH{choice[2]}}) |
+         (lane_payload[3*WIDTH +: WIDTH] & {WIDTH{choice[3]}}));
+    wire [WIDTH-1:0] held_payload=
+        ((held[0*WIDTH +: WIDTH] & {WIDTH{owner[0]}}) |
+         (held[1*WIDTH +: WIDTH] & {WIDTH{owner[1]}})) |
+        ((held[2*WIDTH +: WIDTH] & {WIDTH{owner[2]}}) |
+         (held[3*WIDTH +: WIDTH] & {WIDTH{owner[3]}}));
     wire offered=admit && !occupied && found;
     assign valid=rst_n && (occupied || offered);
-    assign channel=valid ? (occupied ? owner : choice) : 2'd0;
-    assign payload=valid ? (occupied ? held : lane_payload[choice*WIDTH +: WIDTH]) :
+    assign channel=valid ?
+        {selected_owner[2] | selected_owner[3],
+         selected_owner[1] | selected_owner[3]} : 2'd0;
+    assign payload=valid ? (occupied ? held_payload : selected_payload) :
         {WIDTH{1'b0}};
     assign lane_take=rst_n && admit && !occupied && found ?
-        (4'b0001<<choice) : 4'd0;
-    assign lane_retire=valid && ready ? (4'b0001<<channel) : 4'd0;
+        choice : 4'd0;
+    assign lane_retire=valid && ready ? selected_owner : 4'd0;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            occupied<=0; owner<=0; pointer<=0; held<=0;
+            occupied<=0; owner<=0; pointer<=4'b0001; held<=0;
         end else begin
+            // Snapshot every lane before reservation, outside the eligibility cone.
+            if (!occupied) held<=lane_payload;
             if (admit && !occupied && found) begin
                 owner<=choice;
                 if (ready) begin
-                    occupied<=0; pointer<=choice+2'd1;
+                    occupied<=0; pointer<={choice[2:0],choice[3]};
                 end else begin
-                    occupied<=1; held<=lane_payload[choice*WIDTH +: WIDTH];
+                    occupied<=1;
                 end
             end else if (valid && ready) begin
-                occupied<=0; pointer<=owner+2'd1;
+                occupied<=0; pointer<={owner[2:0],owner[3]};
             end
         end
     end

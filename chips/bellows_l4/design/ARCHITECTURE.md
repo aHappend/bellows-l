@@ -268,13 +268,27 @@ Write payload layout is `{wide, address[63:0], data[63:0], strobe[7:0]}`.
 Completion layout remains `{id[15:0], error[3:0], src_bytes[31:0],
 dst_bytes[31:0], checksum[31:0]}`.
 
-Each arbiter offers the rotating winner directly when empty. On an
-unstalled grant it reserves and forwards the transaction at the same edge;
-on a stalled offer it captures the owner/payload into its hold register.
+Each arbiter offers the rotating winner directly when empty. Four fixed
+priority orders are evaluated in parallel and combined with a one-hot
+rotation pointer. Winner selection and payload reduction use one-hot masks
+and balanced pairwise ORs, not an indexed priority-search/payload-mux chain.
+On an unstalled grant it reserves and forwards the transaction at the same
+edge; on a stalled offer it captures the one-hot owner and all four lane
+payloads into independent snapshot registers.
 `lane_take` means an irrevocable reservation, not necessarily external
 memory acceptance. The payload remains stable until the selected transport
 accepts it; the rotation pointer advances only after that successful grant.
 The registered hold path is also used for completion backpressure.
+
+Snapshots update whenever the arbiter is empty, independent of lane
+eligibility, fault qualification, admission and downstream readiness.
+They freeze while occupied, and only the captured owner's snapshot is
+exposed. Thus a stalled reservation uses exactly the pre-reservation
+payload even though that reservation pops its context queue at the same
+edge. Context payloads are reset-masked but are not qualified by request
+validity; only eligible lanes can be reserved or exposed externally.
+This keeps state/fault qualification out of the snapshot data inputs.
+External DMA and completion payloads remain zero when invalid or reset.
 
 DMA latches owner, width and count on external acceptance and makes
 response-ready visible afterward. There can be no same-edge response
@@ -382,6 +396,42 @@ ownership and successful-write accounting are unchanged. The integrated
 4x/8x speedup requirements remain mandatory, not inferred from the absence
 of added cycles. Fresh independent checks, native STA and three consecutive
 physical HIL passes are required on the repaired sources.
+
+### Request-control isolation repair
+
+The subsequent post-fit result for the descriptor-cache repair reported
+setup WNS -2.432 ns and hold slack +0.040 ns at 10.000 ns, with zero
+unconstrained functional endpoints; mapping/fitting used 1,256 of 2,713
+M20Ks. The reported failing endpoints `write_arbiter|held[113:112]`
+were write-address bits, not strobe-count bits. Context state/fault
+qualification still passed through the rotating priority search and
+dynamic payload selection into the old shared held register. That result
+is a retained failure, not current-source timing signoff.
+
+The parallel one-hot selection and independent lane snapshots described
+above remove that control-to-held-address path. Read, write and completion
+directions use the same structure. Eligibility and bus-first fault
+suppression are unchanged: a new fault can prevent a new reservation,
+but cannot cancel an already reserved transaction. No request-preparation
+state or extra transfer edge is introduced. The additional snapshot
+registers isolate control from data rather than serializing transfers.
+
+| Arbiter event | Pre-edge condition | Post-edge effect |
+| --- | --- | --- |
+| Reset | `!rst_n` | Occupancy, owners and snapshots clear; pointer selects lane zero; public outputs are zero |
+| Empty and no reservation | No eligible admitted lane | All lane snapshots refresh; no ownership or pointer change |
+| Immediate acceptance | Empty, admitted winner, downstream ready | Reserve/retire once at this edge; rotate to the successor; remain empty |
+| Stalled reservation at E | Empty, admitted winner, downstream not ready | Capture all pre-edge payloads and winning owner; assert occupied |
+| Held stall | Occupied, downstream not ready | Snapshots, owner and pointer hold, regardless of context faults or data movement |
+| Held acceptance | Occupied, downstream ready | Retire the captured owner once; release occupancy and rotate to its successor |
+| Next transfer | Empty after prior acceptance and DMA available | Fall-through reservation remains possible without a new preparation cycle |
+
+Minimum and non-power-of-two block/descriptor configurations do not change
+the four-lane arbitration geometry. Fairness remains rotation after each
+successful grant, including held grants. Functional/reference, defect,
+synthesis and portable checks need fresh source-bound results; the
+integrated 4x/8x speedup, native timing and physical HIL requirements remain
+unchanged. Static elaboration alone cannot establish those outcomes.
 
 `reads_consumed` counts returned request bytes, including a failed read
 as in the parent, not codec-consumed payload symbols. `writes_reserved`

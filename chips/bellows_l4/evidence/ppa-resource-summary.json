@@ -1,10 +1,10 @@
 {
   "chip": "Bellows-L4",
   "fitter_resources": {
-    "alms_used": 59123,
+    "alms_used": 57677,
     "alms_total": 427200,
     "alms_pct": "14 %",
-    "total_registers": 58118,
+    "total_registers": 53922,
     "block_memory_bits": 19924480,
     "m20k_ram_blocks": 1256,
     "m20k_ram_blocks_total": 2713,
@@ -15,10 +15,10 @@
     "device": "10AX115N2F45E1SG",
     "netlist_mode": "post_fit",
     "target_frequency_mhz": 100.0,
-    "fmax_mhz": 80.52,
-    "critical_path_delay_ns": 12.42,
-    "wns_setup_ns": -2.42,
-    "wns_hold_ns": 0.037
+    "fmax_mhz": 80.44,
+    "critical_path_delay_ns": 12.432,
+    "wns_setup_ns": -2.432,
+    "wns_hold_ns": 0.04
   },
   "verification_tiers": {}
 }

@@ -290,13 +290,13 @@ module bellows_l4_context #(
     wire accept_read_data=rd_response && !rd_error && error_code==0 && fault==0;
     assign rd_valid=rst_n && LEGAL && running && fault==0 && !read_pending &&
         reads_consumed<source_bytes && input_fill<=8;
-    assign rd_payload=rd_valid ? {wide,read_address,read_size} : 69'd0;
+    assign rd_payload=rst_n ? {wide,read_address,read_size} : 69'd0;
     assign wr_valid=rst_n && LEGAL && error_code==0 && fault==0 &&
         (state==RUN || state==FINISH || state==TRAILER || state==SETTLE) &&
         !write_pending && write_size!=0 && output_fill>={2'd0,write_size};
-    assign wr_payload=wr_valid ? {wide,write_address,write_data,write_strobe} : 137'd0;
+    assign wr_payload=rst_n ? {wide,write_address,write_data,write_strobe} : 137'd0;
     assign status_valid=rst_n && LEGAL && state==COMPLETE;
-    assign status_payload=status_valid ?
+    assign status_payload=rst_n ?
         {identifier,error_code,reads_consumed,writes_acked,computed_checksum} : 116'd0;
 
     bellows_l2_compressor #(.MAX_BLOCK_BYTES(BLOCK)) compressor (
