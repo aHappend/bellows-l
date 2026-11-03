@@ -1,0 +1,14 @@
+{
+  "chip": "Bellows-L1",
+  "fitter_resources": {},
+  "timing": {
+    "device": "10AX115N2F45E1SG",
+    "netlist_mode": "post_map",
+    "target_frequency_mhz": 100.0,
+    "fmax_mhz": 435.54,
+    "critical_path_delay_ns": 2.296,
+    "wns_setup_ns": 7.704,
+    "wns_hold_ns": -0.196
+  },
+  "verification_tiers": {}
+}
