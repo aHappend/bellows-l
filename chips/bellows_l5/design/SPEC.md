@@ -275,6 +275,17 @@ paths without printing secret content.
 
 Required tools/libraries: Python 3, Icarus, Verilator, make, C++ compiler, Yosys,
 libzstd, liblz4, libxxhash. Actual versions belong in fresh receipts.
+For Designer-only syntax/elaboration from the delivered root:
+
+```text
+iverilog -g2012 -t null -s bellows_l5_top rtl/*.sv
+```
+
+This static command does not execute behavior, build a simulation harness or
+establish synthesis/timing correctness. Compile only the delivered RTL, not
+both copies of the parent modules. Integration/startup and actual production
+module ownership are described in `ARCHITECTURE.md`.
+
 Shared runtime independently executes mandatory native L1.5 timing lint,
 L2 Quartus 17.1 STA and L3 Arria 10 PCIe hardware-bridge gates. Connectivity-only
 hardware observations are not codec-workload measurements.

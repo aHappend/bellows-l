@@ -45,7 +45,7 @@ module bellows_l5_frame_engine #(
     localparam integer BLOCK=LEGAL ? MAX_BLOCK_BYTES : 1;
     localparam integer DICTIONARY=LEGAL ? DICT_BYTES : 1;
     localparam integer FRAME=2*BLOCK+1024;
-    localparam integer SEQUENCES=(BLOCK>>2)+1;
+    localparam integer SEQUENCES=BLOCK>=4 ? (BLOCK>>2) : 1;
     localparam [7:0] IDLE=0, LOAD=1, DISPATCH=2, FETCH=3, FETCH_WAIT=4,
         HEADER=5, HEADER_BYTE=6, HEADER_CHECK=7, RAW_COPY=8, RAW_BYTE=9,
         RLE_BYTE=10, RLE_FILL=11, LIT_HEADER=12, LIT_FIRST=13,
@@ -72,7 +72,8 @@ module bellows_l5_frame_engine #(
         WRITER_FINISH=89, WRITER_DONE=90, CHOOSE=91,
         OUTPUT_START=92, OUTPUT_REQUEST=93, OUTPUT_WAIT=94,
         OUTPUT_VALID=95, DONE=96, TRAILING=97, TRAILING_BYTE=98,
-        MATCH_ADDRESS=99, MATCH_DISTANCE=100;
+        MATCH_ADDRESS=99, MATCH_DISTANCE=100, SKIP_SIZE=101,
+        SKIP_BYTE=102, SKIP_CHECK=103;
     reg [7:0] phase, return_phase, bit_return, append_return, field_return;
     reg awake, decoding, dictionary_q, raw_fallback, literals_rle;
     reg [14:0] dict_bytes;
@@ -193,7 +194,8 @@ module bellows_l5_frame_engine #(
     reg raw_we, literal_we, raw_read;
     reg [31:0] raw_waddr, raw_raddr, literal_waddr, literal_raddr;
     reg [7:0] raw_wdata, literal_wdata;
-    wire literal_read=active && (phase==COPY_LITERALS || phase==PREFIX_LITERAL);
+    wire literal_read=active && ((phase==COPY_LITERALS && copy_left!=0) ||
+        (phase==PREFIX_LITERAL && prefix_index<{15'd0,literal_count}));
     wire compressed_read=active && phase==OUTPUT_REQUEST && !decoding && !raw_fallback &&
         output_index>=13 && output_index<13+compressed_size;
     wire [31:0] output_body_index=decoding ? output_index : output_index-32'd13;
@@ -230,7 +232,7 @@ module bellows_l5_frame_engine #(
             else if (phase==CHECKSUM_READ && checksum_index<raw_size) begin
                 raw_read=1; raw_raddr=checksum_index;
             end
-            else if (phase==COPY_MATCH && !match_from_dictionary) begin
+            else if (phase==COPY_MATCH && match_left!=0 && !match_from_dictionary) begin
                 raw_read=1; raw_raddr=match_local[31:0];
             end else if (raw_output_read) begin raw_read=1; raw_raddr=output_body_index; end
         end
@@ -312,7 +314,7 @@ module bellows_l5_frame_engine #(
         .done_error(matcher_error)
     );
     assign dict_rd_en=active && (matcher_dict_en ||
-        (phase==COPY_MATCH && match_from_dictionary));
+        (phase==COPY_MATCH && match_left!=0 && match_from_dictionary));
     assign dict_rd_addr=!dict_rd_en ? 14'd0 : matcher_dict_en ?
         matcher_dict_addr : match_virtual[13:0];
 
@@ -407,11 +409,10 @@ module bellows_l5_frame_engine #(
     assign m_data=m_valid ? output_byte : 8'd0;
     assign done_valid=active && phase==DONE;
     assign done_error=done_valid ? error_code : 4'd0;
-    assign done_checksum=done_valid ? private_checksum : 32'd0;
+    assign done_checksum=active ? private_checksum : 32'd0;
     wire [31:0] parsed_block_size={11'd0,header_word[23:3]};
     wire [31:0] parsed_body_size=header_word[2:1]==1 ? 32'd1 : parsed_block_size;
     wire [32:0] parsed_frame_size=33'd17+{1'b0,parsed_body_size};
-    wire [31:0] literal_header_bytes=literal_header>>4;
     wire candidate_smaller=sequence_count!=0 && compressed_size<raw_size;
     wire [31:0] encoded_body_size=raw_fallback ? raw_size : compressed_size;
     wire [31:0] encoded_block_header=(encoded_body_size<<3) |
@@ -454,8 +455,10 @@ module bellows_l5_frame_engine #(
                         decoding<=decompress; dictionary_q<=use_dictionary;
                         dict_bytes<=use_dictionary ? dictionary_bytes : 15'd0;
                         private_mode<=checksum_mode; source_size<=input_bytes;
-                        standard_size<=decompress && checksum_mode!=0 ?
-                            input_bytes-32'd4 : input_bytes;
+                        if (decompress && checksum_mode!=0) begin
+                            if (input_bytes>=4) standard_size<=input_bytes-32'd4;
+                            else standard_size<=0;
+                        end else standard_size<=input_bytes;
                         capacity<=output_capacity; loaded<=0; cursor<=0;
                         block_end<=0; fetch_limit<=0; raw_size<=0; raw_count<=0;
                         block_size<=0; literal_size<=0; literal_used<=0;
@@ -477,9 +480,9 @@ module bellows_l5_frame_engine #(
                         output_byte<=0; checksum_byte<=0; hash_seen<=0; private_seen<=0;
                         alphabet<=0; selected_mode<=0; block_type<=0; extra_index<=0;
                         raw_fallback<=0; literals_rle<=0; error_code<=0;
-                        if (checksum_mode==3 || input_bytes>FRAME+4 ||
+                        if (checksum_mode==3 ||
+                            input_bytes>FRAME+(checksum_mode==0 ? 0 : 4) ||
                             (!decompress && input_bytes>BLOCK) ||
-                            (decompress && input_bytes<(checksum_mode==0 ? 17 : 21)) ||
                             (use_dictionary && (dictionary_bytes==0 || dictionary_bytes>DICTIONARY))) begin
                             error_code<=8; phase<=DONE;
                         end else phase<=LOAD;
@@ -490,7 +493,9 @@ module bellows_l5_frame_engine #(
                     end
                     DISPATCH: begin
                         if (decoding) begin
-                            cursor<=0; fetch_limit<=standard_size; header_index<=0; phase<=HEADER;
+                            cursor<=0; fetch_limit<=standard_size; header_index<=0;
+                            if (standard_size<4) begin error_code<=11; phase<=DONE; end
+                            else phase<=HEADER;
                         end else begin raw_size<=source_size; phase<=CHECKSUM_START; end
                     end
                     FETCH: begin
@@ -507,8 +512,32 @@ module bellows_l5_frame_engine #(
                         else if (header_index==5) window_descriptor<=byte_q;
                         else if (header_index<10) frame_content[(header_index-6)*8 +: 8]<=byte_q;
                         else header_word[(header_index-10)*8 +: 8]<=byte_q;
-                        if (header_index==12) phase<=HEADER_CHECK;
+                        if (header_index==3 &&
+                            ({byte_q,magic[23:0]} & 32'hfffffff0)==32'h184d2a50) begin
+                            header_index<=0; header_word<=0; phase<=SKIP_SIZE;
+                        end else if (header_index==3 && {byte_q,magic[23:0]}!=32'hfd2fb528) begin
+                            error_code<=11; phase<=DONE;
+                        end else if (header_index==4 && byte_q[4:3]!=0) begin
+                            error_code<=11; phase<=DONE;
+                        end else if (header_index==4 && byte_q!=8'h84) begin
+                            error_code<=12; phase<=DONE;
+                        end else if (header_index==4 && standard_size<17) begin
+                            error_code<=11; phase<=DONE;
+                        end else if (header_index==5 && byte_q!=8'h38) begin
+                            error_code<=12; phase<=DONE;
+                        end else if (header_index==12) phase<=HEADER_CHECK;
                         else begin header_index<=header_index+4'd1; phase<=HEADER; end
+                    end
+                    SKIP_SIZE: begin return_phase<=SKIP_BYTE; phase<=FETCH; end
+                    SKIP_BYTE: begin
+                        header_word[header_index*8 +: 8]<=byte_q;
+                        if (header_index==3) phase<=SKIP_CHECK;
+                        else begin header_index<=header_index+4'd1; phase<=SKIP_SIZE; end
+                    end
+                    SKIP_CHECK: begin
+                        if (33'd8+{1'b0,header_word}>{1'b0,standard_size}) error_code<=11;
+                        else error_code<=12;
+                        phase<=DONE;
                     end
                     HEADER_CHECK: begin
                         block_type<=header_word[2:1]; block_size<=parsed_block_size;

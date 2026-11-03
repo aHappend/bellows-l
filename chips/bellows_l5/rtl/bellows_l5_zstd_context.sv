@@ -67,8 +67,7 @@ module bellows_l5_zstd_context #(
         cmd_src_segments>DEPTH || cmd_dst_segments==0 || cmd_dst_segments>DEPTH ||
         cmd_dst_capacity==0 || ((cmd_src_bytes==0)!=(cmd_src_segments==0)) ||
         (!cmd_decompress && cmd_src_bytes>BLOCK) ||
-        (cmd_decompress && ({1'b0,cmd_src_bytes}<33'd17+trailer ||
-            {1'b0,cmd_src_bytes}>FRAME_LIMIT+trailer));
+        (cmd_decompress && {1'b0,cmd_src_bytes}>FRAME_LIMIT+trailer);
     wire [64:0] descriptor_end={1'b0,sg_addr}+{33'd0,sg_bytes-32'd1};
     wire [36:0] next_source_sum=source_sum+{5'd0,sg_bytes};
     wire [36:0] next_destination_sum=destination_sum+{5'd0,sg_bytes};
@@ -296,6 +295,7 @@ module bellows_l5_zstd_context #(
                     phase<=RUN;
                 end
                 RUN: begin
+                    computed_checksum<=engine_checksum;
                     if (engine_status_valid) begin
                         engine_done<=1; computed_checksum<=engine_checksum;
                     end
@@ -309,7 +309,7 @@ module bellows_l5_zstd_context #(
             if (error_code==0 && fault!=0) begin
                 error_code<=fault; phase<=SETTLE;
                 input_queue<=0; input_fill<=0; output_queue<=0; output_fill<=0;
-                if (engine_status_valid) computed_checksum<=engine_checksum;
+                computed_checksum<=engine_checksum;
             end
         end
     end
