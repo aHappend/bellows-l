@@ -2672,13 +2672,13 @@
       ]
     },
     "check:behavior-page4k": {
-      "attempt_id": 13,
-      "duration_s": 812.6290457409341,
-      "stdout_preview": "arent-legacy-89-20cba4d0: child active (30s)\nVerification step: execute-codec-matrix-2026-dc0abbd1\nVerification step: execute-dictionary-edges-2026-ef0bfac0\nVerification step: execute-errors-2026-10224173\nVerification step: execute-parent-errors-2026-88e581fb\nVerification step: execute-legacy-errors-2026-3c4682bf\nVerification step: execute-boundaries-2026-6ab1e5e5\nVerification step: execute-boundaries-2026-roundtrip-301cd59b\nVerification step: execute-legacy-2026-0f4a3c9c\nPreparation execute-legacy-2026-0f4a3c9c: child active (30s)\nPreparation execute-legacy-2026-0f4a3c9c: child active (60s)\nVerification step: execute-parent-legacy-2026-36fa306a\nPreparation execute-parent-legacy-2026-36fa306a: child active (30s)\nVerification step: execute-missing-dictionary-and-recovery-6a716240\nVerification step: execute-rfc-length-offset-boundaries-9996e4ad\nPreparation execute-rfc-length-offset-boundaries-9996e4ad: child active (30s)\nVerification step: concurrent-17-version\nVerification step: concurrent-17-compile\nPreparation concurrent-17-compile: child active (30s)\nVerification step: concurrent-17-simulation\nVerification step: lifecycle-17-version\nVerification step: lifecycle-17-compile\nPreparation lifecycle-17-compile: child active (30s)\nVerification step: lifecycle-17-simulation\nVerification step: dictionary-views-17-version\nVerification step: dictionary-views-17-compile\nVerification step: dictionary-views-17-simulation\nevidence/l1-behavior-page4k-20261103T061823Z-77b67aff/receipt.json\n",
+      "attempt_id": 19,
+      "duration_s": 572.0692348789889,
+      "stdout_preview": "6-ebad9c08-batch-2-fd947c4b\nVerification step: execute-legacy-2026-ebad9c08-batch-3-df086490\nPreparation execute-legacy-2026-ebad9c08-batch-0-ad9f815f: child active (30s)Preparation execute-legacy-2026-ebad9c08-batch-2-fd947c4b: child active (30s)\n\nVerification step: execute-parent-legacy-2026-86887d27-batch-0-9fad656d\nVerification step: execute-parent-legacy-2026-86887d27-batch-1-65c9237f\nVerification step: execute-parent-legacy-2026-86887d27-batch-2-ec9f5c40\nVerification step: execute-parent-legacy-2026-86887d27-batch-3-03663587\nVerification step: execute-missing-dictionary-and-recovery-778e91a7\nVerification step: execute-rfc-length-offset-boundaries-d239a8b9-batch-0-a099e992\nVerification step: execute-rfc-length-offset-boundaries-d239a8b9-batch-1-a3a1edacVerification step: execute-rfc-length-offset-boundaries-d239a8b9-batch-2-2c739737\n\nVerification step: execute-rfc-length-offset-boundaries-d239a8b9-batch-3-8ebe6f51\nVerification step: concurrent-17-version\nVerification step: concurrent-17-compile\nPreparation concurrent-17-compile: child active (30s)\nVerification step: concurrent-17-simulation\nVerification step: lifecycle-17-version\nVerification step: lifecycle-17-compile\nPreparation lifecycle-17-compile: child active (30s)\nVerification step: lifecycle-17-simulation\nVerification step: dictionary-views-17-version\nVerification step: dictionary-views-17-compile\nVerification step: dictionary-views-17-simulation\nevidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/receipt.json\n",
       "receipt_count": 1,
       "receipts": [
         {
-          "path": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/receipt.json",
+          "path": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/receipt.json",
           "data": {
             "kind": "l1-check",
             "argv": [
@@ -2690,20 +2690,20 @@
               "page4k"
             ],
             "cwd": ".",
-            "start": "2026-11-03T06:18:23.208377+00:00",
+            "start": "2026-11-03T08:52:07.364009+00:00",
             "children": [
               {
                 "argv": [
                   "g++",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:18:23.338272+00:00",
-                "timeout_s": 2699.870287290076,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T08:52:07.492050+00:00",
+                "timeout_s": 2699.8721219890285,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/version-g++.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/version-g++.stderr.txt",
-                "end": "2026-11-03T06:18:23.342794+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/version-g++.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/version-g++.stderr.txt",
+                "end": "2026-11-03T08:52:07.496474+00:00",
                 "exit_code": 0
               },
               {
@@ -2711,13 +2711,13 @@
                   "make",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:18:23.343034+00:00",
-                "timeout_s": 2699.8654899329413,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T08:52:07.496718+00:00",
+                "timeout_s": 2699.867437737994,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/version-make.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/version-make.stderr.txt",
-                "end": "2026-11-03T06:18:23.347461+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/version-make.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/version-make.stderr.txt",
+                "end": "2026-11-03T08:52:07.500910+00:00",
                 "exit_code": 0
               },
               {
@@ -2725,13 +2725,13 @@
                   "verilator",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:18:23.347701+00:00",
-                "timeout_s": 2699.860820414964,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T08:52:07.501130+00:00",
+                "timeout_s": 2699.863022347912,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/verilator-version-simulation-40c1e343.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/verilator-version-simulation-40c1e343.stderr.txt",
-                "end": "2026-11-03T06:18:23.462385+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/verilator-version-simulation-00f8fd16.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/verilator-version-simulation-00f8fd16.stderr.txt",
+                "end": "2026-11-03T08:52:07.615686+00:00",
                 "exit_code": 0
               },
               {
@@ -2790,52 +2790,52 @@
                   "../source/rtl/bellows_l5_xxh64.sv",
                   "../source/rtl/bellows_l5_zstd_context.sv"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343",
-                "start": "2026-11-03T06:18:23.462776+00:00",
-                "timeout_s": 2699.745870816987,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16",
+                "start": "2026-11-03T08:52:07.615922+00:00",
+                "timeout_s": 2699.7482410890516,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/compile-simulation-40c1e343.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/compile-simulation-40c1e343.stderr.txt",
-                "end": "2026-11-03T06:18:57.487507+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/compile-simulation-00f8fd16.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/compile-simulation-00f8fd16.stderr.txt",
+                "end": "2026-11-03T08:52:42.994460+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/codec-matrix-17-6bd5cb9a",
-                "start": "2026-11-03T06:18:57.488382+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/codec-matrix-17-913ea92a",
+                "start": "2026-11-03T08:52:42.995700+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-codec-matrix-17-6bd5cb9a.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-codec-matrix-17-6bd5cb9a.stderr.txt",
-                "end": "2026-11-03T06:19:08.878930+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-codec-matrix-17-913ea92a.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-codec-matrix-17-913ea92a.stderr.txt",
+                "end": "2026-11-03T08:52:54.036799+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/dictionary-edges-17-be4e9778",
-                "start": "2026-11-03T06:19:08.910942+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/dictionary-edges-17-c690db23",
+                "start": "2026-11-03T08:52:54.070910+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-dictionary-edges-17-be4e9778.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-dictionary-edges-17-be4e9778.stderr.txt",
-                "end": "2026-11-03T06:19:10.829364+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-dictionary-edges-17-c690db23.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-dictionary-edges-17-c690db23.stderr.txt",
+                "end": "2026-11-03T08:52:55.940278+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/errors-17-48819d98",
-                "start": "2026-11-03T06:19:10.905480+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/errors-17-7eb88fe2",
+                "start": "2026-11-03T08:52:56.011567+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-errors-17-48819d98.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-errors-17-48819d98.stderr.txt",
-                "end": "2026-11-03T06:19:34.419671+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-errors-17-7eb88fe2.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-errors-17-7eb88fe2.stderr.txt",
+                "end": "2026-11-03T08:53:19.033782+00:00",
                 "exit_code": 0
               },
               {
@@ -2843,13 +2843,13 @@
                   "verilator",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:19:34.468776+00:00",
-                "timeout_s": 2628.7397819480393,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T08:53:19.084051+00:00",
+                "timeout_s": 2628.280144263059,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/verilator-version-simulation-b5b05e0b.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/verilator-version-simulation-b5b05e0b.stderr.txt",
-                "end": "2026-11-03T06:19:34.533842+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/verilator-version-simulation-35d4ef84.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/verilator-version-simulation-35d4ef84.stderr.txt",
+                "end": "2026-11-03T08:53:19.199434+00:00",
                 "exit_code": 0
               },
               {
@@ -2891,351 +2891,858 @@
                   "../source/bellows_l4_reference/rtl/bellows_l4_sg_dma.sv",
                   "../source/bellows_l4_reference/rtl/bellows_l4_top.sv"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b",
-                "start": "2026-11-03T06:19:34.534177+00:00",
-                "timeout_s": 2628.674402507022,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84",
+                "start": "2026-11-03T08:53:19.200006+00:00",
+                "timeout_s": 2628.1642222178634,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/compile-simulation-b5b05e0b.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/compile-simulation-b5b05e0b.stderr.txt",
-                "end": "2026-11-03T06:19:54.843984+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/compile-simulation-35d4ef84.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/compile-simulation-35d4ef84.stderr.txt",
+                "end": "2026-11-03T08:53:39.721776+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b/parent-errors-17-1c4bd81f",
-                "start": "2026-11-03T06:19:54.844758+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-errors-17-db154e4a",
+                "start": "2026-11-03T08:53:39.722742+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-errors-17-1c4bd81f.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-errors-17-1c4bd81f.stderr.txt",
-                "end": "2026-11-03T06:20:05.432713+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-errors-17-db154e4a.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-errors-17-db154e4a.stderr.txt",
+                "end": "2026-11-03T08:53:50.012480+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/legacy-errors-17-4c337f1f",
-                "start": "2026-11-03T06:20:05.478971+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-errors-17-2d557ce6",
+                "start": "2026-11-03T08:53:50.050052+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-errors-17-4c337f1f.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-errors-17-4c337f1f.stderr.txt",
-                "end": "2026-11-03T06:20:25.038082+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-errors-17-2d557ce6.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-errors-17-2d557ce6.stderr.txt",
+                "end": "2026-11-03T08:54:09.167778+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/boundaries-17-36d1a88b",
-                "start": "2026-11-03T06:20:25.091689+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-eaf9f305/batch-0-5cc9d2cb",
+                "start": "2026-11-03T08:54:09.241605+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-17-36d1a88b.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-17-36d1a88b.stderr.txt",
-                "end": "2026-11-03T06:20:46.753180+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-0-5cc9d2cb.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-0-5cc9d2cb.stderr.txt",
+                "end": "2026-11-03T08:54:18.128509+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/boundaries-17-roundtrip-9d1c2adb",
-                "start": "2026-11-03T06:20:46.820221+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-eaf9f305/batch-1-539916c9",
+                "start": "2026-11-03T08:54:09.242774+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-17-roundtrip-9d1c2adb.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-17-roundtrip-9d1c2adb.stderr.txt",
-                "end": "2026-11-03T06:21:04.372188+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-1-539916c9.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-1-539916c9.stderr.txt",
+                "end": "2026-11-03T08:54:16.883781+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/legacy-17-28bd83ce",
-                "start": "2026-11-03T06:21:04.553987+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-eaf9f305/batch-2-fbae2842",
+                "start": "2026-11-03T08:54:09.243692+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-17-28bd83ce.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-17-28bd83ce.stderr.txt",
-                "end": "2026-11-03T06:22:35.371658+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-2-fbae2842.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-2-fbae2842.stderr.txt",
+                "end": "2026-11-03T08:54:16.676333+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b/parent-legacy-17-72f7b67f",
-                "start": "2026-11-03T06:22:35.637641+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-eaf9f305/batch-3-501005c4",
+                "start": "2026-11-03T08:54:09.245150+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-legacy-17-72f7b67f.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-legacy-17-72f7b67f.stderr.txt",
-                "end": "2026-11-03T06:23:22.891288+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-3-501005c4.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-eaf9f305-batch-3-501005c4.stderr.txt",
+                "end": "2026-11-03T08:54:12.016754+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/codec-matrix-89-0604a0f0",
-                "start": "2026-11-03T06:23:23.093545+00:00",
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-roundtrip-2e07e731/batch-0-c1c3d3f6",
+                "start": "2026-11-03T08:54:18.206209+00:00",
                 "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-codec-matrix-89-0604a0f0.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-codec-matrix-89-0604a0f0.stderr.txt",
-                "end": "2026-11-03T06:23:34.633931+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-0-c1c3d3f6.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-0-c1c3d3f6.stderr.txt",
+                "end": "2026-11-03T08:54:24.439253+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-roundtrip-2e07e731/batch-1-30895e8e",
+                "start": "2026-11-03T08:54:18.207016+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-1-30895e8e.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-1-30895e8e.stderr.txt",
+                "end": "2026-11-03T08:54:23.535824+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-roundtrip-2e07e731/batch-2-41e610bf",
+                "start": "2026-11-03T08:54:18.207917+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-2-41e610bf.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-2-41e610bf.stderr.txt",
+                "end": "2026-11-03T08:54:24.639803+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-17-roundtrip-2e07e731/batch-3-1bb07e25",
+                "start": "2026-11-03T08:54:18.208770+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-3-1bb07e25.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-17-roundtrip-2e07e731-batch-3-1bb07e25.stderr.txt",
+                "end": "2026-11-03T08:54:20.729851+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-17-48345725/batch-0-f23494a4",
+                "start": "2026-11-03T08:54:24.884277+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-0-f23494a4.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-0-f23494a4.stderr.txt",
+                "end": "2026-11-03T08:55:03.223012+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-17-48345725/batch-1-08e17bb9",
+                "start": "2026-11-03T08:54:24.885167+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-1-08e17bb9.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-1-08e17bb9.stderr.txt",
+                "end": "2026-11-03T08:54:33.824943+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-17-48345725/batch-3-b231b7cb",
+                "start": "2026-11-03T08:54:24.886526+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-3-b231b7cb.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-3-b231b7cb.stderr.txt",
+                "end": "2026-11-03T08:54:36.476656+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-17-48345725/batch-2-7933e405",
+                "start": "2026-11-03T08:54:24.887346+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-2-7933e405.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-17-48345725-batch-2-7933e405.stderr.txt",
+                "end": "2026-11-03T08:55:00.317170+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-17-9004fd3f/batch-0-341d33ab",
+                "start": "2026-11-03T08:55:03.558544+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-0-341d33ab.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-0-341d33ab.stderr.txt",
+                "end": "2026-11-03T08:55:25.278133+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-17-9004fd3f/batch-1-f4f18bf0",
+                "start": "2026-11-03T08:55:03.559398+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-1-f4f18bf0.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-1-f4f18bf0.stderr.txt",
+                "end": "2026-11-03T08:55:08.788105+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-17-9004fd3f/batch-2-2499646c",
+                "start": "2026-11-03T08:55:03.560598+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-2-2499646c.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-2-2499646c.stderr.txt",
+                "end": "2026-11-03T08:55:22.219934+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-17-9004fd3f/batch-3-18b778ce",
+                "start": "2026-11-03T08:55:03.561705+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-3-18b778ce.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-17-9004fd3f-batch-3-18b778ce.stderr.txt",
+                "end": "2026-11-03T08:55:08.838374+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/dictionary-edges-89-ab0bcdc3",
-                "start": "2026-11-03T06:23:34.683980+00:00",
-                "timeout_s": 2388.524569782894,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/codec-matrix-89-4f70e2a0",
+                "start": "2026-11-03T08:55:25.493477+00:00",
+                "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-dictionary-edges-89-ab0bcdc3.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-dictionary-edges-89-ab0bcdc3.stderr.txt",
-                "end": "2026-11-03T06:23:36.602314+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-codec-matrix-89-4f70e2a0.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-codec-matrix-89-4f70e2a0.stderr.txt",
+                "end": "2026-11-03T08:55:36.733302+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/errors-89-b3fd3f0a",
-                "start": "2026-11-03T06:23:36.688082+00:00",
-                "timeout_s": 2386.520482807886,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/dictionary-edges-89-f6d5f848",
+                "start": "2026-11-03T08:55:36.782644+00:00",
+                "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-errors-89-b3fd3f0a.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-errors-89-b3fd3f0a.stderr.txt",
-                "end": "2026-11-03T06:24:00.205238+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-dictionary-edges-89-f6d5f848.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-dictionary-edges-89-f6d5f848.stderr.txt",
+                "end": "2026-11-03T08:55:38.702098+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b/parent-errors-89-92abac16",
-                "start": "2026-11-03T06:24:00.273131+00:00",
-                "timeout_s": 2362.9355184519663,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/errors-89-467d6376",
+                "start": "2026-11-03T08:55:38.786991+00:00",
+                "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-errors-89-92abac16.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-errors-89-92abac16.stderr.txt",
-                "end": "2026-11-03T06:24:09.959750+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-errors-89-467d6376.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-errors-89-467d6376.stderr.txt",
+                "end": "2026-11-03T08:56:09.804353+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/legacy-errors-89-c794749b",
-                "start": "2026-11-03T06:24:10.004088+00:00",
-                "timeout_s": 2353.204494972946,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-errors-89-4e372e0b",
+                "start": "2026-11-03T08:56:09.869251+00:00",
+                "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-errors-89-c794749b.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-errors-89-c794749b.stderr.txt",
-                "end": "2026-11-03T06:24:29.611868+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-errors-89-4e372e0b.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-errors-89-4e372e0b.stderr.txt",
+                "end": "2026-11-03T08:56:20.056719+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/boundaries-89-5e4c20b6",
-                "start": "2026-11-03T06:24:29.671350+00:00",
-                "timeout_s": 2333.5372065480333,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-errors-89-054aebd5",
+                "start": "2026-11-03T08:56:20.102783+00:00",
+                "timeout_s": 2400,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-89-5e4c20b6.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-89-5e4c20b6.stderr.txt",
-                "end": "2026-11-03T06:24:37.855167+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-errors-89-054aebd5.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-errors-89-054aebd5.stderr.txt",
+                "end": "2026-11-03T08:56:40.463733+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-afb023ea/batch-0-4d54dc70",
+                "start": "2026-11-03T08:56:40.544388+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-0-4d54dc70.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-0-4d54dc70.stderr.txt",
+                "end": "2026-11-03T08:56:44.019423+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-afb023ea/batch-1-49b0bb95",
+                "start": "2026-11-03T08:56:40.545179+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-1-49b0bb95.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-1-49b0bb95.stderr.txt",
+                "end": "2026-11-03T08:56:43.067806+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-afb023ea/batch-2-acb6f8a4",
+                "start": "2026-11-03T08:56:40.546298+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-2-acb6f8a4.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-2-acb6f8a4.stderr.txt",
+                "end": "2026-11-03T08:56:43.669531+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-afb023ea/batch-3-1dc07373",
+                "start": "2026-11-03T08:56:40.547307+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-3-1dc07373.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-afb023ea-batch-3-1dc07373.stderr.txt",
+                "end": "2026-11-03T08:56:43.970501+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-roundtrip-d399aca5/batch-0-f5ef627f",
+                "start": "2026-11-03T08:56:44.106876+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-0-f5ef627f.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-0-f5ef627f.stderr.txt",
+                "end": "2026-11-03T08:56:46.529971+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-roundtrip-d399aca5/batch-1-df3df1bd",
+                "start": "2026-11-03T08:56:44.107772+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-1-df3df1bd.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-1-df3df1bd.stderr.txt",
+                "end": "2026-11-03T08:56:46.430160+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-roundtrip-d399aca5/batch-2-8441e357",
+                "start": "2026-11-03T08:56:44.109014+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-2-8441e357.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-2-8441e357.stderr.txt",
+                "end": "2026-11-03T08:56:46.881776+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-89-roundtrip-d399aca5/batch-3-179cf2bb",
+                "start": "2026-11-03T08:56:44.110141+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-3-179cf2bb.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-89-roundtrip-d399aca5-batch-3-179cf2bb.stderr.txt",
+                "end": "2026-11-03T08:56:47.082150+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-89-598d1b79/batch-0-dc971714",
+                "start": "2026-11-03T08:56:47.280213+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-0-dc971714.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-0-dc971714.stderr.txt",
+                "end": "2026-11-03T08:57:23.713895+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-89-598d1b79/batch-1-d493a35a",
+                "start": "2026-11-03T08:56:47.281389+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-1-d493a35a.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-1-d493a35a.stderr.txt",
+                "end": "2026-11-03T08:56:54.915695+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-89-598d1b79/batch-2-022494a0",
+                "start": "2026-11-03T08:56:47.282029+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-2-022494a0.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-2-022494a0.stderr.txt",
+                "end": "2026-11-03T08:57:18.852154+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-89-598d1b79/batch-3-cf95b234",
+                "start": "2026-11-03T08:56:47.283010+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-3-cf95b234.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-89-598d1b79-batch-3-cf95b234.stderr.txt",
+                "end": "2026-11-03T08:56:55.667199+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-89-9b70c19d/batch-0-562b0933",
+                "start": "2026-11-03T08:57:23.937602+00:00",
+                "timeout_s": 2383.426950014895,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-0-562b0933.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-0-562b0933.stderr.txt",
+                "end": "2026-11-03T08:57:45.007949+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-89-9b70c19d/batch-1-fdc77df7",
+                "start": "2026-11-03T08:57:23.938434+00:00",
+                "timeout_s": 2383.425959469052,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-1-fdc77df7.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-1-fdc77df7.stderr.txt",
+                "end": "2026-11-03T08:57:28.265444+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-89-9b70c19d/batch-3-9adbd324",
+                "start": "2026-11-03T08:57:23.940292+00:00",
+                "timeout_s": 2383.4239544819575,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-3-9adbd324.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-3-9adbd324.stderr.txt",
+                "end": "2026-11-03T08:57:29.268226+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-89-9b70c19d/batch-2-9352beca",
+                "start": "2026-11-03T08:57:23.940897+00:00",
+                "timeout_s": 2383.424405942904,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-2-9352beca.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-89-9b70c19d-batch-2-9352beca.stderr.txt",
+                "end": "2026-11-03T08:57:43.603443+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/boundaries-89-roundtrip-4cdb908d",
-                "start": "2026-11-03T06:24:37.921484+00:00",
-                "timeout_s": 2325.2870812308975,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/codec-matrix-2026-969bcd34",
+                "start": "2026-11-03T08:57:45.122959+00:00",
+                "timeout_s": 2362.241275890032,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-89-roundtrip-4cdb908d.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-89-roundtrip-4cdb908d.stderr.txt",
-                "end": "2026-11-03T06:24:45.056529+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-codec-matrix-2026-969bcd34.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-codec-matrix-2026-969bcd34.stderr.txt",
+                "end": "2026-11-03T08:57:56.522984+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/legacy-89-918b944b",
-                "start": "2026-11-03T06:24:45.181418+00:00",
-                "timeout_s": 2318.0271453079768,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/dictionary-edges-2026-ad23ed08",
+                "start": "2026-11-03T08:57:56.589946+00:00",
+                "timeout_s": 2350.774265344953,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-89-918b944b.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-89-918b944b.stderr.txt",
-                "end": "2026-11-03T06:25:58.676409+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-dictionary-edges-2026-ad23ed08.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-dictionary-edges-2026-ad23ed08.stderr.txt",
+                "end": "2026-11-03T08:57:58.460102+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b/parent-legacy-89-20cba4d0",
-                "start": "2026-11-03T06:25:58.833039+00:00",
-                "timeout_s": 2244.375551941106,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/errors-2026-4fc10d47",
+                "start": "2026-11-03T08:57:58.566171+00:00",
+                "timeout_s": 2348.7980477588717,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-legacy-89-20cba4d0.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-legacy-89-20cba4d0.stderr.txt",
-                "end": "2026-11-03T06:26:37.468690+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-errors-2026-4fc10d47.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-errors-2026-4fc10d47.stderr.txt",
+                "end": "2026-11-03T08:58:23.995070+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/codec-matrix-2026-dc0abbd1",
-                "start": "2026-11-03T06:26:37.579697+00:00",
-                "timeout_s": 2205.6288753079716,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-errors-2026-0a3870af",
+                "start": "2026-11-03T08:58:24.074782+00:00",
+                "timeout_s": 2323.2894082679413,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-codec-matrix-2026-dc0abbd1.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-codec-matrix-2026-dc0abbd1.stderr.txt",
-                "end": "2026-11-03T06:26:48.117238+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-errors-2026-0a3870af.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-errors-2026-0a3870af.stderr.txt",
+                "end": "2026-11-03T08:58:35.114630+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/dictionary-edges-2026-ef0bfac0",
-                "start": "2026-11-03T06:26:48.183466+00:00",
-                "timeout_s": 2195.0251031280495,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-errors-2026-27306eae",
+                "start": "2026-11-03T08:58:35.159154+00:00",
+                "timeout_s": 2312.205024613999,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-dictionary-edges-2026-ef0bfac0.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-dictionary-edges-2026-ef0bfac0.stderr.txt",
-                "end": "2026-11-03T06:26:50.102364+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-errors-2026-27306eae.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-errors-2026-27306eae.stderr.txt",
+                "end": "2026-11-03T08:58:54.616529+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-6a48473e/batch-0-0fff172e",
+                "start": "2026-11-03T08:58:54.713121+00:00",
+                "timeout_s": 2292.651426890865,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-0-0fff172e.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-0-0fff172e.stderr.txt",
+                "end": "2026-11-03T08:58:57.536044+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-6a48473e/batch-1-84402c58",
+                "start": "2026-11-03T08:58:54.713893+00:00",
+                "timeout_s": 2292.650453987997,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-1-84402c58.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-1-84402c58.stderr.txt",
+                "end": "2026-11-03T08:58:57.236669+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-6a48473e/batch-2-f51cded1",
+                "start": "2026-11-03T08:58:54.715247+00:00",
+                "timeout_s": 2292.649132914841,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-2-f51cded1.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-2-f51cded1.stderr.txt",
+                "end": "2026-11-03T08:58:57.637518+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-6a48473e/batch-3-5efb37bf",
+                "start": "2026-11-03T08:58:54.716639+00:00",
+                "timeout_s": 2292.6477575220633,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-3-5efb37bf.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-6a48473e-batch-3-5efb37bf.stderr.txt",
+                "end": "2026-11-03T08:58:58.139164+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-roundtrip-4eee442f/batch-1-46188da6",
+                "start": "2026-11-03T08:58:58.238074+00:00",
+                "timeout_s": 2289.126260139048,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-1-46188da6.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-1-46188da6.stderr.txt",
+                "end": "2026-11-03T08:59:00.259459+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-roundtrip-4eee442f/batch-0-c172ebcb",
+                "start": "2026-11-03T08:58:58.238690+00:00",
+                "timeout_s": 2289.1267079939134,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-0-c172ebcb.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-0-c172ebcb.stderr.txt",
+                "end": "2026-11-03T08:59:00.309926+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-roundtrip-4eee442f/batch-2-69257ec7",
+                "start": "2026-11-03T08:58:58.239954+00:00",
+                "timeout_s": 2289.124527117936,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-2-69257ec7.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-2-69257ec7.stderr.txt",
+                "end": "2026-11-03T08:59:01.713522+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/boundaries-2026-roundtrip-4eee442f/batch-3-42441875",
+                "start": "2026-11-03T08:58:58.241121+00:00",
+                "timeout_s": 2289.123241442023,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-3-42441875.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-boundaries-2026-roundtrip-4eee442f-batch-3-42441875.stderr.txt",
+                "end": "2026-11-03T08:59:01.263379+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-2026-ebad9c08/batch-0-ad9f815f",
+                "start": "2026-11-03T08:59:01.899637+00:00",
+                "timeout_s": 2285.464929472888,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-0-ad9f815f.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-0-ad9f815f.stderr.txt",
+                "end": "2026-11-03T08:59:36.683994+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-2026-ebad9c08/batch-1-a87357cf",
+                "start": "2026-11-03T08:59:01.900362+00:00",
+                "timeout_s": 2285.4639903618954,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-1-a87357cf.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-1-a87357cf.stderr.txt",
+                "end": "2026-11-03T08:59:10.084661+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-2026-ebad9c08/batch-2-fd947c4b",
+                "start": "2026-11-03T08:59:01.901208+00:00",
+                "timeout_s": 2285.4630603990518,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-2-fd947c4b.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-2-fd947c4b.stderr.txt",
+                "end": "2026-11-03T08:59:32.218681+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/legacy-2026-ebad9c08/batch-3-df086490",
+                "start": "2026-11-03T08:59:01.902507+00:00",
+                "timeout_s": 2285.4620229250286,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-3-df086490.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-legacy-2026-ebad9c08-batch-3-df086490.stderr.txt",
+                "end": "2026-11-03T08:59:08.734003+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-2026-86887d27/batch-0-9fad656d",
+                "start": "2026-11-03T08:59:36.905173+00:00",
+                "timeout_s": 2250.4594118208624,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-0-9fad656d.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-0-9fad656d.stderr.txt",
+                "end": "2026-11-03T08:59:52.708406+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-2026-86887d27/batch-1-65c9237f",
+                "start": "2026-11-03T08:59:36.906273+00:00",
+                "timeout_s": 2250.4583657209296,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-1-65c9237f.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-1-65c9237f.stderr.txt",
+                "end": "2026-11-03T08:59:41.183156+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-2026-86887d27/batch-2-ec9f5c40",
+                "start": "2026-11-03T08:59:36.907253+00:00",
+                "timeout_s": 2250.4571979239117,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-2-ec9f5c40.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-2-ec9f5c40.stderr.txt",
+                "end": "2026-11-03T08:59:55.270281+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-35d4ef84/parent-legacy-2026-86887d27/batch-3-03663587",
+                "start": "2026-11-03T08:59:36.908241+00:00",
+                "timeout_s": 2250.456004881067,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-3-03663587.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-parent-legacy-2026-86887d27-batch-3-03663587.stderr.txt",
+                "end": "2026-11-03T08:59:41.131523+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/errors-2026-10224173",
-                "start": "2026-11-03T06:26:50.202807+00:00",
-                "timeout_s": 2193.005864419043,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/missing-dictionary-and-recovery-778e91a7",
+                "start": "2026-11-03T08:59:55.360527+00:00",
+                "timeout_s": 2232.0036641939078,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-errors-2026-10224173.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-errors-2026-10224173.stderr.txt",
-                "end": "2026-11-03T06:27:13.223363+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-missing-dictionary-and-recovery-778e91a7.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-missing-dictionary-and-recovery-778e91a7.stderr.txt",
+                "end": "2026-11-03T08:59:55.475312+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b/parent-errors-2026-88e581fb",
-                "start": "2026-11-03T06:27:13.299114+00:00",
-                "timeout_s": 2169.909458553884,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/rfc-length-offset-boundaries-d239a8b9/batch-0-a099e992",
+                "start": "2026-11-03T08:59:55.836895+00:00",
+                "timeout_s": 2231.5276931440458,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-errors-2026-88e581fb.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-errors-2026-88e581fb.stderr.txt",
-                "end": "2026-11-03T06:27:22.782972+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-0-a099e992.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-0-a099e992.stderr.txt",
+                "end": "2026-11-03T09:00:06.130681+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/legacy-errors-2026-3c4682bf",
-                "start": "2026-11-03T06:27:22.835256+00:00",
-                "timeout_s": 2160.3733085189015,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/rfc-length-offset-boundaries-d239a8b9/batch-2-2c739737",
+                "start": "2026-11-03T08:59:55.838252+00:00",
+                "timeout_s": 2231.5261502489448,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-errors-2026-3c4682bf.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-errors-2026-3c4682bf.stderr.txt",
-                "end": "2026-11-03T06:27:41.488788+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-2-2c739737.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-2-2c739737.stderr.txt",
+                "end": "2026-11-03T09:00:10.041100+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/boundaries-2026-6ab1e5e5",
-                "start": "2026-11-03T06:27:41.566595+00:00",
-                "timeout_s": 2141.6419966788962,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/rfc-length-offset-boundaries-d239a8b9/batch-1-a3a1edac",
+                "start": "2026-11-03T08:59:55.840888+00:00",
+                "timeout_s": 2231.5266488979105,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-2026-6ab1e5e5.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-2026-6ab1e5e5.stderr.txt",
-                "end": "2026-11-03T06:27:48.696195+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-1-a3a1edac.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-1-a3a1edac.stderr.txt",
+                "end": "2026-11-03T09:00:07.584024+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
-                  "../compile-obj/Vtb"
+                  "../../compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/boundaries-2026-roundtrip-301cd59b",
-                "start": "2026-11-03T06:27:48.782125+00:00",
-                "timeout_s": 2134.42644962389,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/simulation-00f8fd16/rfc-length-offset-boundaries-d239a8b9/batch-3-8ebe6f51",
+                "start": "2026-11-03T08:59:55.841826+00:00",
+                "timeout_s": 2231.5226041190326,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-2026-roundtrip-301cd59b.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-boundaries-2026-roundtrip-301cd59b.stderr.txt",
-                "end": "2026-11-03T06:27:55.912673+00:00",
-                "exit_code": 0
-              },
-              {
-                "argv": [
-                  "../compile-obj/Vtb"
-                ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/legacy-2026-0f4a3c9c",
-                "start": "2026-11-03T06:27:56.056832+00:00",
-                "timeout_s": 2127.151766279014,
-                "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-2026-0f4a3c9c.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-legacy-2026-0f4a3c9c.stderr.txt",
-                "end": "2026-11-03T06:29:09.304751+00:00",
-                "exit_code": 0
-              },
-              {
-                "argv": [
-                  "../compile-obj/Vtb"
-                ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-b5b05e0b/parent-legacy-2026-36fa306a",
-                "start": "2026-11-03T06:29:09.488478+00:00",
-                "timeout_s": 2053.7201040249784,
-                "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-legacy-2026-36fa306a.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-parent-legacy-2026-36fa306a.stderr.txt",
-                "end": "2026-11-03T06:29:46.778652+00:00",
-                "exit_code": 0
-              },
-              {
-                "argv": [
-                  "../compile-obj/Vtb"
-                ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/missing-dictionary-and-recovery-6a716240",
-                "start": "2026-11-03T06:29:46.876380+00:00",
-                "timeout_s": 2016.3321727009024,
-                "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-missing-dictionary-and-recovery-6a716240.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-missing-dictionary-and-recovery-6a716240.stderr.txt",
-                "end": "2026-11-03T06:29:46.991176+00:00",
-                "exit_code": 0
-              },
-              {
-                "argv": [
-                  "../compile-obj/Vtb"
-                ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/simulation-40c1e343/rfc-length-offset-boundaries-9996e4ad",
-                "start": "2026-11-03T06:29:47.320261+00:00",
-                "timeout_s": 2015.888285138877,
-                "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-rfc-length-offset-boundaries-9996e4ad.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/execute-rfc-length-offset-boundaries-9996e4ad.stderr.txt",
-                "end": "2026-11-03T06:30:28.910466+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-3-8ebe6f51.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/execute-rfc-length-offset-boundaries-d239a8b9-batch-3-8ebe6f51.stderr.txt",
+                "end": "2026-11-03T09:00:07.984767+00:00",
                 "exit_code": 0
               },
               {
@@ -3243,13 +3750,13 @@
                   "verilator",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:30:29.084622+00:00",
-                "timeout_s": 1974.1239325320348,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T09:00:10.185392+00:00",
+                "timeout_s": 2217.1787579839583,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-version.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-version.stderr.txt",
-                "end": "2026-11-03T06:30:29.199805+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-version.stderr.txt",
+                "end": "2026-11-03T09:00:10.300688+00:00",
                 "exit_code": 0
               },
               {
@@ -3308,26 +3815,26 @@
                   "../source/rtl/bellows_l5_xxh64.sv",
                   "../source/rtl/bellows_l5_zstd_context.sv"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-a18b86de",
-                "start": "2026-11-03T06:30:29.200053+00:00",
-                "timeout_s": 1974.0084821449127,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-25b96b09",
+                "start": "2026-11-03T09:00:10.301249+00:00",
+                "timeout_s": 2217.063054576982,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-compile.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-compile.stderr.txt",
-                "end": "2026-11-03T06:31:04.176650+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-compile.stderr.txt",
+                "end": "2026-11-03T09:00:46.131424+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "./compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-a18b86de",
-                "start": "2026-11-03T06:31:04.177140+00:00",
-                "timeout_s": 1939.0315101409797,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-25b96b09",
+                "start": "2026-11-03T09:00:46.132075+00:00",
+                "timeout_s": 2181.232204539003,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-simulation.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/concurrent-17-simulation.stderr.txt",
-                "end": "2026-11-03T06:31:04.643231+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/concurrent-17-simulation.stderr.txt",
+                "end": "2026-11-03T09:00:46.598182+00:00",
                 "exit_code": 0
               },
               {
@@ -3335,13 +3842,13 @@
                   "verilator",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:31:04.752822+00:00",
-                "timeout_s": 1938.4557324328925,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T09:00:46.711198+00:00",
+                "timeout_s": 2180.6529780749697,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-version.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-version.stderr.txt",
-                "end": "2026-11-03T06:31:04.868233+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-version.stderr.txt",
+                "end": "2026-11-03T09:00:46.826343+00:00",
                 "exit_code": 0
               },
               {
@@ -3400,26 +3907,26 @@
                   "../source/rtl/bellows_l5_xxh64.sv",
                   "../source/rtl/bellows_l5_zstd_context.sv"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-55b4f64d",
-                "start": "2026-11-03T06:31:04.868905+00:00",
-                "timeout_s": 1938.339871650096,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-eec17da0",
+                "start": "2026-11-03T09:00:46.826737+00:00",
+                "timeout_s": 2180.5375610350166,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-compile.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-compile.stderr.txt",
-                "end": "2026-11-03T06:31:48.314104+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-compile.stderr.txt",
+                "end": "2026-11-03T09:01:31.884745+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "./compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-55b4f64d",
-                "start": "2026-11-03T06:31:48.314755+00:00",
-                "timeout_s": 1894.8940212279558,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-eec17da0",
+                "start": "2026-11-03T09:01:31.885420+00:00",
+                "timeout_s": 2135.4789073439315,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-simulation.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/lifecycle-17-simulation.stderr.txt",
-                "end": "2026-11-03T06:31:48.480041+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/lifecycle-17-simulation.stderr.txt",
+                "end": "2026-11-03T09:01:32.051204+00:00",
                 "exit_code": 0
               },
               {
@@ -3427,13 +3934,13 @@
                   "verilator",
                   "--version"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff",
-                "start": "2026-11-03T06:31:48.575052+00:00",
-                "timeout_s": 1894.6334887528792,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3",
+                "start": "2026-11-03T09:01:32.159810+00:00",
+                "timeout_s": 2135.204419680871,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-version.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-version.stderr.txt",
-                "end": "2026-11-03T06:31:48.690162+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-version.stderr.txt",
+                "end": "2026-11-03T09:01:32.275070+00:00",
                 "exit_code": 0
               },
               {
@@ -3492,26 +3999,26 @@
                   "../source/rtl/bellows_l5_xxh64.sv",
                   "../source/rtl/bellows_l5_zstd_context.sv"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-4817c56d",
-                "start": "2026-11-03T06:31:48.690418+00:00",
-                "timeout_s": 1894.5181158999912,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-408a83c7",
+                "start": "2026-11-03T09:01:32.275745+00:00",
+                "timeout_s": 2135.0886684779543,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-compile.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-compile.stderr.txt",
-                "end": "2026-11-03T06:31:55.321075+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-compile.stderr.txt",
+                "end": "2026-11-03T09:01:38.908362+00:00",
                 "exit_code": 0
               },
               {
                 "argv": [
                   "./compile-obj/Vtb"
                 ],
-                "cwd": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-4817c56d",
-                "start": "2026-11-03T06:31:55.321714+00:00",
-                "timeout_s": 1887.8870515420567,
+                "cwd": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-408a83c7",
+                "start": "2026-11-03T09:01:38.909513+00:00",
+                "timeout_s": 2128.454766714014,
                 "timed_out": false,
-                "stdout": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-simulation.stdout.txt",
-                "stderr": "evidence/l1-behavior-page4k-20261103T061823Z-77b67aff/dictionary-views-17-simulation.stderr.txt",
-                "end": "2026-11-03T06:31:55.437033+00:00",
+                "stdout": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-page4k-20261103T085207Z-cb1a53a3/dictionary-views-17-simulation.stderr.txt",
+                "end": "2026-11-03T09:01:39.024580+00:00",
                 "exit_code": 0
               }
             ],
@@ -3563,12 +4070,13 @@
               "tests/l1_matrix.py": "acc7f6ff3bdb2bf2420ef06886963288f2f3e2f61089d3b5a6b4e10f232e2399",
               "tests/l1_oracle.py": "5c71183e14cdd9ce98672777366e39eff8fe0c51268bdd841e4b8394d3b95420",
               "tests/l1_protocol.py": "39f1774275e67cc1971fd14a9b15eb6ef6582f36494bafcdfb1f69895b2e92c6",
-              "tests/l1_runner.py": "de80033fefb6d7b6bbdf36d3b805b256b9791201ee33b6f34778c852f7c00471",
+              "tests/l1_runner.py": "088c13462e8b682c2a8eca56555da8beef7d4cec991df46d8b6c8ea8295f60bc",
               "tests/l1_synthesis.py": "aba0dce779b8fe52101329cffeebacfb1b62d6213830fd849e0ebbedf9f4b798",
-              "tests/l1_transport.py": "53da85c3b291d18582b485e214a372e67dd87f599fc8e514ccc412580350265e",
+              "tests/l1_transport.py": "3324c9736548fc5df3421fb7835245c04d4bdd1cf7a64cc6a54693ac2a617532",
               "tests/l1_zstd.py": "eaba2b8e6700511848cea79fa2e87f7eed70b33b1e1d133c92d43d8b9cbadffc",
               "tests/preparation.py": "a139971a4c89bfd6cf1eeeff73b629187ee5897d3cc8e17e6249303dc1f11622",
-              "tests/verify.py": "5effcd3314a1b72a6244fd04bfcf8811fe8f2a2edc7ebcfee7129450b3db70b2",
+              "tests/timeout_diagnosis.py": "a00bee31a0e1b8fadc23d73f3ff037e5ee648606d2c1a2a8c50898224b29a0bf",
+              "tests/verify.py": "7718cfbd7951ab98ce04c69255e8e39d4905312f5697491d6671534c6f93a281",
               "design/ARCHITECTURE.md": "df5a154f64a7ea066c0d8363e893c6f2d2969aa59467cd94e3dc3a8258be0994",
               "design/GENERATIONAL_HANDOFF.md": "bf1adc54259d008c25e75ff5f7e9ec80f2a28767574674c164dca0fc739f6a4b",
               "design/SPEC.md": "ba06c773492cc7456248075c88e60aea05714d4b4fee631457c5d976e5085475",
@@ -3607,8 +4115,8 @@
               "make": "GNU Make 4.3"
             },
             "complete_byte_comparisons": 3991,
-            "end": "2026-11-03T06:31:55.598889+00:00",
-            "duration_s": 812.3905280150939,
+            "end": "2026-11-03T09:01:39.193326+00:00",
+            "duration_s": 571.8293351500761,
             "timeout_s": 2700,
             "exit_code": 0,
             "timed_out": false
