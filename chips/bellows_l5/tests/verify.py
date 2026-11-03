@@ -309,6 +309,16 @@ def main():
         parser.error("--configuration is required for behavior")
     stem = "l1-" + args.check + ("-" + args.configuration if args.check == "behavior" else "")
     experiment = Experiment(stem, ["python3", "tests/verify.py", *sys.argv[1:]], admitted=True)
+    if args.check == "behavior" and args.configuration == "default":
+        experiment.receipt["execution_repair"] = {
+            "repair_of": "evidence/l1-behavior-default-20261103T064957Z-83981782/receipt.json",
+            "discrimination": (
+                "evidence/preparation/timeout-discrimination-20261103T073827Z-97bfffa1/receipt.json"),
+            "retained_192_flips": (
+                "evidence/preparation/timeout-discrimination-20261103T074026Z-e55a1223/receipt.json"),
+            "batch_selection_repair_of": (
+                "evidence/l1-behavior-default-20261103T074610Z-0d47f0bb/receipt.json"),
+            "change": "four-process independent transaction batching; completion-only flushing"}
     try:
         if args.check == "behavior":
             behavior(experiment, args.configuration)

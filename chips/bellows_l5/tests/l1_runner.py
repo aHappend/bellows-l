@@ -1,4 +1,10 @@
-"""Reusable bounded executions of independently generated public transactions."""
+"""Reusable bounded executions of independently generated public transactions.
+
+Compile once per geometry/implementation, then reuse the executable with fresh
+vectors. Expensive independent cases use four bounded process batches. Retained
+batch indices reconstruct the original ordering before full oracle comparisons;
+lifecycle, recovery and protocol sequences are never split.
+"""
 
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -83,8 +89,9 @@ class Simulation:
             raise AssertionError("vector change requires a different transactor geometry")
         argv = (["vvp", "../sim.vvp"] if self.simulator == "icarus"
                 else ["../compile-obj/Vtb"])
-        independent = name.startswith(("boundaries-", "legacy-", "parent-legacy-",
-                                       "rfc-length-offset-", "gain-", "page-corruption"))
+        independent = bool(re.match(
+            r"^(?:boundaries-\d|(?:parent-)?legacy-\d|rfc-length-offset-|gain-\d|page-corruption)",
+            name))
         if self.simulator == "verilator" and independent and len(cases) >= 8:
             # Only independent transactions may move to separate reset epochs.
             # Lifecycle/error/recovery/protocol sequences remain ordered.
