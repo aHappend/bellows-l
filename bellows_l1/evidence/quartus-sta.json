@@ -1,0 +1,329 @@
+{
+  "gate": "quartus-sta",
+  "timestamp_utc": "2026-10-27T05:43:03.280083+00:00",
+  "project_dir": "/data/sufeng/bellows-l1-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work",
+  "revision": "top",
+  "clock_filter": "clk_main",
+  "min_setup_slack_ns": 0.0,
+  "min_hold_slack_ns": 0.0,
+  "status": "passed",
+  "map_summary": {
+    "exists": true,
+    "path": "/data/sufeng/bellows-l1-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work/top.map.rpt",
+    "error_count": 0,
+    "errors": [],
+    "lpm_divide_error_count": 0,
+    "lpm_divide_errors": [],
+    "warning_10268_count": 0,
+    "warning_10268": []
+  },
+  "sta_summary": {
+    "exit_code": 0,
+    "netlist_mode": "post_map",
+    "clocks": [
+      {
+        "name": "clk_main",
+        "period_ns": 10.0
+      }
+    ],
+    "wns_setup_ns": 7.704,
+    "wns_hold_ns": -0.196,
+    "failing_setup_count": 0,
+    "failing_hold_count": 20,
+    "setup_paths": [
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a7~reg1|bellows_l1_output:output_stage|pending_data[7]"
+      },
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a6~reg1|bellows_l1_output:output_stage|pending_data[6]"
+      },
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a5~reg1|bellows_l1_output:output_stage|pending_data[5]"
+      },
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a4~reg1|bellows_l1_output:output_stage|pending_data[4]"
+      },
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a3~reg1|bellows_l1_output:output_stage|pending_data[3]"
+      },
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a2~reg1|bellows_l1_output:output_stage|pending_data[2]"
+      },
+      {
+        "slack_ns": 7.704,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a1~reg1|bellows_l1_output:output_stage|pending_data[1]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a15~reg1|bellows_l1_output:output_stage|pending_data[7]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a14~reg1|bellows_l1_output:output_stage|pending_data[6]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a12~reg1|bellows_l1_output:output_stage|pending_data[4]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a11~reg1|bellows_l1_output:output_stage|pending_data[3]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a10~reg1|bellows_l1_output:output_stage|pending_data[2]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a9~reg1|bellows_l1_output:output_stage|pending_data[1]"
+      },
+      {
+        "slack_ns": 7.706,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a13~reg1|bellows_l1_output:output_stage|pending_data[5]"
+      },
+      {
+        "slack_ns": 7.712,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a0~reg1|bellows_l1_output:output_stage|pending_data[0]"
+      },
+      {
+        "slack_ns": 7.714,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a8~reg1|bellows_l1_output:output_stage|pending_data[0]"
+      },
+      {
+        "slack_ns": 7.795,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a1~reg1|bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a1~reg0"
+      },
+      {
+        "slack_ns": 7.795,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a3~reg1|bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a3~reg0"
+      },
+      {
+        "slack_ns": 7.795,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a3~reg1|bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a27~reg0"
+      },
+      {
+        "slack_ns": 7.795,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "bellows_l1_history:history",
+        "to_node": "altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a4~reg1|bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a4~reg0"
+      }
+    ],
+    "hold_paths": [
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a17~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a13~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a9~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a28~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a1~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a12~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a16~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a24~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a27~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a20~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a1~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a20~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a19~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a11~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a19~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a5~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a13~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[6]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a24~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a28~reg0"
+      },
+      {
+        "slack_ns": -0.196,
+        "from_clock": "clk_main",
+        "to_clock": "clk_main",
+        "from_node": "write_pointer[4]",
+        "to_node": "bellows_l1_history:history|altsyncram:memory_rtl_0|altsyncram_j2k1:auto_generated|ram_block1a27~reg0"
+      }
+    ],
+    "stderr_tail": []
+  },
+  "detail": "Timing closed: Setup WNS = 7.704 ns",
+  "top_module": "bellows_l1_top",
+  "clock_port": "clk",
+  "clock_period_ns": 10.0,
+  "target_frequency_mhz": 100.0,
+  "fmax_mhz": 435.54,
+  "critical_path_delay_ns": 2.296,
+  "parameters": {},
+  "source_sha256": "cfd4885a3bf77218aa1ce2d37d0146bd3bc46c3b71abcc4b8bc22a2e01d8a828",
+  "applicable": true
+}

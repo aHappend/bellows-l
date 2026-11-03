@@ -1,0 +1,129 @@
+{
+  "chip": "Bellows-L1",
+  "passed_checks": {
+    "check:portable-l1-all": {
+      "attempt_id": 10,
+      "duration_s": 22158.80464721704,
+      "stdout_preview": "L1 all passed; retained evidence/l1/20261027T054604Z-2581496c2acf/receipt.json\n",
+      "receipt_count": 1,
+      "receipts": [
+        {
+          "path": "evidence/l1/20261027T054604Z-2581496c2acf/receipt.json",
+          "data": {
+            "argv": [
+              "python3",
+              "tests/verify.py",
+              "--suite",
+              "all"
+            ],
+            "commands": [
+              "evidence/l1/20261027T054604Z-2581496c2acf/versions/python3/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/versions/iverilog/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/versions/vvp/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/versions/yosys/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-17-mode-0/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-17-mode-0/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-17-mode-1/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-17-mode-1/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-17-mode-2/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-17-mode-2/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-89-mode-0/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-89-mode-0/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-89-mode-1/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-89-mode-1/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-89-mode-2/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-89-mode-2/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-2026-mode-0/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-2026-mode-0/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-2026-mode-1/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-2026-mode-1/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-2026-mode-2/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/matrix/seed-2026-mode-2/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/offset-endianness/positive-control/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/offset-endianness/positive-control/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/offset-endianness/original-target/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/offset-endianness/original-target/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/offset-endianness/negative-target/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/offset-endianness/negative-target/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/match-minimum-four/positive-control/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/match-minimum-four/positive-control/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/match-minimum-four/original-target/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/match-minimum-four/original-target/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/match-minimum-four/negative-target/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/match-minimum-four/negative-target/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/stale-overlap/positive-control/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/stale-overlap/positive-control/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/stale-overlap/original-target/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/stale-overlap/original-target/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/stale-overlap/negative-target/compile/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/mutants/stale-overlap/negative-target/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/synthesis/execute/receipt.json",
+              "evidence/l1/20261027T054604Z-2581496c2acf/clean-reproduction-execute/receipt.json"
+            ],
+            "cwd": ".",
+            "end_time": "2026-10-27T11:55:23.297139+00:00",
+            "error": null,
+            "exit_status": 0,
+            "kind": "portable-l1",
+            "repair_of": null,
+            "source_changes": {},
+            "source_sha256": {
+              "design/ARCHITECTURE.md": "390283d887c567c75cab01f0cb72fcecb80aaa1335a950e0a7e53d68c45e51c8",
+              "design/SPEC.md": "e0bfd5ccf347998e939c9e4d17413a4eb36c816df948d01e539ae94e70191aa9",
+              "rtl/bellows_l1_history.sv": "331986adb15c820df57979f3b741b64286dd409c5cc801712c609706e908c4ad",
+              "rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "tests/lz4_reference.py": "93927c394091acb3638c04ab55653736f8c3a99a43986adfe5088083bf229c18",
+              "tests/retention.py": "782f4f95712225d1ce1e3479f440e437c7132afa5719b09cb4b07c3742396e38",
+              "tests/scenarios.py": "77d5263f9895989b03f133b5124d6b9ad3e366ec3877d2dbcafd605958c4e4b0",
+              "tests/transactor.py": "ba46d29c6d418e7627a9df20e6b6f85977e78fe41b5435d7da970cf6c47b700f",
+              "tests/verify.py": "fe983d4083a026f22f026e3dd59514fb30de0aec327bb297f376fd1d344d14ec"
+            },
+            "start_time": "2026-10-27T05:46:04.718587+00:00",
+            "stderr": "evidence/l1/20261027T054604Z-2581496c2acf/stderr.log",
+            "stdout": "evidence/l1/20261027T054604Z-2581496c2acf/stdout.log",
+            "timeout_s": 86400,
+            "tool_versions": {
+              "iverilog": {
+                "argv": [
+                  "iverilog",
+                  "-V"
+                ],
+                "exit_status": 0,
+                "stderr": "evidence/l1/20261027T054604Z-2581496c2acf/versions/iverilog/stderr.log",
+                "stdout": "evidence/l1/20261027T054604Z-2581496c2acf/versions/iverilog/stdout.log"
+              },
+              "python3": {
+                "argv": [
+                  "python3",
+                  "--version"
+                ],
+                "exit_status": 0,
+                "stderr": "evidence/l1/20261027T054604Z-2581496c2acf/versions/python3/stderr.log",
+                "stdout": "evidence/l1/20261027T054604Z-2581496c2acf/versions/python3/stdout.log"
+              },
+              "vvp": {
+                "argv": [
+                  "vvp",
+                  "-V"
+                ],
+                "exit_status": 0,
+                "stderr": "evidence/l1/20261027T054604Z-2581496c2acf/versions/vvp/stderr.log",
+                "stdout": "evidence/l1/20261027T054604Z-2581496c2acf/versions/vvp/stdout.log"
+              },
+              "yosys": {
+                "argv": [
+                  "yosys",
+                  "-V"
+                ],
+                "exit_status": 0,
+                "stderr": "evidence/l1/20261027T054604Z-2581496c2acf/versions/yosys/stderr.log",
+                "stdout": "evidence/l1/20261027T054604Z-2581496c2acf/versions/yosys/stdout.log"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
