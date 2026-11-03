@@ -45,6 +45,10 @@ class Case:
     capacity: int = 1024
     error: int = 0
     dictionary_id: int = 0
+    pre_dma: bool = False
+    segments: int = 1
+    descriptor_error: int = 0
+    dma_error: int = 0
 
 
 def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
@@ -62,25 +66,35 @@ def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
     declarations += [f"wire [{width-1}:0] {name};" for name, width in OUTPUTS.items()]
     connection = ",\n".join(f".{name}({name})" for name in ("clk", *INPUTS, *OUTPUTS))
     reset_bus = "{" + ",".join(OUTPUTS) + "}"
-    calls = []
-    if dictionary:
-        calls.append(f'load_dictionary({len(dictionary)}, 32\'h12345678);')
+    (directory / "dictionary-size.txt").write_text(f"{len(dictionary)}\n")
+    (directory / "seed.txt").write_text(f"{seed}\n")
+    calls = [r"""
+ input_fd=$fopen("dictionary-size.txt","r");
+ tokens=$fscanf(input_fd,"%d",ts); $fclose(input_fd);
+ if(tokens!=1) $fatal(1,"missing dictionary length");
+ if(ts>0) load_dictionary(ts,32'h12345678);
+"""]
     (directory / "cases.txt").write_text("".join(
+        [f"{len(cases)}\n"] + [
         f"{i} {len(c.source)} {c.codec} {c.decompress} {c.mode} {c.wide} "
-        f"{c.channel} {c.capacity} {c.dictionary_id}\n" for i, c in enumerate(cases)))
-    calls.append(f"""
+        f"{c.channel} {c.capacity} {c.dictionary_id} {int(c.pre_dma)} "
+        f"{c.segments} {c.descriptor_error} {c.dma_error}\n" for i, c in enumerate(cases)]))
+    calls.append(r"""
  input_fd=$fopen("cases.txt","r");
  if(!input_fd) $fatal(1,"cannot open case metadata");
- for(tc=0;tc<{len(cases)};tc=tc+1) begin
-  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d",
-                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid);
-  if(tokens!=9 || tn!=tc) $fatal(1,"malformed case metadata");
+ tokens=$fscanf(input_fd,"%d",total_cases);
+ if(tokens!=1) $fatal(1,"missing case count");
+ for(tc=0;tc<total_cases;tc=tc+1) begin
+  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d %d %d %d %d",
+                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid,tp,tsegments,tbad,tfault);
+  if(tokens!=13 || tn!=tc) $fatal(1,"malformed case metadata");
   run_case(tn,ts,tcodec,td,tm,tw,tch,tcap,tid);
  end
  $fclose(input_fd);
 """)
     return r"""`timescale 1ns/1ps
 module tb;
+parameter integer CYCLE_LIMIT=2000000000;
 """ + "\n".join(declarations) + f"""
 bellows_l5_top #(.MAX_BLOCK_BYTES({block}), .SG_DEPTH({depth}),
  .COPY_BYTES({copy}), .DICT_BYTES({dict_bytes})) dut (
@@ -94,7 +108,9 @@ integer r_count=0, w_count=0, r_wide=0, w_wide=0;
 integer read_bytes=0, write_bytes=0, completions=0, case_index=-1;
 integer expected_source=0, expected_capacity=0, expected_channel=0, case_active=0;
 integer i, j, fd, age;
-integer input_fd,tc,tokens,tn,ts,tcodec,td,tm,tw,tch,tcap;
+integer input_fd,tc,tokens,tn,ts,tcodec,td,tm,tw,tch,tcap,total_cases;
+integer tp,tsegments,tbad,tfault,read_fault=0,write_fault=0;
+integer source_ends[0:15], destination_ends[0:15], ns, nd;
 reg [31:0] tid;
 reg [63:0] held_read, held_write;
 reg [7:0] held_strobe;
@@ -125,12 +141,14 @@ always @(negedge clk) begin
   wr_rsp_valid=w_pending && w_delay==0 && !w_wide;
   w_wr_rsp_valid=w_pending && w_delay==0 && w_wide;
   rd_rsp_data=held_read[7:0]; w_rd_rsp_data=held_read;
+  rd_rsp_error=read_fault; w_rd_rsp_error=read_fault;
+  wr_rsp_error=write_fault; w_wr_rsp_error=write_fault;
  end
 end
 
 always @(posedge clk) begin
  cycles=cycles+1;
- if (cycles>10000000) $fatal(1,"operation-count bound, case=%0d",case_index);
+ if (cycles>CYCLE_LIMIT) $fatal(1,"operation-count bound, case=%0d",case_index);
  if (!rst_n) begin
   r_pending=0; w_pending=0; stalled_status=0; stalled_read=0; stalled_write=0;
  end else begin
@@ -161,7 +179,8 @@ always @(posedge clk) begin
   end
   if ((wr_rsp_valid && wr_rsp_ready)||(w_wr_rsp_valid && w_wr_rsp_ready)) begin
     if (!w_pending) $fatal(1,"unowned write response");
-    write_bytes=write_bytes+w_count; w_pending=0;
+    if(!write_fault) write_bytes=write_bytes+w_count;
+    w_pending=0;
   end
   if (r_pending && r_delay>0) r_delay=r_delay-1;
   if (w_pending && w_delay>0) w_delay=w_delay-1;
@@ -174,9 +193,13 @@ always @(posedge clk) begin
     age=(r_wide ? w_rd_req_addr : rd_req_addr)-64'h10000;
     if (r_count<1 || r_count>8 || age<0 || age+r_count>expected_source)
       $fatal(1,"read outside source");
+    for(j=0;j<ns-1;j=j+1)
+      if(age<source_ends[j] && age+r_count>source_ends[j])
+        $fatal(1,"read crosses segment");
     held_read=0;
     for (j=0;j<r_count;j=j+1) held_read[j*8 +: 8]=source[age+j];
     r_delay=random_state[8:6]; r_pending=1;
+    read_fault=(tfault==1 && read_bytes==0);
   end
   if ((wr_req_valid && wr_req_ready)||(w_wr_req_valid && w_wr_req_ready)) begin
     if (w_pending || !case_active) $fatal(1,"unexpected/duplicate write");
@@ -192,7 +215,11 @@ always @(posedge clk) begin
       if (age+j<0 || age+j>=expected_capacity) $fatal(1,"write outside destination");
       destination[age+j]=held_write[j*8 +: 8]; w_count=w_count+1;
     end
+    for(j=0;j<nd-1;j=j+1)
+      if(age<destination_ends[j] && age+w_count>destination_ends[j])
+        $fatal(1,"write crosses segment");
     w_delay=random_state[11:9]; w_pending=1;
+    write_fault=(tfault==2 && write_bytes==0);
   end
   if (status_valid && status_ready) begin
     if (!case_active || r_pending || w_pending) $fatal(1,"early/duplicate completion");
@@ -225,8 +252,9 @@ begin
 end
 endtask
 task load_dictionary(input integer size, input reg [31:0] id);
-integer n,k;
+integer n,k,begin_cycle;
 begin
+ begin_cycle=cycles;
  $readmemh("dictionary.hex",dictionary_image,0,size-1);
  dict_begin_valid=1; dict_begin_id=id; dict_begin_bytes=size; #1;
  n=0;
@@ -244,31 +272,49 @@ begin
   $fatal(1,"dictionary load metadata");
  repeat(4) step();
  dict_status_ready=1; step(); dict_status_ready=0;
+ $display("DICTIONARY_COLD_LOAD bytes=%0d cycles=%0d",size,cycles-begin_cycle);
 end
 endtask
 task run_case(input integer number, input integer size, input integer codec,
  input integer decoding, input integer mode, input integer wide,
  input integer channel, input integer capacity, input reg [31:0] dictionary_id);
-integer n,old_completions;
+integer n,old_completions,k,offset,count;
 reg [255:0] filename;
 begin
  case_index=number; expected_source=size; expected_capacity=capacity;
  expected_channel=channel; case_active=1; read_bytes=0; write_bytes=0;
  old_completions=completions;
+ read_fault=0; write_fault=0;
+ ns=size==0 ? 0 : (size<tsegments ? size:tsegments);
+ nd=capacity<tsegments ? capacity:tsegments;
  for(i=0;i<MEM;i=i+1) begin source[i]=0; destination[i]=8'hcd; end
  if(size>0) begin
   $sformat(filename,"source-%0d.hex",number); $readmemh(filename,source,0,size-1);
  end
  cmd_channel=channel; sg_channel=channel; cmd_id=16'h5a5a;
  cmd_codec=codec; cmd_decompress=decoding; cmd_checksum_mode=mode; cmd_wide=wide;
- cmd_src_bytes=size; cmd_dst_capacity=capacity; cmd_src_segments=size>0 ? 1 : 0;
- cmd_dst_segments=1; cmd_dict_id=dictionary_id; cmd_valid=1; #1;
+ cmd_src_bytes=size; cmd_dst_capacity=capacity; cmd_src_segments=ns;
+ cmd_dst_segments=nd; cmd_dict_id=dictionary_id; cmd_valid=1; #1;
  n=0;
  while(!cmd_ready) begin step(); n=n+1; if(n>1000) $fatal(1,"command timeout"); end
  command_edge=cycles+1; step(); cmd_valid=0;
  if(cmd_ready!==0) $fatal(1,"lane command admission remained open");
- if(size>0) send_descriptor(0,size,64'h10000);
- send_descriptor(1,capacity,64'h100000);
+ if(!tp) begin
+  offset=0;
+  for(k=0;k<ns;k=k+1) begin
+   count=(size-offset)/(ns-k);
+   source_ends[k]=offset+count;
+   send_descriptor(0,count+(tbad==1 && k==ns-1),64'h10000+offset);
+   offset=offset+count;
+  end
+  offset=0;
+  for(k=0;k<nd;k=k+1) begin
+   count=(capacity-offset)/(nd-k);
+   destination_ends[k]=offset+count;
+   send_descriptor(1,count+(tbad==2 && k==nd-1),64'h100000+offset);
+   offset=offset+count;
+  end
+ end
  n=0;
  while(!status_valid) begin
   step(); n=n+1;
@@ -281,7 +327,9 @@ begin
 end
 endtask
 initial begin
- random_state=""" + str(seed) + r""";
+ input_fd=$fopen("seed.txt","r");
+ tokens=$fscanf(input_fd,"%d",random_state); $fclose(input_fd);
+ if(tokens!=1) $fatal(1,"missing seed");
  fd=$fopen("results.txt","w");
  if(!fd) $fatal(1,"cannot open results");
  rst_n=0;

@@ -46,13 +46,17 @@ def sha256(data):
 
 
 class Experiment:
-    def __init__(self, stem, argv):
+    def __init__(self, stem, argv, admitted=False):
         unique = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
-        self.directory = ROOT / "evidence" / "preparation" / f"{stem}-{unique}"
+        parent = ROOT / "evidence" if admitted else ROOT / "evidence" / "preparation"
+        self.directory = parent / f"{stem}-{unique}"
         self.directory.mkdir(parents=True, exist_ok=False)
-        self.receipt = {"kind": "verifier-preparation", "argv": argv, "cwd": ".",
-                        "start": timestamp(), "children": [], "source_sha256": {}}
+        self.receipt = {"kind": "l1-check" if admitted else "verifier-preparation",
+                        "argv": argv, "cwd": ".",
+                        "start": timestamp(), "children": [], "source_sha256": {},
+                        "python_version": sys.version}
         self.started = time.monotonic()
+        self.deadline = self.started + 2700
         for pattern in ("rtl/*.sv", "tests/*.py", "design/*.md", "bellows_l4_reference/rtl/*.sv"):
             for path in sorted(ROOT.glob(pattern)):
                 relative = path.relative_to(ROOT)
@@ -65,7 +69,10 @@ class Experiment:
     def relative(self, path):
         return path.relative_to(ROOT).as_posix()
 
-    def command(self, name, argv, timeout=3600, cwd=None):
+    def command(self, name, argv, timeout=2700, cwd=None, expect_failure=False):
+        timeout = min(timeout, self.deadline - time.monotonic())
+        if timeout <= 0:
+            raise TimeoutError("complete check exceeded its 2700-second execution budget")
         cwd = self.directory if cwd is None else cwd
         out = self.directory / f"{name}.stdout.txt"
         err = self.directory / f"{name}.stderr.txt"
@@ -93,8 +100,10 @@ class Experiment:
                 record["end"] = timestamp()
                 record["exit_code"] = process.returncode
         record["exit_code"] = code
-        if code != 0 or record["timed_out"]:
+        if record["timed_out"] or (code != 0 and not expect_failure):
             raise RuntimeError(f"{name} failed, exit={code}, stderr={self.relative(err)}")
+        if expect_failure and code == 0:
+            raise AssertionError(f"{name}: required semantic rejection did not occur")
         return out.read_text()
 
     def finish(self, code, error=None):
@@ -105,7 +114,8 @@ class Experiment:
                 shutil.copy2(executable, self.directory / "simulator")
             shutil.rmtree(build)
         self.receipt.update(end=timestamp(), duration_s=time.monotonic()-self.started,
-                            timeout_s=3600, exit_code=code, timed_out=False)
+                            timeout_s=2700, exit_code=code,
+                            timed_out=any(c["timed_out"] for c in self.receipt["children"]))
         if error is not None:
             self.receipt["failure"] = error
         path = self.directory / "receipt.json"
@@ -152,8 +162,12 @@ def check_results(experiment, cases, libraries, dictionary=b"", directory=None):
         actual = bytes.fromhex(lines[index*2+1])
         if (case.error == -1 and error == 0) or (case.error != -1 and error != case.error):
             raise AssertionError(f"{case.name}: completion error {error}, expected {case.error}")
-        if read != len(case.source) or written != len(actual):
+        if read > len(case.source) or written != len(actual):
             raise AssertionError(f"{case.name}: incorrect exact byte counts")
+        if not case.error and read != len(case.source):
+            raise AssertionError(f"{case.name}: successful command did not consume full source")
+        if case.pre_dma and (read or written):
+            raise AssertionError(f"{case.name}: invalid command performed DMA")
         if case.error:
             compared.append({"case": case.name, "error": error, "input_bytes": read,
                              "output_bytes": written, "input_sha256": sha256(case.source),
@@ -405,7 +419,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="nonpower")
     parser.add_argument("--simulator", choices=("icarus", "verilator"), default="icarus")
-    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis"), default="transport")
+    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis", "errors", "matrix", "boundaries", "protocol"), default="transport")
     parser.add_argument("--pinned-dictionary", action="store_true")
     parser.add_argument("--seed", type=int, choices=(17, 89, 2026), default=17)
     parser.add_argument("--repair-of", help="Project-relative retained failure receipt")
@@ -441,6 +455,36 @@ def main():
             cases = []
         elif args.suite == "legacy":
             cases = legacy_cases(geometry)
+        elif args.suite == "protocol":
+            from l1_protocol import concurrent_testbench, lifecycle_testbench
+            from l1_runner import custom_simulation
+            raw = b"ab"[:geometry[0]]
+            cases = [Case("concurrent-"+str(i), raw, codec=(0, 1, 5, 6)[i],
+                          channel=i, wide=i&1, capacity=1024,
+                          dictionary_id=0x12345678 if i==3 else 0) for i in range(4)]
+            dictionary = bytes(range(min(geometry[3], 7)))
+            custom_simulation(experiment, "concurrent", concurrent_testbench, cases, geometry,
+                              libraries, dictionary=dictionary, concurrent=True)
+            custom_simulation(experiment, "lifecycle",
+                              lambda c,g,d,s,b: lifecycle_testbench(g,d),
+                              [Case("recovery", b"x", capacity=64)], geometry, libraries,
+                              simulator=args.simulator)
+            experiment.finish(0)
+            return 0
+        elif args.suite in ("errors", "matrix", "boundaries"):
+            from l1_matrix import boundaries, codec_matrix, errors
+            from l1_runner import Simulation
+            dictionary = random.Random(args.seed).randbytes(min(geometry[3], 1024))
+            builder = {"errors": lambda: errors(geometry, dictionary),
+                       "matrix": lambda: codec_matrix(geometry, args.seed, dictionary),
+                       "boundaries": lambda: boundaries(geometry, args.seed)}[args.suite]
+            simulation = Simulation(experiment, geometry, libraries)
+            try:
+                simulation.run(args.suite, builder(), args.seed, dictionary)
+            finally:
+                simulation.close()
+            experiment.finish(0)
+            return 0
         elif args.suite == "interop":
             cases = interop_cases(libraries, dictionary)
         elif args.suite == "corruption":

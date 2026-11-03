@@ -83,9 +83,9 @@ endtask
 task initialize(input integer value);
 begin
  if(m_valid) begin m_ready=1; edge_step(); m_ready=0; end
- init_valid=1; init_state=value; #1;
+ init_valid=1; init_state=value; step_valid=1; available=9; #1;
  if(init_ready!==1 || step_ready!==0) $fatal(1,"FSE init priority");
- edge_step(); init_valid=0;
+ edge_step(); init_valid=0; step_valid=0;
  if(state!==value[8:0] || m_valid!==0) $fatal(1,"FSE initialization latency");
 end
 endtask
@@ -166,6 +166,24 @@ initial begin
    if(step_ready!==1) $fatal(1,"FSE dependent recurrence not one-per-cycle");
    expected=bits;
    edge_step(); compare_transition(row,expected); continuous=continuous+1;
+  end
+  step_valid=0; edge_step(); m_ready=0;
+  initialize(0); m_ready=1;
+  for(ci=0;ci<300;ci=ci+1) begin
+   row=rows[state]; bits=(ci*73)^17; available=9; step_valid=1; #1;
+   if(step_ready!==1) $fatal(1,"FSE stalled-copy recurrence readiness");
+   expected=bits;
+   edge_step(); compare_transition(row,expected);
+   if(ci%7==3) begin
+    m_ready=0; held={m_symbol,m_nbits,m_state}; held_state=state;
+    repeat(3) begin
+     edge_step();
+     if(m_valid!==1 || step_ready!==0 || state!==held_state ||
+        {m_symbol,m_nbits,m_state}!==held) $fatal(1,"FSE stalled-copy recurrence changed");
+     stalls=stalls+1;
+    end
+    m_ready=1;
+   end
   end
   step_valid=0; edge_step(); m_ready=0;
   initialize(0); row=rows[0]; k=row[12:9];
