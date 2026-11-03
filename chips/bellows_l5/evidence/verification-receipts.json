@@ -1,6 +1,2444 @@
 {
   "chip": "Bellows-L5",
   "passed_checks": {
+    "check:behavior-default": {
+      "attempt_id": 21,
+      "duration_s": 1484.6082622620743,
+      "stdout_preview": "hild active (210s)\nPreparation execute-page-corruption-b05c3bdc-batch-1-7291ea9b: child active (210s)\nPreparation execute-page-corruption-b05c3bdc-batch-0-129acdc4: child active (240s)\nPreparation execute-page-corruption-b05c3bdc-batch-3-d132a6aa: child active (240s)\nPreparation execute-page-corruption-b05c3bdc-batch-2-0f1cc6e9: child active (240s)\nPreparation execute-page-corruption-b05c3bdc-batch-1-7291ea9b: child active (240s)\nPreparation execute-page-corruption-b05c3bdc-batch-0-129acdc4: child active (270s)\nPreparation execute-page-corruption-b05c3bdc-batch-3-d132a6aa: child active (270s)\nPreparation execute-page-corruption-b05c3bdc-batch-2-0f1cc6e9: child active (270s)\nPreparation execute-page-corruption-b05c3bdc-batch-1-7291ea9b: child active (270s)\nPreparation execute-page-corruption-b05c3bdc-batch-0-129acdc4: child active (300s)\nPreparation execute-page-corruption-b05c3bdc-batch-1-7291ea9b: child active (300s)\nVerification step: concurrent-17-version\nVerification step: concurrent-17-compile\nPreparation concurrent-17-compile: child active (30s)\nVerification step: concurrent-17-simulation\nVerification step: lifecycle-17-version\nVerification step: lifecycle-17-compile\nPreparation lifecycle-17-compile: child active (30s)\nVerification step: lifecycle-17-simulation\nVerification step: dictionary-views-17-version\nVerification step: dictionary-views-17-compile\nVerification step: dictionary-views-17-simulation\nevidence/l1-behavior-default-20261103T091223Z-6484d642/receipt.json\n",
+      "receipt_count": 1,
+      "receipts": [
+        {
+          "path": "evidence/l1-behavior-default-20261103T091223Z-6484d642/receipt.json",
+          "data": {
+            "kind": "l1-check",
+            "argv": [
+              "python3",
+              "tests/verify.py",
+              "--check",
+              "behavior",
+              "--configuration",
+              "default"
+            ],
+            "cwd": ".",
+            "start": "2026-11-03T09:12:23.100625+00:00",
+            "children": [
+              {
+                "argv": [
+                  "g++",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:12:23.228165+00:00",
+                "timeout_s": 2699.8726309819613,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/version-g++.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/version-g++.stderr.txt",
+                "end": "2026-11-03T09:12:23.232581+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "make",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:12:23.232817+00:00",
+                "timeout_s": 2699.8679552259855,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/version-make.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/version-make.stderr.txt",
+                "end": "2026-11-03T09:12:23.237099+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:12:23.237321+00:00",
+                "timeout_s": 2699.863449035911,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/verilator-version-simulation-e61a19ce.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/verilator-version-simulation-e61a19ce.stderr.txt",
+                "end": "2026-11-03T09:12:23.351916+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce",
+                "start": "2026-11-03T09:12:23.352152+00:00",
+                "timeout_s": 2699.7486278088763,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/compile-simulation-e61a19ce.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/compile-simulation-e61a19ce.stderr.txt",
+                "end": "2026-11-03T09:12:59.181765+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/codec-matrix-17-cdeff87d",
+                "start": "2026-11-03T09:12:59.183140+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-codec-matrix-17-cdeff87d.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-codec-matrix-17-cdeff87d.stderr.txt",
+                "end": "2026-11-03T09:13:10.826663+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/dictionary-edges-17-aef66b61",
+                "start": "2026-11-03T09:13:10.858854+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-dictionary-edges-17-aef66b61.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-dictionary-edges-17-aef66b61.stderr.txt",
+                "end": "2026-11-03T09:13:12.778688+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/errors-17-e45762bf",
+                "start": "2026-11-03T09:13:13.030775+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-errors-17-e45762bf.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-errors-17-e45762bf.stderr.txt",
+                "end": "2026-11-03T09:13:37.851674+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:13:37.900049+00:00",
+                "timeout_s": 2625.200738979969,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/verilator-version-simulation-06b7e1e5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/verilator-version-simulation-06b7e1e5.stderr.txt",
+                "end": "2026-11-03T09:13:38.015137+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_byte_ram.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l1_history.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l1_output.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l1_top.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_compressor.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_emitter.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_hash_match.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_top.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_checksum.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_context.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_scheduler.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_sg_dma.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_top.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_context.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_copy_engine.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_entropy.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_huffman_table.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_intermediate.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_scheduler.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_sg_dma.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_top.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5",
+                "start": "2026-11-03T09:13:38.015449+00:00",
+                "timeout_s": 2625.085378578864,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/compile-simulation-06b7e1e5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/compile-simulation-06b7e1e5.stderr.txt",
+                "end": "2026-11-03T09:13:58.377987+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-errors-17-cf9274b9",
+                "start": "2026-11-03T09:13:58.378796+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-errors-17-cf9274b9.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-errors-17-cf9274b9.stderr.txt",
+                "end": "2026-11-03T09:14:08.819173+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-errors-17-a3364125",
+                "start": "2026-11-03T09:14:08.856438+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-errors-17-a3364125.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-errors-17-a3364125.stderr.txt",
+                "end": "2026-11-03T09:14:27.416447+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-3aa432c6/batch-0-0ad04e8b",
+                "start": "2026-11-03T09:14:27.916900+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-0-0ad04e8b.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-0-0ad04e8b.stderr.txt",
+                "end": "2026-11-03T09:15:50.435724+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-3aa432c6/batch-1-ce41b22f",
+                "start": "2026-11-03T09:14:27.918100+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-1-ce41b22f.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-1-ce41b22f.stderr.txt",
+                "end": "2026-11-03T09:15:37.556803+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-3aa432c6/batch-2-6a0556c5",
+                "start": "2026-11-03T09:14:27.919045+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-2-6a0556c5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-2-6a0556c5.stderr.txt",
+                "end": "2026-11-03T09:15:36.704176+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-3aa432c6/batch-3-8bcdf575",
+                "start": "2026-11-03T09:14:27.920396+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-3-8bcdf575.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-3aa432c6-batch-3-8bcdf575.stderr.txt",
+                "end": "2026-11-03T09:15:55.444870+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-roundtrip-517dab09/batch-0-0404daff",
+                "start": "2026-11-03T09:15:55.791221+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-0-0404daff.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-0-0404daff.stderr.txt",
+                "end": "2026-11-03T09:17:05.486763+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-roundtrip-517dab09/batch-1-533f05f5",
+                "start": "2026-11-03T09:15:55.792644+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-1-533f05f5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-1-533f05f5.stderr.txt",
+                "end": "2026-11-03T09:16:54.425151+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-roundtrip-517dab09/batch-2-015edc27",
+                "start": "2026-11-03T09:15:55.793864+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-2-015edc27.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-2-015edc27.stderr.txt",
+                "end": "2026-11-03T09:16:49.760885+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-17-roundtrip-517dab09/batch-3-5b2880ac",
+                "start": "2026-11-03T09:15:55.794577+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-3-5b2880ac.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-17-roundtrip-517dab09-batch-3-5b2880ac.stderr.txt",
+                "end": "2026-11-03T09:17:08.043985+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-17-12edf281/batch-0-69523654",
+                "start": "2026-11-03T09:17:10.913839+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-0-69523654.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-0-69523654.stderr.txt",
+                "end": "2026-11-03T09:18:05.793838+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-17-12edf281/batch-1-dc323a65",
+                "start": "2026-11-03T09:17:10.915119+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-1-dc323a65.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-1-dc323a65.stderr.txt",
+                "end": "2026-11-03T09:17:41.786769+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-17-12edf281/batch-2-46f15557",
+                "start": "2026-11-03T09:17:10.915783+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-2-46f15557.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-2-46f15557.stderr.txt",
+                "end": "2026-11-03T09:18:34.838884+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-17-12edf281/batch-3-623e9325",
+                "start": "2026-11-03T09:17:10.918795+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-3-623e9325.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-17-12edf281-batch-3-623e9325.stderr.txt",
+                "end": "2026-11-03T09:17:48.702994+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-17-3d3e5ece/batch-0-9241cfa5",
+                "start": "2026-11-03T09:18:37.140760+00:00",
+                "timeout_s": 2325.9604476960376,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-0-9241cfa5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-0-9241cfa5.stderr.txt",
+                "end": "2026-11-03T09:19:06.023162+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-17-3d3e5ece/batch-1-f8f7748f",
+                "start": "2026-11-03T09:18:37.141597+00:00",
+                "timeout_s": 2325.9594016459305,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-1-f8f7748f.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-1-f8f7748f.stderr.txt",
+                "end": "2026-11-03T09:18:57.454769+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-17-3d3e5ece/batch-2-f1e149b7",
+                "start": "2026-11-03T09:18:37.142477+00:00",
+                "timeout_s": 2325.9583880270366,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-2-f1e149b7.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-2-f1e149b7.stderr.txt",
+                "end": "2026-11-03T09:19:19.337157+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-17-3d3e5ece/batch-3-24f0fe90",
+                "start": "2026-11-03T09:18:37.143423+00:00",
+                "timeout_s": 2325.9574297799263,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-3-24f0fe90.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-17-3d3e5ece-batch-3-24f0fe90.stderr.txt",
+                "end": "2026-11-03T09:18:56.049951+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/codec-matrix-89-f75e2e75",
+                "start": "2026-11-03T09:19:21.053239+00:00",
+                "timeout_s": 2282.0475626150146,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-codec-matrix-89-f75e2e75.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-codec-matrix-89-f75e2e75.stderr.txt",
+                "end": "2026-11-03T09:19:32.645643+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/dictionary-edges-89-cf579ade",
+                "start": "2026-11-03T09:19:32.694820+00:00",
+                "timeout_s": 2270.406114315847,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-dictionary-edges-89-cf579ade.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-dictionary-edges-89-cf579ade.stderr.txt",
+                "end": "2026-11-03T09:19:34.613779+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/errors-89-38e17bcf",
+                "start": "2026-11-03T09:19:34.884786+00:00",
+                "timeout_s": 2268.2160406268667,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-errors-89-38e17bcf.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-errors-89-38e17bcf.stderr.txt",
+                "end": "2026-11-03T09:20:01.066395+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-errors-89-f8d77e88",
+                "start": "2026-11-03T09:20:01.130990+00:00",
+                "timeout_s": 2241.9698401088826,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-errors-89-f8d77e88.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-errors-89-f8d77e88.stderr.txt",
+                "end": "2026-11-03T09:20:11.470540+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-errors-89-03cc2c03",
+                "start": "2026-11-03T09:20:11.514131+00:00",
+                "timeout_s": 2231.586692887824,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-errors-89-03cc2c03.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-errors-89-03cc2c03.stderr.txt",
+                "end": "2026-11-03T09:20:34.894796+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-84886866/batch-0-ee90124d",
+                "start": "2026-11-03T09:20:35.031070+00:00",
+                "timeout_s": 2208.070120760938,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-0-ee90124d.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-0-ee90124d.stderr.txt",
+                "end": "2026-11-03T09:20:37.905059+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-84886866/batch-1-98e0f100",
+                "start": "2026-11-03T09:20:35.031975+00:00",
+                "timeout_s": 2208.069030227838,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-1-98e0f100.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-1-98e0f100.stderr.txt",
+                "end": "2026-11-03T09:20:37.604511+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-84886866/batch-2-31d36739",
+                "start": "2026-11-03T09:20:35.033697+00:00",
+                "timeout_s": 2208.067853263812,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-2-31d36739.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-2-31d36739.stderr.txt",
+                "end": "2026-11-03T09:20:38.206531+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-84886866/batch-3-15ac8f2c",
+                "start": "2026-11-03T09:20:35.034746+00:00",
+                "timeout_s": 2208.066407628823,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-3-15ac8f2c.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-84886866-batch-3-15ac8f2c.stderr.txt",
+                "end": "2026-11-03T09:20:37.856541+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-roundtrip-f1457d08/batch-0-a9d11cf1",
+                "start": "2026-11-03T09:20:38.277785+00:00",
+                "timeout_s": 2204.8235315349884,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-0-a9d11cf1.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-0-a9d11cf1.stderr.txt",
+                "end": "2026-11-03T09:20:40.900359+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-roundtrip-f1457d08/batch-1-669b928b",
+                "start": "2026-11-03T09:20:38.278280+00:00",
+                "timeout_s": 2204.8231787469704,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-1-669b928b.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-1-669b928b.stderr.txt",
+                "end": "2026-11-03T09:20:40.698543+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-roundtrip-f1457d08/batch-2-88e91fb6",
+                "start": "2026-11-03T09:20:38.279713+00:00",
+                "timeout_s": 2204.8218056168407,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-2-88e91fb6.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-2-88e91fb6.stderr.txt",
+                "end": "2026-11-03T09:20:40.200692+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-89-roundtrip-f1457d08/batch-3-5dc87f3a",
+                "start": "2026-11-03T09:20:38.280489+00:00",
+                "timeout_s": 2204.8205563789234,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-3-5dc87f3a.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-89-roundtrip-f1457d08-batch-3-5dc87f3a.stderr.txt",
+                "end": "2026-11-03T09:20:40.902236+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-89-2c321f27/batch-0-1af86539",
+                "start": "2026-11-03T09:20:41.077398+00:00",
+                "timeout_s": 2202.0238007039297,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-0-1af86539.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-0-1af86539.stderr.txt",
+                "end": "2026-11-03T09:21:12.095985+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-89-2c321f27/batch-1-a92573ac",
+                "start": "2026-11-03T09:20:41.078290+00:00",
+                "timeout_s": 2202.0227259809617,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-1-a92573ac.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-1-a92573ac.stderr.txt",
+                "end": "2026-11-03T09:20:48.761784+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-89-2c321f27/batch-2-b3abe94c",
+                "start": "2026-11-03T09:20:41.079206+00:00",
+                "timeout_s": 2202.0216426709667,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-2-b3abe94c.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-2-b3abe94c.stderr.txt",
+                "end": "2026-11-03T09:21:11.747371+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-89-2c321f27/batch-3-f3623ce6",
+                "start": "2026-11-03T09:20:41.080180+00:00",
+                "timeout_s": 2202.020788618829,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-3-f3623ce6.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-89-2c321f27-batch-3-f3623ce6.stderr.txt",
+                "end": "2026-11-03T09:20:47.659936+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-89-a762ce9a/batch-0-0a87cffc",
+                "start": "2026-11-03T09:21:12.297469+00:00",
+                "timeout_s": 2170.803731143009,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-0-0a87cffc.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-0-0a87cffc.stderr.txt",
+                "end": "2026-11-03T09:21:28.113330+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-89-a762ce9a/batch-1-ad54bd01",
+                "start": "2026-11-03T09:21:12.298617+00:00",
+                "timeout_s": 2170.802690702956,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-1-ad54bd01.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-1-ad54bd01.stderr.txt",
+                "end": "2026-11-03T09:21:16.726115+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-89-a762ce9a/batch-2-17d643e8",
+                "start": "2026-11-03T09:21:12.299646+00:00",
+                "timeout_s": 2170.801486567827,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-2-17d643e8.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-2-17d643e8.stderr.txt",
+                "end": "2026-11-03T09:21:28.858512+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-89-a762ce9a/batch-3-d7ff01ca",
+                "start": "2026-11-03T09:21:12.301125+00:00",
+                "timeout_s": 2170.8001120458357,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-3-d7ff01ca.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-89-a762ce9a-batch-3-d7ff01ca.stderr.txt",
+                "end": "2026-11-03T09:21:16.576062+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/codec-matrix-2026-68e6c29b",
+                "start": "2026-11-03T09:21:28.973313+00:00",
+                "timeout_s": 2154.127490681829,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-codec-matrix-2026-68e6c29b.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-codec-matrix-2026-68e6c29b.stderr.txt",
+                "end": "2026-11-03T09:21:40.516152+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/dictionary-edges-2026-7dbd8cc3",
+                "start": "2026-11-03T09:21:40.581836+00:00",
+                "timeout_s": 2142.5189938379917,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-dictionary-edges-2026-7dbd8cc3.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-dictionary-edges-2026-7dbd8cc3.stderr.txt",
+                "end": "2026-11-03T09:21:42.501167+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/errors-2026-d7cc4ed5",
+                "start": "2026-11-03T09:21:42.782330+00:00",
+                "timeout_s": 2140.318492479855,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-errors-2026-d7cc4ed5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-errors-2026-d7cc4ed5.stderr.txt",
+                "end": "2026-11-03T09:22:06.604490+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-errors-2026-36c89402",
+                "start": "2026-11-03T09:22:06.683084+00:00",
+                "timeout_s": 2116.417763965903,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-errors-2026-36c89402.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-errors-2026-36c89402.stderr.txt",
+                "end": "2026-11-03T09:22:19.825897+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-errors-2026-ba30bab8",
+                "start": "2026-11-03T09:22:19.877878+00:00",
+                "timeout_s": 2103.2229236378334,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-errors-2026-ba30bab8.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-errors-2026-ba30bab8.stderr.txt",
+                "end": "2026-11-03T09:22:38.489695+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-cc732ce1/batch-0-ce78eb7f",
+                "start": "2026-11-03T09:22:38.730746+00:00",
+                "timeout_s": 2084.3704799639527,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-0-ce78eb7f.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-0-ce78eb7f.stderr.txt",
+                "end": "2026-11-03T09:22:41.504352+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-cc732ce1/batch-1-47ba8866",
+                "start": "2026-11-03T09:22:38.731921+00:00",
+                "timeout_s": 2084.369396163849,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-1-47ba8866.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-1-47ba8866.stderr.txt",
+                "end": "2026-11-03T09:22:41.304439+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-cc732ce1/batch-3-f1d24705",
+                "start": "2026-11-03T09:22:38.733009+00:00",
+                "timeout_s": 2084.3678136139642,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-3-f1d24705.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-3-f1d24705.stderr.txt",
+                "end": "2026-11-03T09:22:41.604731+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-cc732ce1/batch-2-c5342df5",
+                "start": "2026-11-03T09:22:38.733770+00:00",
+                "timeout_s": 2084.368268601829,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-2-c5342df5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-cc732ce1-batch-2-c5342df5.stderr.txt",
+                "end": "2026-11-03T09:22:42.608338+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-roundtrip-3466d59c/batch-0-01fb6d9c",
+                "start": "2026-11-03T09:22:42.698842+00:00",
+                "timeout_s": 2080.402407519985,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-0-01fb6d9c.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-0-01fb6d9c.stderr.txt",
+                "end": "2026-11-03T09:22:45.272185+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-roundtrip-3466d59c/batch-1-dfe5f698",
+                "start": "2026-11-03T09:22:42.699598+00:00",
+                "timeout_s": 2080.4013885199092,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-1-dfe5f698.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-1-dfe5f698.stderr.txt",
+                "end": "2026-11-03T09:22:45.071918+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-roundtrip-3466d59c/batch-2-0eabdcac",
+                "start": "2026-11-03T09:22:42.700959+00:00",
+                "timeout_s": 2080.400197028881,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-2-0eabdcac.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-2-0eabdcac.stderr.txt",
+                "end": "2026-11-03T09:22:45.523699+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/boundaries-2026-roundtrip-3466d59c/batch-3-ee7bc662",
+                "start": "2026-11-03T09:22:42.702145+00:00",
+                "timeout_s": 2080.398931409931,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-3-ee7bc662.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-boundaries-2026-roundtrip-3466d59c-batch-3-ee7bc662.stderr.txt",
+                "end": "2026-11-03T09:22:45.322939+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-2026-add3c284/batch-0-e9fc840e",
+                "start": "2026-11-03T09:22:45.717275+00:00",
+                "timeout_s": 2077.383927486837,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-0-e9fc840e.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-0-e9fc840e.stderr.txt",
+                "end": "2026-11-03T09:23:16.486927+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-2026-add3c284/batch-1-90388a76",
+                "start": "2026-11-03T09:22:45.718142+00:00",
+                "timeout_s": 2077.382859806996,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-1-90388a76.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-1-90388a76.stderr.txt",
+                "end": "2026-11-03T09:22:53.352085+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-2026-add3c284/batch-2-537ac6bd",
+                "start": "2026-11-03T09:22:45.719241+00:00",
+                "timeout_s": 2077.381705695996,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-2-537ac6bd.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-2-537ac6bd.stderr.txt",
+                "end": "2026-11-03T09:23:16.136931+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/legacy-2026-add3c284/batch-3-41998d64",
+                "start": "2026-11-03T09:22:45.720629+00:00",
+                "timeout_s": 2077.380413255887,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-3-41998d64.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-legacy-2026-add3c284-batch-3-41998d64.stderr.txt",
+                "end": "2026-11-03T09:22:54.056235+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-2026-2ed818aa/batch-0-f3d2e0da",
+                "start": "2026-11-03T09:23:16.706795+00:00",
+                "timeout_s": 2046.3944958068896,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-0-f3d2e0da.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-0-f3d2e0da.stderr.txt",
+                "end": "2026-11-03T09:23:32.510019+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-2026-2ed818aa/batch-1-4d8afeed",
+                "start": "2026-11-03T09:23:16.707645+00:00",
+                "timeout_s": 2046.3933723228984,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-1-4d8afeed.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-1-4d8afeed.stderr.txt",
+                "end": "2026-11-03T09:23:22.085873+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-2026-2ed818aa/batch-2-a63f66ce",
+                "start": "2026-11-03T09:23:16.709489+00:00",
+                "timeout_s": 2046.3922393808607,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-2-a63f66ce.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-2-a63f66ce.stderr.txt",
+                "end": "2026-11-03T09:23:32.313282+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-06b7e1e5/parent-legacy-2026-2ed818aa/batch-3-537ba614",
+                "start": "2026-11-03T09:23:16.710149+00:00",
+                "timeout_s": 2046.3915584208444,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-3-537ba614.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-parent-legacy-2026-2ed818aa-batch-3-537ba614.stderr.txt",
+                "end": "2026-11-03T09:23:21.035482+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/missing-dictionary-and-recovery-1ffc61c4",
+                "start": "2026-11-03T09:23:32.610851+00:00",
+                "timeout_s": 2030.48996901582,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-missing-dictionary-and-recovery-1ffc61c4.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-missing-dictionary-and-recovery-1ffc61c4.stderr.txt",
+                "end": "2026-11-03T09:23:32.775697+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/rfc-length-offset-boundaries-021ec4f6/batch-0-8bde5f1b",
+                "start": "2026-11-03T09:23:34.071304+00:00",
+                "timeout_s": 2029.0298497769982,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-0-8bde5f1b.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-0-8bde5f1b.stderr.txt",
+                "end": "2026-11-03T09:25:30.849825+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/rfc-length-offset-boundaries-021ec4f6/batch-1-ec1b4d67",
+                "start": "2026-11-03T09:23:34.072112+00:00",
+                "timeout_s": 2029.0288822529837,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-1-ec1b4d67.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-1-ec1b4d67.stderr.txt",
+                "end": "2026-11-03T09:25:37.952175+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/rfc-length-offset-boundaries-021ec4f6/batch-3-818b5730",
+                "start": "2026-11-03T09:23:34.073976+00:00",
+                "timeout_s": 2029.026866535889,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-3-818b5730.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-3-818b5730.stderr.txt",
+                "end": "2026-11-03T09:25:53.741162+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/rfc-length-offset-boundaries-021ec4f6/batch-2-5677990d",
+                "start": "2026-11-03T09:23:34.074627+00:00",
+                "timeout_s": 2029.0275823399425,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-2-5677990d.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-rfc-length-offset-boundaries-021ec4f6-batch-2-5677990d.stderr.txt",
+                "end": "2026-11-03T09:25:52.989544+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-MAX_BLOCK_BYTES-0.vvp",
+                  "illegal-MAX_BLOCK_BYTES-0.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:54.153369+00:00",
+                "timeout_s": 1888.9474398549646,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-0-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-0-compile.stderr.txt",
+                "end": "2026-11-03T09:25:54.869891+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-MAX_BLOCK_BYTES-0.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:54.870330+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-0-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-0-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:25:55.487900+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-MAX_BLOCK_BYTES-65537.vvp",
+                  "illegal-MAX_BLOCK_BYTES-65537.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:55.488447+00:00",
+                "timeout_s": 1887.6123994088266,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-65537-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-65537-compile.stderr.txt",
+                "end": "2026-11-03T09:25:56.205867+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-MAX_BLOCK_BYTES-65537.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:56.206276+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-65537-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-MAX_BLOCK_BYTES-65537-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:25:56.822910+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-SG_DEPTH-0.vvp",
+                  "illegal-SG_DEPTH-0.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:56.823451+00:00",
+                "timeout_s": 1886.2773679699749,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-0-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-0-compile.stderr.txt",
+                "end": "2026-11-03T09:25:57.539948+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-SG_DEPTH-0.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:57.540277+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-0-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-0-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:25:58.156498+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-SG_DEPTH-17.vvp",
+                  "illegal-SG_DEPTH-17.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:58.157311+00:00",
+                "timeout_s": 1884.9435209489893,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-17-compile.stderr.txt",
+                "end": "2026-11-03T09:25:58.873827+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-SG_DEPTH-17.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:58.874121+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-17-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-SG_DEPTH-17-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:25:59.490234+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-COPY_BYTES-1.vvp",
+                  "illegal-COPY_BYTES-1.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:25:59.490830+00:00",
+                "timeout_s": 1883.6099921199493,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-1-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-1-compile.stderr.txt",
+                "end": "2026-11-03T09:26:00.207740+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-COPY_BYTES-1.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:00.208065+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-1-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-1-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:26:00.824218+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-COPY_BYTES-16.vvp",
+                  "illegal-COPY_BYTES-16.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:00.824811+00:00",
+                "timeout_s": 1882.2761032308917,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-16-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-16-compile.stderr.txt",
+                "end": "2026-11-03T09:26:01.541305+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-COPY_BYTES-16.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:01.541725+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-16-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-COPY_BYTES-16-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:26:02.158353+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-DICT_BYTES-0.vvp",
+                  "illegal-DICT_BYTES-0.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:02.159145+00:00",
+                "timeout_s": 1880.941689372994,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-0-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-0-compile.stderr.txt",
+                "end": "2026-11-03T09:26:02.875635+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-DICT_BYTES-0.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:02.875963+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-0-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-0-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:26:03.492169+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-o",
+                  "illegal-DICT_BYTES-16385.vvp",
+                  "illegal-DICT_BYTES-16385.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:03.492788+00:00",
+                "timeout_s": 1879.6081309199799,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-16385-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-16385-compile.stderr.txt",
+                "end": "2026-11-03T09:26:04.209360+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "illegal-DICT_BYTES-16385.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:04.209791+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-16385-diagnostic.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/illegal-DICT_BYTES-16385-diagnostic.stderr.txt",
+                "end": "2026-11-03T09:26:04.826185+00:00",
+                "exit_code": 1
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "bellows_l5_top",
+                  "-Pbellows_l5_top.COPY_BYTES=4",
+                  "-o",
+                  "copy4.vvp",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/parameters-0a694bce",
+                "start": "2026-11-03T09:26:04.826518+00:00",
+                "timeout_s": 1878.2743164990097,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/copy4-elaboration.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/copy4-elaboration.stderr.txt",
+                "end": "2026-11-03T09:26:05.543531+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:26:05.560379+00:00",
+                "timeout_s": 1877.5404257830232,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-version.stderr.txt",
+                "end": "2026-11-03T09:26:05.675394+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-fdbc8497",
+                "start": "2026-11-03T09:26:05.675824+00:00",
+                "timeout_s": 1877.4251196079422,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-compile.stderr.txt",
+                "end": "2026-11-03T09:26:13.307705+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-fdbc8497",
+                "start": "2026-11-03T09:26:13.308262+00:00",
+                "timeout_s": 1869.7926440588199,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/fse-verilator-simulation.stderr.txt",
+                "end": "2026-11-03T09:26:13.624027+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/interop-False-0f46a1bf",
+                "start": "2026-11-03T09:26:13.734115+00:00",
+                "timeout_s": 1869.3667001780123,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-interop-False-0f46a1bf.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-interop-False-0f46a1bf.stderr.txt",
+                "end": "2026-11-03T09:26:28.634843+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/malformed-tables-False-c9948ca8",
+                "start": "2026-11-03T09:26:28.805945+00:00",
+                "timeout_s": 1854.294867679011,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-malformed-tables-False-c9948ca8.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-malformed-tables-False-c9948ca8.stderr.txt",
+                "end": "2026-11-03T09:26:29.372728+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/constant-tables-False-b37a90ba",
+                "start": "2026-11-03T09:26:29.449691+00:00",
+                "timeout_s": 1853.651141669834,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-constant-tables-False-b37a90ba.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-constant-tables-False-b37a90ba.stderr.txt",
+                "end": "2026-11-03T09:26:30.467130+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/short-corruption-False-bf83693f",
+                "start": "2026-11-03T09:26:30.658336+00:00",
+                "timeout_s": 1852.4424854668323,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-short-corruption-False-bf83693f.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-short-corruption-False-bf83693f.stderr.txt",
+                "end": "2026-11-03T09:26:37.139415+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/interop-True-d0cec724",
+                "start": "2026-11-03T09:26:37.316898+00:00",
+                "timeout_s": 1845.783917209832,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-interop-True-d0cec724.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-interop-True-d0cec724.stderr.txt",
+                "end": "2026-11-03T09:26:52.665497+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/malformed-tables-True-78027993",
+                "start": "2026-11-03T09:26:52.847268+00:00",
+                "timeout_s": 1830.2535522829276,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-malformed-tables-True-78027993.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-malformed-tables-True-78027993.stderr.txt",
+                "end": "2026-11-03T09:26:53.513192+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/constant-tables-True-299292b0",
+                "start": "2026-11-03T09:26:53.601498+00:00",
+                "timeout_s": 1829.499319643015,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-constant-tables-True-299292b0.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-constant-tables-True-299292b0.stderr.txt",
+                "end": "2026-11-03T09:26:54.719212+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/short-corruption-True-54961791",
+                "start": "2026-11-03T09:26:54.917864+00:00",
+                "timeout_s": 1828.1829602259677,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-short-corruption-True-54961791.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-short-corruption-True-54961791.stderr.txt",
+                "end": "2026-11-03T09:27:01.347337+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/gain-17-45091ab1",
+                "start": "2026-11-03T09:27:01.477905+00:00",
+                "timeout_s": 1821.622913285857,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-17-45091ab1.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-17-45091ab1.stderr.txt",
+                "end": "2026-11-03T09:27:47.431688+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/gain-17-roundtrip-af0d3fa5",
+                "start": "2026-11-03T09:27:47.561329+00:00",
+                "timeout_s": 1775.539493195014,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-17-roundtrip-af0d3fa5.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-17-roundtrip-af0d3fa5.stderr.txt",
+                "end": "2026-11-03T09:28:09.176982+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/gain-89-d8ce0b58",
+                "start": "2026-11-03T09:28:09.321213+00:00",
+                "timeout_s": 1753.7796486148145,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-89-d8ce0b58.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-89-d8ce0b58.stderr.txt",
+                "end": "2026-11-03T09:28:54.311772+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/gain-89-roundtrip-6715dd02",
+                "start": "2026-11-03T09:28:54.438733+00:00",
+                "timeout_s": 1708.6621096970048,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-89-roundtrip-6715dd02.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-89-roundtrip-6715dd02.stderr.txt",
+                "end": "2026-11-03T09:29:16.007909+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/gain-2026-254bd9ef",
+                "start": "2026-11-03T09:29:16.155652+00:00",
+                "timeout_s": 1686.9451933319215,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-2026-254bd9ef.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-2026-254bd9ef.stderr.txt",
+                "end": "2026-11-03T09:30:02.470351+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/gain-2026-roundtrip-8681f668",
+                "start": "2026-11-03T09:30:02.606838+00:00",
+                "timeout_s": 1640.4939968888648,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-2026-roundtrip-8681f668.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-gain-2026-roundtrip-8681f668.stderr.txt",
+                "end": "2026-11-03T09:30:24.420776+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/page-corruption-b05c3bdc/batch-0-129acdc4",
+                "start": "2026-11-03T09:30:25.942771+00:00",
+                "timeout_s": 1617.1585886068642,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-0-129acdc4.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-0-129acdc4.stderr.txt",
+                "end": "2026-11-03T09:35:39.941869+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/page-corruption-b05c3bdc/batch-1-7291ea9b",
+                "start": "2026-11-03T09:30:25.943913+00:00",
+                "timeout_s": 1617.157571340911,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-1-7291ea9b.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-1-7291ea9b.stderr.txt",
+                "end": "2026-11-03T09:35:26.864871+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/page-corruption-b05c3bdc/batch-2-0f1cc6e9",
+                "start": "2026-11-03T09:30:25.944953+00:00",
+                "timeout_s": 1617.1571492638905,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-2-0f1cc6e9.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-2-0f1cc6e9.stderr.txt",
+                "end": "2026-11-03T09:35:21.517399+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/simulation-e61a19ce/page-corruption-b05c3bdc/batch-3-d132a6aa",
+                "start": "2026-11-03T09:30:25.945572+00:00",
+                "timeout_s": 1617.1560190569144,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-3-d132a6aa.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/execute-page-corruption-b05c3bdc-batch-3-d132a6aa.stderr.txt",
+                "end": "2026-11-03T09:35:14.748813+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:35:39.994176+00:00",
+                "timeout_s": 1303.106560605811,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-version.stderr.txt",
+                "end": "2026-11-03T09:35:40.108947+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-2c0a457d",
+                "start": "2026-11-03T09:35:40.109097+00:00",
+                "timeout_s": 1302.9916257369332,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-compile.stderr.txt",
+                "end": "2026-11-03T09:36:16.036858+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-2c0a457d",
+                "start": "2026-11-03T09:36:16.037534+00:00",
+                "timeout_s": 1267.0634182109497,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/concurrent-17-simulation.stderr.txt",
+                "end": "2026-11-03T09:36:16.603960+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:36:16.716062+00:00",
+                "timeout_s": 1266.3847407069989,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-version.stderr.txt",
+                "end": "2026-11-03T09:36:16.831290+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-2b1c95c2",
+                "start": "2026-11-03T09:36:16.831542+00:00",
+                "timeout_s": 1266.2692426480353,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-compile.stderr.txt",
+                "end": "2026-11-03T09:36:59.526314+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-2b1c95c2",
+                "start": "2026-11-03T09:36:59.526915+00:00",
+                "timeout_s": 1223.5739682589192,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/lifecycle-17-simulation.stderr.txt",
+                "end": "2026-11-03T09:36:59.691916+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642",
+                "start": "2026-11-03T09:36:59.789692+00:00",
+                "timeout_s": 1223.311115034856,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-version.stderr.txt",
+                "end": "2026-11-03T09:36:59.904766+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-f95d2972",
+                "start": "2026-11-03T09:36:59.905028+00:00",
+                "timeout_s": 1223.1957606039941,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-compile.stderr.txt",
+                "end": "2026-11-03T09:37:07.037201+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-f95d2972",
+                "start": "2026-11-03T09:37:07.037848+00:00",
+                "timeout_s": 1216.0631512659602,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-default-20261103T091223Z-6484d642/dictionary-views-17-simulation.stderr.txt",
+                "end": "2026-11-03T09:37:07.252981+00:00",
+                "exit_code": 0
+              }
+            ],
+            "source_sha256": {
+              "rtl/bellows_byte_ram.sv": "c8a01bb83033612977d0dc5fe18984c7f3edb1a196a010bd29e149d3530cb3df",
+              "rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "rtl/bellows_l2_compressor.sv": "bde7ef6043b402c99b55d01c1428060d7fceca0a2ce18a723ee3e752c7fdbe19",
+              "rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "rtl/bellows_l2_literal_buffer.sv": "02fb500f52c6f35f68c445f95c8fb5af2933e54786982ee47a8bfe847dae72af",
+              "rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "rtl/bellows_l4_context.sv": "cb83bfaa594b45bce72cace4c081df76b4b0ef557703f6f4a9e92b756d2ada9b",
+              "rtl/bellows_l4_copy_engine.sv": "657cddec9ee78a9ed768e3f357820856ca1f6216cbfda1311cb6941b09f25e73",
+              "rtl/bellows_l4_entropy.sv": "aca40b5c5d3e18886c993cb0100ae87292447e9de70f3bafbbca387516b462ef",
+              "rtl/bellows_l4_huffman_table.sv": "3356aad5499b3f1235de4eac18ca54bc96220bdc4c31d0506764726dd920c036",
+              "rtl/bellows_l4_intermediate.sv": "b8766878531e9297419ed35cd5637da5d4e18d00df0208f9f1537044a789c002",
+              "rtl/bellows_l4_lz4_decoder.sv": "0bbeb8d40edc21bff4d398b79d780b9f210446c0e1a6e764b18788c06860c106",
+              "rtl/bellows_l4_scheduler.sv": "a31d8b3668f5a8649b31e66f48d1cbd4360c5502197bb049046dbae4834951d0",
+              "rtl/bellows_l4_sg_dma.sv": "d18eb22e37022de753f9337bd5f0172e81964d34e9b51d3f51ec8741b79d6a8d",
+              "rtl/bellows_l4_top.sv": "e069e4fc025002ccef4936068cb9220e95f2cc8683a7719bf826ec9a08fdc9bf",
+              "rtl/bellows_l5_bit_writer.sv": "cc336c24828995ccc817e332614ea7c1fcdd6fd47d7325eedc163209ac273f2e",
+              "rtl/bellows_l5_buffer.sv": "eeb493a12c9c67221db18da0e6841ecb53b0a2ebff0b71c93afc5cb9864ce98e",
+              "rtl/bellows_l5_context.sv": "d226dfe675a8ff916bd387d1fc24709546659ff482cdcda00bd701410888c1cc",
+              "rtl/bellows_l5_dictionary.sv": "0fa0322689e6fcf7dc1eb16561a2a2c533222a050641a8cecc92bc1e137dc981",
+              "rtl/bellows_l5_entropy.sv": "96389cf21810e9da3c582b777e17794af835939744375939395a5d522b4fd7b9",
+              "rtl/bellows_l5_frame_engine.sv": "fb2f24372781b2ff1abc50ce75ea7ea6f57bf7166adbaa3f3f82a537b6f5e294",
+              "rtl/bellows_l5_fse_counts.sv": "186761f6f216cd9cecadda65926538c8e9e25f0ec18e951ca2176ed335c1a1ad",
+              "rtl/bellows_l5_fse_decoder.sv": "b6af30ad7fe09bcbc64bf316a733abc6025db3529cd247ba89837af07a47e3f6",
+              "rtl/bellows_l5_fse_encoder.sv": "6e0ff67a31c0140411cdab00c7ab95e04edbfd8fb12d227a76bc2a80c2c32f9a",
+              "rtl/bellows_l5_fse_table.sv": "098db0096450c254ce8ce2be2f3392d213b51e7fbfdec6fdfba0eee5bb4e8b74",
+              "rtl/bellows_l5_matcher.sv": "5ff271fec1bf83b5112e3fda1ab79e4fd1cf3e8f0a0f3ec8cb98bbda4bbe5c19",
+              "rtl/bellows_l5_mul64.sv": "eadc482298e3d9ca5cbe46246485409f34020db24e9e5282aa450098e410b7a8",
+              "rtl/bellows_l5_reverse_reader.sv": "6341c26d7451570a2642565d5be9682bc58e15b8513b48fd5d3e32f5e7bb8219",
+              "rtl/bellows_l5_sequences.sv": "ada84290ea033f0345d7def789e8954c15732f2a95c683c3fa6ad1a15dcc5173",
+              "rtl/bellows_l5_top.sv": "6399b8872c28a6a7d567b1aabd2dbd0ed709249811419187a51c683d9954079e",
+              "rtl/bellows_l5_xxh64.sv": "d276d1fd0ab09118ffaa737e5f8944e93863bd203e6c2e45ec518975fd0ef5c6",
+              "rtl/bellows_l5_zstd_context.sv": "c5a37359d584d199c7edb27e65904184610279e60a9b0026a47e8a3b14811c87",
+              "tests/l1_defects.py": "f941ee08f49fc1bb0ac9c8e895370b0a84cc71944609a55904d40a8766efa208",
+              "tests/l1_dictionary.py": "8af126d2d6fbff15eaff28bffc79ca6a2d8d3810e0e374ce280f0ded7d2b42e2",
+              "tests/l1_fse.py": "0170b339af584769eef8d1d8f56c1b872d68aa9da9d55109cdcc20d7d58abdb6",
+              "tests/l1_legacy.py": "64613593433e50a73856c93c876ba45b3d3eb3e7ceaa484bb5fffccb67fd094b",
+              "tests/l1_matrix.py": "acc7f6ff3bdb2bf2420ef06886963288f2f3e2f61089d3b5a6b4e10f232e2399",
+              "tests/l1_oracle.py": "5c71183e14cdd9ce98672777366e39eff8fe0c51268bdd841e4b8394d3b95420",
+              "tests/l1_protocol.py": "39f1774275e67cc1971fd14a9b15eb6ef6582f36494bafcdfb1f69895b2e92c6",
+              "tests/l1_runner.py": "088c13462e8b682c2a8eca56555da8beef7d4cec991df46d8b6c8ea8295f60bc",
+              "tests/l1_synthesis.py": "aba0dce779b8fe52101329cffeebacfb1b62d6213830fd849e0ebbedf9f4b798",
+              "tests/l1_transport.py": "3324c9736548fc5df3421fb7835245c04d4bdd1cf7a64cc6a54693ac2a617532",
+              "tests/l1_zstd.py": "eaba2b8e6700511848cea79fa2e87f7eed70b33b1e1d133c92d43d8b9cbadffc",
+              "tests/preparation.py": "a139971a4c89bfd6cf1eeeff73b629187ee5897d3cc8e17e6249303dc1f11622",
+              "tests/timeout_diagnosis.py": "a00bee31a0e1b8fadc23d73f3ff037e5ee648606d2c1a2a8c50898224b29a0bf",
+              "tests/verify.py": "7718cfbd7951ab98ce04c69255e8e39d4905312f5697491d6671534c6f93a281",
+              "design/ARCHITECTURE.md": "df5a154f64a7ea066c0d8363e893c6f2d2969aa59467cd94e3dc3a8258be0994",
+              "design/GENERATIONAL_HANDOFF.md": "bf1adc54259d008c25e75ff5f7e9ec80f2a28767574674c164dca0fc739f6a4b",
+              "design/SPEC.md": "ba06c773492cc7456248075c88e60aea05714d4b4fee631457c5d976e5085475",
+              "bellows_l4_reference/rtl/bellows_byte_ram.sv": "c8a01bb83033612977d0dc5fe18984c7f3edb1a196a010bd29e149d3530cb3df",
+              "bellows_l4_reference/rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "bellows_l4_reference/rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "bellows_l4_reference/rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "bellows_l4_reference/rtl/bellows_l2_compressor.sv": "bde7ef6043b402c99b55d01c1428060d7fceca0a2ce18a723ee3e752c7fdbe19",
+              "bellows_l4_reference/rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "bellows_l4_reference/rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "bellows_l4_reference/rtl/bellows_l2_literal_buffer.sv": "02fb500f52c6f35f68c445f95c8fb5af2933e54786982ee47a8bfe847dae72af",
+              "bellows_l4_reference/rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "bellows_l4_reference/rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "bellows_l4_reference/rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "bellows_l4_reference/rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "bellows_l4_reference/rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "bellows_l4_reference/rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "bellows_l4_reference/rtl/bellows_l4_context.sv": "cb83bfaa594b45bce72cace4c081df76b4b0ef557703f6f4a9e92b756d2ada9b",
+              "bellows_l4_reference/rtl/bellows_l4_copy_engine.sv": "657cddec9ee78a9ed768e3f357820856ca1f6216cbfda1311cb6941b09f25e73",
+              "bellows_l4_reference/rtl/bellows_l4_entropy.sv": "aca40b5c5d3e18886c993cb0100ae87292447e9de70f3bafbbca387516b462ef",
+              "bellows_l4_reference/rtl/bellows_l4_huffman_table.sv": "3356aad5499b3f1235de4eac18ca54bc96220bdc4c31d0506764726dd920c036",
+              "bellows_l4_reference/rtl/bellows_l4_intermediate.sv": "b8766878531e9297419ed35cd5637da5d4e18d00df0208f9f1537044a789c002",
+              "bellows_l4_reference/rtl/bellows_l4_lz4_decoder.sv": "0bbeb8d40edc21bff4d398b79d780b9f210446c0e1a6e764b18788c06860c106",
+              "bellows_l4_reference/rtl/bellows_l4_scheduler.sv": "a31d8b3668f5a8649b31e66f48d1cbd4360c5502197bb049046dbae4834951d0",
+              "bellows_l4_reference/rtl/bellows_l4_sg_dma.sv": "d18eb22e37022de753f9337bd5f0172e81964d34e9b51d3f51ec8741b79d6a8d",
+              "bellows_l4_reference/rtl/bellows_l4_top.sv": "e069e4fc025002ccef4936068cb9220e95f2cc8683a7719bf826ec9a08fdc9bf"
+            },
+            "python_version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+            "execution_repair": {
+              "repair_of": "evidence/l1-behavior-default-20261103T064957Z-83981782/receipt.json",
+              "discrimination": "evidence/preparation/timeout-discrimination-20261103T073827Z-97bfffa1/receipt.json",
+              "retained_192_flips": "evidence/preparation/timeout-discrimination-20261103T074026Z-e55a1223/receipt.json",
+              "batch_selection_repair_of": "evidence/l1-behavior-default-20261103T074610Z-0d47f0bb/receipt.json",
+              "change": "four-process independent transaction batching; completion-only flushing"
+            },
+            "libraries": {
+              "libzstd": "1.5.5",
+              "liblz4": "1.9.4",
+              "libxxhash": 802
+            },
+            "tools": {
+              "g++": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+              "make": "GNU Make 4.3"
+            },
+            "complete_byte_comparisons": 5649,
+            "end": "2026-11-03T09:37:07.442209+00:00",
+            "duration_s": 1484.3415969861671,
+            "timeout_s": 2700,
+            "exit_code": 0,
+            "timed_out": false
+          }
+        }
+      ]
+    },
     "check:behavior-nonpower": {
       "attempt_id": 18,
       "duration_s": 384.6534047049936,
