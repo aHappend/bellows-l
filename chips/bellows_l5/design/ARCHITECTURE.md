@@ -200,6 +200,32 @@ expects synchronous byte-read responses, qualified by valid; it tolerates
 additional response latency. Requests are one-edge pulses, not ready/valid DMA.
 The reverse reader has at most one such memory read outstanding.
 
+`bellows_l5_buffer` implements each replicated byte view with the unchanged
+inherited `bellows_byte_ram` primitive. `bellows_l5_sequences` uses nine
+instances of that primitive, preserving the byte-lane order of `{wof,wml,wll}`.
+Physical RAM addresses use `max(1,$clog2(depth))` bits. Full-width address
+comparisons remain outside the primitive and gate its enables before address
+narrowing; an invalid address cannot alias a valid entry. This includes depth
+one and unused binary addresses at non-power-of-two depths.
+
+| Buffer/sequence boundary | Preserved behavior |
+|---|---|
+| Before edge E | Sample enables, full-width addresses and write payload. |
+| Valid read at E | Registered RAM data and response valid appear immediately after E; no extra pipeline stage. |
+| Read and write at E, same address | Read returns the old byte/tuple; write updates storage for later reads. |
+| Read and write at E, different addresses | Both operations proceed independently. |
+| Invalid read/write address | Suppress that RAM access; invalid read produces valid=0 and zero public data. |
+| Active reset | Gate all RAM accesses; asynchronously clear response validity and mask public data to zero, without resetting storage. |
+| Depth one | Physical address width remains one; only full-width address zero is enabled. |
+
+This storage repair addresses the demonstrated failure in
+`evidence/preparation/ram-resource-discriminator-20261103T103801Z-32b5f677/receipt.json`:
+the inherited control retained 16384 block-memory bits while the previous L5
+buffer and sequence arrays retained none. The repaired inference, functional
+latency/reset/collision behavior and legal geometries require fresh independent
+Verifier checks. That failed receipt remains historical evidence; neither this
+repair nor static elaboration establishes native RAM retention or timing.
+
 Private helper `clear` wins over all handshakes. Every valid result remains
 stable until ready. The table builder invalidates ownership on reset, clear and
 accepted replacement; a table becomes owned only at successful commit.

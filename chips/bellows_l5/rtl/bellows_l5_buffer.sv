@@ -8,19 +8,23 @@ module bellows_l5_buffer #(
     input wire b_en, input wire [31:0] b_addr,
     output wire b_valid, output wire [7:0] b_data
 );
+    localparam integer ADDR_BITS=BYTES>1 ? $clog2(BYTES) : 1;
+    wire write_en=rst_n && we && waddr<BYTES;
     wire [7:0] a_q, b_q;
     reg av, bv;
     genvar lane;
     generate
         for (lane=0;lane<2;lane=lane+1) begin : views
-            (* ramstyle="M20K", nomem2reg *) reg [7:0] image [0:BYTES-1];
-            reg [7:0] q;
+            wire [7:0] q;
             wire re=lane==0 ? a_en : b_en;
             wire [31:0] addr=lane==0 ? a_addr : b_addr;
-            always @(posedge clk) begin
-                if (rst_n && we && waddr<BYTES) image[waddr]<=wdata;
-                if (rst_n && re && addr<BYTES) q<=image[addr];
-            end
+            bellows_byte_ram #(.DEPTH(BYTES), .ADDR_BITS(ADDR_BITS)) storage (
+                .clk(clk),
+                .write_en(write_en), .write_addr(waddr[ADDR_BITS-1:0]),
+                .write_data(wdata),
+                .read_en(rst_n && re && addr<BYTES),
+                .read_addr(addr[ADDR_BITS-1:0]), .read_data(q)
+            );
             if (lane==0) assign a_q=q;
             else assign b_q=q;
         end
