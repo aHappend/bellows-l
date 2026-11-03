@@ -65,11 +65,20 @@ def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
     calls = []
     if dictionary:
         calls.append(f'load_dictionary({len(dictionary)}, 32\'h12345678);')
-    for i, case in enumerate(cases):
-        calls.append(
-            f'run_case({i},{len(case.source)},{case.codec},{case.decompress},'
-            f'{case.mode},{case.wide},{case.channel},{case.capacity},'
-            f'{case.dictionary_id});')
+    (directory / "cases.txt").write_text("".join(
+        f"{i} {len(c.source)} {c.codec} {c.decompress} {c.mode} {c.wide} "
+        f"{c.channel} {c.capacity} {c.dictionary_id}\n" for i, c in enumerate(cases)))
+    calls.append(f"""
+ input_fd=$fopen("cases.txt","r");
+ if(!input_fd) $fatal(1,"cannot open case metadata");
+ for(tc=0;tc<{len(cases)};tc=tc+1) begin
+  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d",
+                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid);
+  if(tokens!=9 || tn!=tc) $fatal(1,"malformed case metadata");
+  run_case(tn,ts,tcodec,td,tm,tw,tch,tcap,tid);
+ end
+ $fclose(input_fd);
+""")
     return r"""`timescale 1ns/1ps
 module tb;
 """ + "\n".join(declarations) + f"""
@@ -85,6 +94,8 @@ integer r_count=0, w_count=0, r_wide=0, w_wide=0;
 integer read_bytes=0, write_bytes=0, completions=0, case_index=-1;
 integer expected_source=0, expected_capacity=0, expected_channel=0, case_active=0;
 integer i, j, fd, age;
+integer input_fd,tc,tokens,tn,ts,tcodec,td,tm,tw,tch,tcap;
+reg [31:0] tid;
 reg [63:0] held_read, held_write;
 reg [7:0] held_strobe;
 reg [127:0] old_status;

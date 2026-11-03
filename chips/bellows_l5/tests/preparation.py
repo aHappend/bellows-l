@@ -21,6 +21,9 @@ from uuid import uuid4
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from l1_oracle import Libraries, decode_lz4, frame, private_checksum, rle_sequence_frame
 from l1_transport import Case, top_testbench
+from l1_zstd import FrameError, decode_frame, sequence_frame
+from l1_fse import table_testbench
+from l1_synthesis import synthesis
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -148,19 +151,28 @@ def check_results(experiment, cases, libraries, dictionary=b""):
             raise AssertionError(f"{case.name}: completion error {error}, expected {case.error}")
         if read != len(case.source) or written != len(actual):
             raise AssertionError(f"{case.name}: incorrect exact byte counts")
+        if case.error:
+            compared.append({"case": case.name, "error": error, "input_bytes": read,
+                             "output_bytes": written, "input_sha256": sha256(case.source),
+                             "output_sha256": sha256(actual)})
+            continue
+        decoded = None
         if case.decompress:
+            standard = case.source[:-4] if case.mode else case.source
+            decoded = decode_frame(standard, dictionary if case.codec == 6 else b"")
             raw = libraries.decompress_zstd(
-                case.source[:-4] if case.mode else case.source, case.capacity,
+                standard, case.capacity,
                 dictionary if case.codec == 6 else b"")
-            if actual != raw:
+            if actual != raw or actual != decoded.data:
                 raise AssertionError(f"{case.name}: full decoded output mismatch")
         else:
             raw = case.source
             standard = actual[:-4] if case.mode else actual
             if case.codec in (5, 6):
+                decoded = decode_frame(standard, dictionary if case.codec == 6 else b"")
                 recovered = libraries.decompress_zstd(
                     standard, len(raw), dictionary if case.codec == 6 else b"")
-                if recovered != raw:
+                if recovered != raw or decoded.data != raw:
                     raise AssertionError(f"{case.name}: libzstd full output mismatch")
                 if len(standard) > len(raw)+17:
                     raise AssertionError(f"{case.name}: raw fallback length bound")
@@ -180,7 +192,11 @@ def check_results(experiment, cases, libraries, dictionary=b""):
                 raise AssertionError(f"{case.name}: private checksum trailer mismatch")
         compared.append({"case": case.name, "input_bytes": len(case.source),
                          "output_bytes": len(actual), "input_sha256": sha256(case.source),
-                         "output_sha256": sha256(actual), "checksum": checksum})
+                         "output_sha256": sha256(actual), "checksum": checksum,
+                         "rfc_modes": list(decoded.modes) if decoded else [],
+                         "fse_sequences": len(decoded.sequences) if decoded else 0,
+                         "fse_transitions": decoded.transitions if decoded else 0,
+                         "dictionary_matches": decoded.dictionary_matches if decoded else 0})
     (experiment.directory / "comparisons.json").write_text(json.dumps(compared, indent=2)+"\n")
     experiment.receipt["complete_byte_comparisons"] = len(compared)
 
@@ -235,11 +251,58 @@ def check_gain(experiment, manifest):
                              f"aggregate={candidate_total}/{baseline_total}, required <=1/2")
 
 
+def interop_cases(libraries, dictionary=b""):
+    """Public-pin predefined/RLE/compressed combinations and repeat rejection."""
+    from itertools import product
+    result = []
+    for modes in product(range(3), repeat=3):
+        source = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], modes, dictionary)
+        expected = decode_frame(source, dictionary)
+        assert libraries.decompress_zstd(source, 4096, dictionary) == expected.data
+        result.append(Case("external-modes-" + "".join(map(str, modes)), source,
+                           codec=6 if dictionary else 5, decompress=1,
+                           dictionary_id=0x12345678 if dictionary else 0))
+        for mask in range(1, 8):
+            # One-byte literal header, two literal bytes, one sequence count.
+            changed = bytearray(source)
+            for alphabet, shift in enumerate((6, 4, 2)):
+                if mask & (1 << alphabet):
+                    changed[17] |= 3 << shift
+            malformed = bytes(changed)
+            try:
+                decode_frame(malformed, dictionary)
+            except FrameError as error:
+                assert error.code == 11
+            else:
+                raise AssertionError("independent parser accepted prior-table-free repeat")
+            try:
+                libraries.decompress_zstd(malformed, 4096, dictionary)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("libzstd accepted repeat fixture")
+            result.append(Case(f"repeat-after-{modes}-mask{mask}", malformed,
+                               codec=6 if dictionary else 5, decompress=1, error=11,
+                               dictionary_id=0x12345678 if dictionary else 0))
+            result.append(Case(f"recovery-after-{modes}-mask{mask}", source,
+                               codec=6 if dictionary else 5, decompress=1,
+                               dictionary_id=0x12345678 if dictionary else 0))
+    for logs in ((5, 5, 5), (6, 6, 6), (9, 8, 9)):
+        source = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], (2, 2, 2),
+                                dictionary, logs)
+        expected = decode_frame(source, dictionary)
+        assert libraries.decompress_zstd(source, 4096, dictionary) == expected.data
+        result.append(Case(f"external-compressed-logs{logs}", source,
+                           codec=6 if dictionary else 5, decompress=1,
+                           dictionary_id=0x12345678 if dictionary else 0))
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="nonpower")
     parser.add_argument("--simulator", choices=("icarus", "verilator"), default="icarus")
-    parser.add_argument("--suite", choices=("transport", "dictionary"), default="transport")
+    parser.add_argument("--suite", choices=("transport", "dictionary", "interop", "fse", "synthesis"), default="transport")
     parser.add_argument("--seed", type=int, choices=(17, 89, 2026), default=17)
     parser.add_argument("--repair-of", help="Project-relative retained failure receipt")
     args = parser.parse_args()
@@ -248,6 +311,10 @@ def main():
     if args.repair_of:
         experiment.receipt["repair_of"] = args.repair_of
     try:
+        if args.suite == "synthesis":
+            synthesis(experiment, [(args.configuration, CONFIGURATIONS[args.configuration])])
+            experiment.finish(0)
+            return 0
         libraries = Libraries()
         experiment.receipt["libraries"] = libraries.versions()
         for data in (b"", b"a", b"abc", bytes(range(255)), b"a"*4096):
@@ -262,27 +329,38 @@ def main():
             (experiment.directory / "fixture-manifest.json").write_text(json.dumps(
                 {"generator": dictionary_cases.__doc__, "cases": manifest,
                  "dictionary_sha256": sha256(dictionary)}, indent=2)+"\n")
+        elif args.suite == "fse":
+            cases = []
+        elif args.suite == "interop":
+            cases = interop_cases(libraries)
         else:
             cases = cases_for(geometry)
         experiment.receipt.update(configuration=args.configuration, geometry=geometry,
                                   seed=args.seed, cases=[c.name for c in cases])
-        tb = top_testbench(cases, geometry, experiment.directory, args.seed, dictionary)
+        tb = (table_testbench(experiment.directory) if args.suite == "fse" else
+              top_testbench(cases, geometry, experiment.directory, args.seed, dictionary))
         (experiment.directory / "tb.sv").write_text(tb)
         sources = [p.relative_to(experiment.directory).as_posix()
                    for p in sorted((experiment.directory/"source"/"rtl").glob("*.sv"))]
+        if args.suite == "fse":
+            sources = [p for p in sources if Path(p).stem in
+                       ("bellows_l5_fse_table", "bellows_l5_fse_decoder")]
         experiment.receipt["generated_tb_sha256"] = sha256(tb.encode())
         if args.simulator == "icarus":
             experiment.command("tool-version", ["iverilog", "-V"])
             experiment.command("compile", ["iverilog", "-g2012", "-Wall", "-s", "tb",
                                           "-o", "sim.vvp", "tb.sv", *sources])
-            experiment.command("simulation", ["vvp", "sim.vvp"])
+            simulation = experiment.command("simulation", ["vvp", "sim.vvp"], timeout=600)
         else:
             experiment.command("tool-version", ["verilator", "--version"])
             experiment.command("compile", ["verilator", "--binary", "--timing", "-Wno-fatal",
                                           "--top-module", "tb", "-j", "2", "--Mdir", "compile-obj",
                                           "tb.sv", *sources])
-            experiment.command("simulation", ["./compile-obj/Vtb"])
-        check_results(experiment, cases, libraries, dictionary)
+            simulation = experiment.command("simulation", ["./compile-obj/Vtb"], timeout=2400)
+        if args.suite == "fse":
+            experiment.receipt["comparison_summary"] = simulation.strip()
+        else:
+            check_results(experiment, cases, libraries, dictionary)
         if args.suite == "dictionary":
             check_gain(experiment, manifest)
         experiment.finish(0)
