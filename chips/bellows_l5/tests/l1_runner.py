@@ -1,6 +1,7 @@
 """Reusable bounded executions of independently generated public transactions."""
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import re
 import shutil
@@ -20,23 +21,21 @@ def compiler_versions(experiment):
 
 class Simulation:
     def __init__(self, experiment, geometry, libraries, simulator="verilator", parent=False,
-                 source_directory=None):
+                 source_directory=None, cycle_limit=None):
         self.experiment = experiment
         self.geometry = geometry
         self.libraries = libraries
         self.simulator = simulator
         self.parent = parent
         self.source_directory = source_directory
+        self.cycle_limit = cycle_limit
         self.directory = experiment.directory / ("simulation-" + uuid4().hex[:8])
         self.directory.mkdir()
         self.template = None
         self.runs = []
 
-    def run(self, name, cases, seed=17, dictionary=b"", roundtrip=False):
-        e = self.experiment
-        run = self.directory / (name + "-" + uuid4().hex[:8])
-        run.mkdir()
-        tb = top_testbench(cases, self.geometry, run, seed, dictionary)
+    def testbench(self, cases, directory, seed, dictionary):
+        tb = top_testbench(cases, self.geometry, directory, seed, dictionary)
         if self.parent:
             from l1_transport import INPUTS, OUTPUTS
             extras = {n for n in (*INPUTS, *OUTPUTS) if n.startswith("dict_")
@@ -49,6 +48,13 @@ class Simulation:
             a, b = tb.index("task reset_outputs;"), tb.index("always @(negedge clk)")
             tb = tb[:a] + "task reset_outputs; begin end endtask\n" + tb[b:]
             tb = tb.replace('if(cmd_ready!==0) $fatal(1,"lane command admission remained open");', "")
+        return tb
+
+    def run(self, name, cases, seed=17, dictionary=b"", roundtrip=False):
+        e = self.experiment
+        run = self.directory / (name + "-" + uuid4().hex[:8])
+        run.mkdir()
+        tb = self.testbench(cases, run, seed, dictionary)
         if self.template is None:
             self.template = tb
             (self.directory / "tb.sv").write_text(tb)
@@ -70,14 +76,55 @@ class Simulation:
                 e.command("compile-" + self.directory.name,
                           ["verilator", "--binary", "--timing", "-Wno-fatal", "-CFLAGS", "-O3",
                            "--top-module", "tb", "-j", "2", "--Mdir", "compile-obj",
+                           *([f"-GCYCLE_LIMIT={self.cycle_limit}"] if self.cycle_limit else []),
                            "tb.sv", *sources], cwd=self.directory)
             (self.directory / "transactor-sha256.txt").write_text(sha256(tb.encode()) + "\n")
         elif tb != self.template:
             raise AssertionError("vector change requires a different transactor geometry")
         argv = (["vvp", "../sim.vvp"] if self.simulator == "icarus"
                 else ["../compile-obj/Vtb"])
-        stdout = e.command("execute-" + run.name, argv,
-                           timeout=600 if self.simulator == "icarus" else 2400, cwd=run)
+        independent = name.startswith(("boundaries-", "legacy-", "parent-legacy-",
+                                       "rfc-length-offset-", "gain-", "page-corruption"))
+        if self.simulator == "verilator" and independent and len(cases) >= 8:
+            # Only independent transactions may move to separate reset epochs.
+            # Lifecycle/error/recovery/protocol sequences remain ordered.
+            batches = []
+            for worker in range(4):
+                indices = list(range(worker, len(cases), 4))
+                batch = run / f"batch-{worker}"
+                batch.mkdir()
+                generated = self.testbench([cases[i] for i in indices], batch, seed, dictionary)
+                if generated != self.template:
+                    raise AssertionError("batch changed compiled transactor geometry")
+                batches.append((indices, batch))
+
+            def execute_batch(item):
+                _, batch = item
+                return e.command("execute-" + run.name + "-" + batch.name,
+                                 ["../../compile-obj/Vtb"], timeout=2400, cwd=batch)
+
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                outputs = list(executor.map(execute_batch, batches))
+            ordered = {}
+            for indices, batch in batches:
+                lines = (batch / "results.txt").read_text().splitlines()
+                if len(lines) != 2 * len(indices):
+                    raise AssertionError("batch completion conservation")
+                for local, index in enumerate(indices):
+                    words = lines[2*local].split()
+                    if len(words) != 6 or words[:2] != ["RESULT", str(local)]:
+                        raise AssertionError("batch result identity")
+                    words[1] = str(index)
+                    ordered[index] = [" ".join(words), lines[2*local+1]]
+            (run / "results.txt").write_text(
+                "\n".join(line for i in range(len(cases)) for line in ordered[i]) + "\n")
+            (run / "batches.json").write_text(json.dumps(
+                [{"indices": indices, "directory": batch.name}
+                 for indices, batch in batches], indent=2) + "\n")
+            stdout = "\n".join(outputs)
+        else:
+            stdout = e.command("execute-" + run.name, argv,
+                               timeout=600 if self.simulator == "icarus" else 2400, cwd=run)
         load_cost = re.findall(r"DICTIONARY_COLD_LOAD bytes=(\d+) cycles=(\d+)", stdout)
         dictionary_loads = [{"bytes": int(n), "cycles": int(c)} for n, c in load_cost]
         check_results(e, cases, self.libraries, dictionary, run)

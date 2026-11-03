@@ -108,6 +108,7 @@ localparam integer BLOCK_BOUND={block};
 """ + r"""
 reg [7:0] source [0:MEM-1], destination [0:MEM-1], dictionary_image [0:16383];
 integer cycles=0, command_edge=-1, descriptor_edge=-1;
+integer case_begin_cycle=0;
 integer r_pending=0, w_pending=0, r_delay=0, w_delay=0;
 integer r_count=0, w_count=0, r_wide=0, w_wide=0;
 integer read_bytes=0, write_bytes=0, completions=0, case_index=-1;
@@ -159,6 +160,13 @@ end
 
 always @(posedge clk) begin
  cycles=cycles+1;
+ if(case_active && cycles-case_begin_cycle<=8000000 &&
+    (cycles-case_begin_cycle)%1000000==0) begin
+  $display("PROGRESS case=%0d cycles=%0d read=%0d written=%0d read_pending=%0d write_pending=%0d status=%0d error=%0d",
+           case_index,cycles-case_begin_cycle,read_bytes,write_bytes,
+           r_pending,w_pending,status_valid,status_error);
+  $fflush();
+ end
  if (cycles>CYCLE_LIMIT) $fatal(1,"operation-count bound, case=%0d",case_index);
  if (!rst_n) begin
   r_pending=0; w_pending=0; stalled_status=0; stalled_read=0; stalled_write=0;
@@ -252,6 +260,10 @@ always @(posedge clk) begin
               status_src_bytes,status_dst_bytes,status_checksum);
     for (j=0;j<status_dst_bytes;j=j+1) $fwrite(fd,"%02x",destination[j]);
     $fwrite(fd,"\n");
+    $fflush(fd);
+    $display("TRANSACTION case=%0d cycles=%0d error=%0d read=%0d written=%0d",
+             case_index,cycles-case_begin_cycle,status_error,read_bytes,write_bytes);
+    $fflush();
   end
  end
 end
@@ -307,7 +319,8 @@ begin
   repeat(3) step();
   if(pinned_size>0) load_dictionary(pinned_size,32'h12345678);
  end
- case_index=number; expected_source=size; expected_capacity=capacity;
+ case_index=number; case_begin_cycle=cycles;
+ expected_source=size; expected_capacity=capacity;
  expected_channel=channel; case_active=1; read_bytes=0; write_bytes=0;
  old_completions=completions;
  // Architecture's conservative operation bounds, plus fair DMA service.
