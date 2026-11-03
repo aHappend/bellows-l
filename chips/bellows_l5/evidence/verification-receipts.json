@@ -1,0 +1,1172 @@
+{
+  "chip": "Bellows-L5",
+  "passed_checks": {
+    "check:behavior-singleton": {
+      "attempt_id": 11,
+      "duration_s": 370.24481430696324,
+      "stdout_preview": "tep: execute-legacy-errors-2026-8d9e84a1\nVerification step: execute-boundaries-2026-02694c14\nVerification step: execute-boundaries-2026-roundtrip-aa2e1e47\nVerification step: execute-legacy-2026-ba7fda02\nVerification step: execute-parent-legacy-2026-58ff7c31\nVerification step: execute-missing-dictionary-and-recovery-413f9365\nVerification step: concurrent-17-version\nVerification step: concurrent-17-compile\nPreparation concurrent-17-compile: child active (30s)\nVerification step: concurrent-17-simulation\nVerification step: lifecycle-17-version\nVerification step: lifecycle-17-compile\nPreparation lifecycle-17-compile: child active (30s)\nVerification step: lifecycle-17-simulation\nVerification step: dictionary-views-17-version\nVerification step: dictionary-views-17-compile\nVerification step: dictionary-views-17-simulation\nVerification step: icarus-version-simulation-75f258ed\nVerification step: compile-simulation-75f258ed\nVerification step: execute-smoke-icarus-f260699f\nVerification step: execute-roundtrip-icarus-61932126\nVerification step: execute-roundtrip-icarus-roundtrip-f6fb2373\nVerification step: verilator-version-simulation-a3db1005\nVerification step: compile-simulation-a3db1005\nPreparation compile-simulation-a3db1005: child active (30s)\nVerification step: execute-smoke-verilator-3609b628\nVerification step: execute-roundtrip-verilator-3dd41bc5\nVerification step: execute-roundtrip-verilator-roundtrip-3ec9d892\nevidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/receipt.json\n",
+      "receipt_count": 1,
+      "receipts": [
+        {
+          "path": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/receipt.json",
+          "data": {
+            "kind": "l1-check",
+            "argv": [
+              "python3",
+              "tests/verify.py",
+              "--check",
+              "behavior",
+              "--configuration",
+              "singleton"
+            ],
+            "cwd": ".",
+            "start": "2026-11-03T06:04:30.836643+00:00",
+            "children": [
+              {
+                "argv": [
+                  "g++",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:04:30.960779+00:00",
+                "timeout_s": 2699.876032419037,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/version-g++.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/version-g++.stderr.txt",
+                "end": "2026-11-03T06:04:30.965464+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "make",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:04:30.965724+00:00",
+                "timeout_s": 2699.871067368891,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/version-make.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/version-make.stderr.txt",
+                "end": "2026-11-03T06:04:30.970046+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:04:30.970271+00:00",
+                "timeout_s": 2699.8665161710232,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/verilator-version-simulation-ac07b27b.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/verilator-version-simulation-ac07b27b.stderr.txt",
+                "end": "2026-11-03T06:04:31.084999+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b",
+                "start": "2026-11-03T06:04:31.085241+00:00",
+                "timeout_s": 2699.751556789037,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-ac07b27b.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-ac07b27b.stderr.txt",
+                "end": "2026-11-03T06:05:04.808297+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/codec-matrix-17-4d04f5c8",
+                "start": "2026-11-03T06:05:04.809159+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-codec-matrix-17-4d04f5c8.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-codec-matrix-17-4d04f5c8.stderr.txt",
+                "end": "2026-11-03T06:05:13.144286+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/dictionary-edges-17-ea83a122",
+                "start": "2026-11-03T06:05:13.158346+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-dictionary-edges-17-ea83a122.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-dictionary-edges-17-ea83a122.stderr.txt",
+                "end": "2026-11-03T06:05:13.273234+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/errors-17-e5ec1c39",
+                "start": "2026-11-03T06:05:13.322508+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-errors-17-e5ec1c39.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-errors-17-e5ec1c39.stderr.txt",
+                "end": "2026-11-03T06:05:28.421320+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:05:28.465286+00:00",
+                "timeout_s": 2642.3715451268945,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/verilator-version-simulation-598585ce.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/verilator-version-simulation-598585ce.stderr.txt",
+                "end": "2026-11-03T06:05:28.580345+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_byte_ram.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l1_history.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l1_output.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l1_top.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_compressor.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_emitter.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_hash_match.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l2_top.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_checksum.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_context.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_scheduler.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_sg_dma.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l3_top.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_context.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_copy_engine.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_entropy.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_huffman_table.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_intermediate.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_scheduler.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_sg_dma.sv",
+                  "../source/bellows_l4_reference/rtl/bellows_l4_top.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce",
+                "start": "2026-11-03T06:05:28.580735+00:00",
+                "timeout_s": 2642.256177864969,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-598585ce.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-598585ce.stderr.txt",
+                "end": "2026-11-03T06:05:48.741544+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce/parent-errors-17-723e567d",
+                "start": "2026-11-03T06:05:48.742351+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-errors-17-723e567d.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-errors-17-723e567d.stderr.txt",
+                "end": "2026-11-03T06:05:55.170714+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/legacy-errors-17-123e32dd",
+                "start": "2026-11-03T06:05:55.201730+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-errors-17-123e32dd.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-errors-17-123e32dd.stderr.txt",
+                "end": "2026-11-03T06:06:07.645801+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/boundaries-17-b38b9033",
+                "start": "2026-11-03T06:06:07.666533+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-17-b38b9033.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-17-b38b9033.stderr.txt",
+                "end": "2026-11-03T06:06:07.982131+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/boundaries-17-roundtrip-0cd18c15",
+                "start": "2026-11-03T06:06:07.996343+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-17-roundtrip-0cd18c15.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-17-roundtrip-0cd18c15.stderr.txt",
+                "end": "2026-11-03T06:06:08.261715+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/legacy-17-3e06fe4e",
+                "start": "2026-11-03T06:06:08.300630+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-17-3e06fe4e.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-17-3e06fe4e.stderr.txt",
+                "end": "2026-11-03T06:06:20.345963+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce/parent-legacy-17-15ecd9b5",
+                "start": "2026-11-03T06:06:20.394807+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-legacy-17-15ecd9b5.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-legacy-17-15ecd9b5.stderr.txt",
+                "end": "2026-11-03T06:06:26.975379+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/codec-matrix-89-c5f6a263",
+                "start": "2026-11-03T06:06:27.013717+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-codec-matrix-89-c5f6a263.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-codec-matrix-89-c5f6a263.stderr.txt",
+                "end": "2026-11-03T06:06:35.248522+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/dictionary-edges-89-0bcae1a8",
+                "start": "2026-11-03T06:06:35.274075+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-dictionary-edges-89-0bcae1a8.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-dictionary-edges-89-0bcae1a8.stderr.txt",
+                "end": "2026-11-03T06:06:35.388812+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/errors-89-66045d2d",
+                "start": "2026-11-03T06:06:35.448267+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-errors-89-66045d2d.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-errors-89-66045d2d.stderr.txt",
+                "end": "2026-11-03T06:06:50.345196+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce/parent-errors-89-dc7254d3",
+                "start": "2026-11-03T06:06:50.389397+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-errors-89-dc7254d3.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-errors-89-dc7254d3.stderr.txt",
+                "end": "2026-11-03T06:06:56.265988+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/legacy-errors-89-5792748e",
+                "start": "2026-11-03T06:06:56.301330+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-errors-89-5792748e.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-errors-89-5792748e.stderr.txt",
+                "end": "2026-11-03T06:07:08.740886+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/boundaries-89-f4df53fe",
+                "start": "2026-11-03T06:07:08.772061+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-89-f4df53fe.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-89-f4df53fe.stderr.txt",
+                "end": "2026-11-03T06:07:09.087331+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/boundaries-89-roundtrip-7562a84a",
+                "start": "2026-11-03T06:07:09.112127+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-89-roundtrip-7562a84a.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-89-roundtrip-7562a84a.stderr.txt",
+                "end": "2026-11-03T06:07:09.377430+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/legacy-89-83e9decc",
+                "start": "2026-11-03T06:07:09.426636+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-89-83e9decc.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-89-83e9decc.stderr.txt",
+                "end": "2026-11-03T06:07:22.665278+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce/parent-legacy-89-fc522ef1",
+                "start": "2026-11-03T06:07:22.706802+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-legacy-89-fc522ef1.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-legacy-89-fc522ef1.stderr.txt",
+                "end": "2026-11-03T06:07:29.285789+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/codec-matrix-2026-a0c5fca4",
+                "start": "2026-11-03T06:07:29.328454+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-codec-matrix-2026-a0c5fca4.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-codec-matrix-2026-a0c5fca4.stderr.txt",
+                "end": "2026-11-03T06:07:36.658706+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/dictionary-edges-2026-871ec30d",
+                "start": "2026-11-03T06:07:36.694959+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-dictionary-edges-2026-871ec30d.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-dictionary-edges-2026-871ec30d.stderr.txt",
+                "end": "2026-11-03T06:07:36.810067+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/errors-2026-54467b03",
+                "start": "2026-11-03T06:07:36.871354+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-errors-2026-54467b03.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-errors-2026-54467b03.stderr.txt",
+                "end": "2026-11-03T06:07:51.719990+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce/parent-errors-2026-e4749b50",
+                "start": "2026-11-03T06:07:51.779542+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-errors-2026-e4749b50.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-errors-2026-e4749b50.stderr.txt",
+                "end": "2026-11-03T06:07:58.608917+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/legacy-errors-2026-8d9e84a1",
+                "start": "2026-11-03T06:07:58.651480+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-errors-2026-8d9e84a1.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-errors-2026-8d9e84a1.stderr.txt",
+                "end": "2026-11-03T06:08:11.042260+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/boundaries-2026-02694c14",
+                "start": "2026-11-03T06:08:11.085858+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-2026-02694c14.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-2026-02694c14.stderr.txt",
+                "end": "2026-11-03T06:08:11.402207+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/boundaries-2026-roundtrip-aa2e1e47",
+                "start": "2026-11-03T06:08:11.440321+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-2026-roundtrip-aa2e1e47.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-boundaries-2026-roundtrip-aa2e1e47.stderr.txt",
+                "end": "2026-11-03T06:08:11.755694+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/legacy-2026-ba7fda02",
+                "start": "2026-11-03T06:08:11.817393+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-2026-ba7fda02.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-legacy-2026-ba7fda02.stderr.txt",
+                "end": "2026-11-03T06:08:24.508401+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-598585ce/parent-legacy-2026-58ff7c31",
+                "start": "2026-11-03T06:08:24.579370+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-legacy-2026-58ff7c31.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-parent-legacy-2026-58ff7c31.stderr.txt",
+                "end": "2026-11-03T06:08:31.208095+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-ac07b27b/missing-dictionary-and-recovery-413f9365",
+                "start": "2026-11-03T06:08:31.237923+00:00",
+                "timeout_s": 2400,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-missing-dictionary-and-recovery-413f9365.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-missing-dictionary-and-recovery-413f9365.stderr.txt",
+                "end": "2026-11-03T06:08:31.353910+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:08:31.393961+00:00",
+                "timeout_s": 2459.4428995279595,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-version.stderr.txt",
+                "end": "2026-11-03T06:08:31.509191+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-2c3ee6cb",
+                "start": "2026-11-03T06:08:31.509522+00:00",
+                "timeout_s": 2459.327345801983,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-compile.stderr.txt",
+                "end": "2026-11-03T06:09:05.031994+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-2c3ee6cb",
+                "start": "2026-11-03T06:09:05.032448+00:00",
+                "timeout_s": 2425.8044640149456,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/concurrent-17-simulation.stderr.txt",
+                "end": "2026-11-03T06:09:05.548670+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:09:05.660659+00:00",
+                "timeout_s": 2425.1762117380276,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-version.stderr.txt",
+                "end": "2026-11-03T06:09:05.775796+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-bb8df649",
+                "start": "2026-11-03T06:09:05.776101+00:00",
+                "timeout_s": 2425.06074434286,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-compile.stderr.txt",
+                "end": "2026-11-03T06:09:46.116166+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-bb8df649",
+                "start": "2026-11-03T06:09:46.116882+00:00",
+                "timeout_s": 2384.720158641925,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/lifecycle-17-simulation.stderr.txt",
+                "end": "2026-11-03T06:09:46.281991+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:09:46.377754+00:00",
+                "timeout_s": 2384.4590670629404,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-version.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-version.stderr.txt",
+                "end": "2026-11-03T06:09:46.492952+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-66a4fe57",
+                "start": "2026-11-03T06:09:46.493425+00:00",
+                "timeout_s": 2384.343462130986,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-compile.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-compile.stderr.txt",
+                "end": "2026-11-03T06:09:52.719669+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "./compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-66a4fe57",
+                "start": "2026-11-03T06:09:52.720043+00:00",
+                "timeout_s": 2378.1168206278235,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-simulation.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/dictionary-views-17-simulation.stderr.txt",
+                "end": "2026-11-03T06:09:52.834867+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-V"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:09:52.840214+00:00",
+                "timeout_s": 2377.9965556359384,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/icarus-version-simulation-75f258ed.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/icarus-version-simulation-75f258ed.stderr.txt",
+                "end": "2026-11-03T06:09:52.857009+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "iverilog",
+                  "-g2012",
+                  "-Wall",
+                  "-s",
+                  "tb",
+                  "-Ptb.CYCLE_LIMIT=500000",
+                  "-o",
+                  "sim.vvp",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-75f258ed",
+                "start": "2026-11-03T06:09:52.857211+00:00",
+                "timeout_s": 2377.979564700043,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-75f258ed.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-75f258ed.stderr.txt",
+                "end": "2026-11-03T06:09:53.572665+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "../sim.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-75f258ed/smoke-icarus-f260699f",
+                "start": "2026-11-03T06:09:53.573044+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-smoke-icarus-f260699f.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-smoke-icarus-f260699f.stderr.txt",
+                "end": "2026-11-03T06:09:54.739411+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "../sim.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-75f258ed/roundtrip-icarus-61932126",
+                "start": "2026-11-03T06:09:54.741766+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-icarus-61932126.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-icarus-61932126.stderr.txt",
+                "end": "2026-11-03T06:09:59.013042+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "vvp",
+                  "../sim.vvp"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-75f258ed/roundtrip-icarus-roundtrip-f6fb2373",
+                "start": "2026-11-03T06:09:59.016893+00:00",
+                "timeout_s": 600,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-icarus-roundtrip-f6fb2373.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-icarus-roundtrip-f6fb2373.stderr.txt",
+                "end": "2026-11-03T06:10:02.386451+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--version"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca",
+                "start": "2026-11-03T06:10:02.392032+00:00",
+                "timeout_s": 2368.444744698936,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/verilator-version-simulation-a3db1005.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/verilator-version-simulation-a3db1005.stderr.txt",
+                "end": "2026-11-03T06:10:02.507178+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "verilator",
+                  "--binary",
+                  "--timing",
+                  "-Wno-fatal",
+                  "-CFLAGS",
+                  "-O3",
+                  "--top-module",
+                  "tb",
+                  "-j",
+                  "2",
+                  "--Mdir",
+                  "compile-obj",
+                  "tb.sv",
+                  "../source/rtl/bellows_byte_ram.sv",
+                  "../source/rtl/bellows_l1_history.sv",
+                  "../source/rtl/bellows_l1_output.sv",
+                  "../source/rtl/bellows_l1_top.sv",
+                  "../source/rtl/bellows_l2_compressor.sv",
+                  "../source/rtl/bellows_l2_emitter.sv",
+                  "../source/rtl/bellows_l2_hash_match.sv",
+                  "../source/rtl/bellows_l2_literal_buffer.sv",
+                  "../source/rtl/bellows_l2_top.sv",
+                  "../source/rtl/bellows_l3_checksum.sv",
+                  "../source/rtl/bellows_l3_context.sv",
+                  "../source/rtl/bellows_l3_scheduler.sv",
+                  "../source/rtl/bellows_l3_sg_dma.sv",
+                  "../source/rtl/bellows_l3_top.sv",
+                  "../source/rtl/bellows_l4_context.sv",
+                  "../source/rtl/bellows_l4_copy_engine.sv",
+                  "../source/rtl/bellows_l4_entropy.sv",
+                  "../source/rtl/bellows_l4_huffman_table.sv",
+                  "../source/rtl/bellows_l4_intermediate.sv",
+                  "../source/rtl/bellows_l4_lz4_decoder.sv",
+                  "../source/rtl/bellows_l4_scheduler.sv",
+                  "../source/rtl/bellows_l4_sg_dma.sv",
+                  "../source/rtl/bellows_l4_top.sv",
+                  "../source/rtl/bellows_l5_bit_writer.sv",
+                  "../source/rtl/bellows_l5_buffer.sv",
+                  "../source/rtl/bellows_l5_context.sv",
+                  "../source/rtl/bellows_l5_dictionary.sv",
+                  "../source/rtl/bellows_l5_entropy.sv",
+                  "../source/rtl/bellows_l5_frame_engine.sv",
+                  "../source/rtl/bellows_l5_fse_counts.sv",
+                  "../source/rtl/bellows_l5_fse_decoder.sv",
+                  "../source/rtl/bellows_l5_fse_encoder.sv",
+                  "../source/rtl/bellows_l5_fse_table.sv",
+                  "../source/rtl/bellows_l5_matcher.sv",
+                  "../source/rtl/bellows_l5_mul64.sv",
+                  "../source/rtl/bellows_l5_reverse_reader.sv",
+                  "../source/rtl/bellows_l5_sequences.sv",
+                  "../source/rtl/bellows_l5_top.sv",
+                  "../source/rtl/bellows_l5_xxh64.sv",
+                  "../source/rtl/bellows_l5_zstd_context.sv"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-a3db1005",
+                "start": "2026-11-03T06:10:02.507384+00:00",
+                "timeout_s": 2368.3293941719458,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-a3db1005.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/compile-simulation-a3db1005.stderr.txt",
+                "end": "2026-11-03T06:10:39.782693+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-a3db1005/smoke-verilator-3609b628",
+                "start": "2026-11-03T06:10:39.783382+00:00",
+                "timeout_s": 2331.053447971819,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-smoke-verilator-3609b628.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-smoke-verilator-3609b628.stderr.txt",
+                "end": "2026-11-03T06:10:39.948344+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-a3db1005/roundtrip-verilator-3dd41bc5",
+                "start": "2026-11-03T06:10:39.950470+00:00",
+                "timeout_s": 2330.88631138904,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-verilator-3dd41bc5.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-verilator-3dd41bc5.stderr.txt",
+                "end": "2026-11-03T06:10:40.365780+00:00",
+                "exit_code": 0
+              },
+              {
+                "argv": [
+                  "../compile-obj/Vtb"
+                ],
+                "cwd": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/simulation-a3db1005/roundtrip-verilator-roundtrip-3ec9d892",
+                "start": "2026-11-03T06:10:40.369067+00:00",
+                "timeout_s": 2330.4677098898683,
+                "timed_out": false,
+                "stdout": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-verilator-roundtrip-3ec9d892.stdout.txt",
+                "stderr": "evidence/l1-behavior-singleton-20261103T060430Z-a8dc62ca/execute-roundtrip-verilator-roundtrip-3ec9d892.stderr.txt",
+                "end": "2026-11-03T06:10:40.684190+00:00",
+                "exit_code": 0
+              }
+            ],
+            "source_sha256": {
+              "rtl/bellows_byte_ram.sv": "c8a01bb83033612977d0dc5fe18984c7f3edb1a196a010bd29e149d3530cb3df",
+              "rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "rtl/bellows_l2_compressor.sv": "bde7ef6043b402c99b55d01c1428060d7fceca0a2ce18a723ee3e752c7fdbe19",
+              "rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "rtl/bellows_l2_literal_buffer.sv": "02fb500f52c6f35f68c445f95c8fb5af2933e54786982ee47a8bfe847dae72af",
+              "rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "rtl/bellows_l4_context.sv": "cb83bfaa594b45bce72cace4c081df76b4b0ef557703f6f4a9e92b756d2ada9b",
+              "rtl/bellows_l4_copy_engine.sv": "657cddec9ee78a9ed768e3f357820856ca1f6216cbfda1311cb6941b09f25e73",
+              "rtl/bellows_l4_entropy.sv": "aca40b5c5d3e18886c993cb0100ae87292447e9de70f3bafbbca387516b462ef",
+              "rtl/bellows_l4_huffman_table.sv": "3356aad5499b3f1235de4eac18ca54bc96220bdc4c31d0506764726dd920c036",
+              "rtl/bellows_l4_intermediate.sv": "b8766878531e9297419ed35cd5637da5d4e18d00df0208f9f1537044a789c002",
+              "rtl/bellows_l4_lz4_decoder.sv": "0bbeb8d40edc21bff4d398b79d780b9f210446c0e1a6e764b18788c06860c106",
+              "rtl/bellows_l4_scheduler.sv": "a31d8b3668f5a8649b31e66f48d1cbd4360c5502197bb049046dbae4834951d0",
+              "rtl/bellows_l4_sg_dma.sv": "d18eb22e37022de753f9337bd5f0172e81964d34e9b51d3f51ec8741b79d6a8d",
+              "rtl/bellows_l4_top.sv": "e069e4fc025002ccef4936068cb9220e95f2cc8683a7719bf826ec9a08fdc9bf",
+              "rtl/bellows_l5_bit_writer.sv": "cc336c24828995ccc817e332614ea7c1fcdd6fd47d7325eedc163209ac273f2e",
+              "rtl/bellows_l5_buffer.sv": "eeb493a12c9c67221db18da0e6841ecb53b0a2ebff0b71c93afc5cb9864ce98e",
+              "rtl/bellows_l5_context.sv": "d226dfe675a8ff916bd387d1fc24709546659ff482cdcda00bd701410888c1cc",
+              "rtl/bellows_l5_dictionary.sv": "0fa0322689e6fcf7dc1eb16561a2a2c533222a050641a8cecc92bc1e137dc981",
+              "rtl/bellows_l5_entropy.sv": "96389cf21810e9da3c582b777e17794af835939744375939395a5d522b4fd7b9",
+              "rtl/bellows_l5_frame_engine.sv": "fb2f24372781b2ff1abc50ce75ea7ea6f57bf7166adbaa3f3f82a537b6f5e294",
+              "rtl/bellows_l5_fse_counts.sv": "186761f6f216cd9cecadda65926538c8e9e25f0ec18e951ca2176ed335c1a1ad",
+              "rtl/bellows_l5_fse_decoder.sv": "b6af30ad7fe09bcbc64bf316a733abc6025db3529cd247ba89837af07a47e3f6",
+              "rtl/bellows_l5_fse_encoder.sv": "6e0ff67a31c0140411cdab00c7ab95e04edbfd8fb12d227a76bc2a80c2c32f9a",
+              "rtl/bellows_l5_fse_table.sv": "098db0096450c254ce8ce2be2f3392d213b51e7fbfdec6fdfba0eee5bb4e8b74",
+              "rtl/bellows_l5_matcher.sv": "5ff271fec1bf83b5112e3fda1ab79e4fd1cf3e8f0a0f3ec8cb98bbda4bbe5c19",
+              "rtl/bellows_l5_mul64.sv": "eadc482298e3d9ca5cbe46246485409f34020db24e9e5282aa450098e410b7a8",
+              "rtl/bellows_l5_reverse_reader.sv": "6341c26d7451570a2642565d5be9682bc58e15b8513b48fd5d3e32f5e7bb8219",
+              "rtl/bellows_l5_sequences.sv": "ada84290ea033f0345d7def789e8954c15732f2a95c683c3fa6ad1a15dcc5173",
+              "rtl/bellows_l5_top.sv": "6399b8872c28a6a7d567b1aabd2dbd0ed709249811419187a51c683d9954079e",
+              "rtl/bellows_l5_xxh64.sv": "d276d1fd0ab09118ffaa737e5f8944e93863bd203e6c2e45ec518975fd0ef5c6",
+              "rtl/bellows_l5_zstd_context.sv": "c5a37359d584d199c7edb27e65904184610279e60a9b0026a47e8a3b14811c87",
+              "tests/l1_defects.py": "f941ee08f49fc1bb0ac9c8e895370b0a84cc71944609a55904d40a8766efa208",
+              "tests/l1_dictionary.py": "8af126d2d6fbff15eaff28bffc79ca6a2d8d3810e0e374ce280f0ded7d2b42e2",
+              "tests/l1_fse.py": "0170b339af584769eef8d1d8f56c1b872d68aa9da9d55109cdcc20d7d58abdb6",
+              "tests/l1_legacy.py": "64613593433e50a73856c93c876ba45b3d3eb3e7ceaa484bb5fffccb67fd094b",
+              "tests/l1_matrix.py": "acc7f6ff3bdb2bf2420ef06886963288f2f3e2f61089d3b5a6b4e10f232e2399",
+              "tests/l1_oracle.py": "5c71183e14cdd9ce98672777366e39eff8fe0c51268bdd841e4b8394d3b95420",
+              "tests/l1_protocol.py": "39f1774275e67cc1971fd14a9b15eb6ef6582f36494bafcdfb1f69895b2e92c6",
+              "tests/l1_runner.py": "de80033fefb6d7b6bbdf36d3b805b256b9791201ee33b6f34778c852f7c00471",
+              "tests/l1_synthesis.py": "aba0dce779b8fe52101329cffeebacfb1b62d6213830fd849e0ebbedf9f4b798",
+              "tests/l1_transport.py": "53da85c3b291d18582b485e214a372e67dd87f599fc8e514ccc412580350265e",
+              "tests/l1_zstd.py": "eaba2b8e6700511848cea79fa2e87f7eed70b33b1e1d133c92d43d8b9cbadffc",
+              "tests/preparation.py": "a139971a4c89bfd6cf1eeeff73b629187ee5897d3cc8e17e6249303dc1f11622",
+              "tests/verify.py": "5effcd3314a1b72a6244fd04bfcf8811fe8f2a2edc7ebcfee7129450b3db70b2",
+              "design/ARCHITECTURE.md": "df5a154f64a7ea066c0d8363e893c6f2d2969aa59467cd94e3dc3a8258be0994",
+              "design/GENERATIONAL_HANDOFF.md": "bf1adc54259d008c25e75ff5f7e9ec80f2a28767574674c164dca0fc739f6a4b",
+              "design/SPEC.md": "ba06c773492cc7456248075c88e60aea05714d4b4fee631457c5d976e5085475",
+              "bellows_l4_reference/rtl/bellows_byte_ram.sv": "c8a01bb83033612977d0dc5fe18984c7f3edb1a196a010bd29e149d3530cb3df",
+              "bellows_l4_reference/rtl/bellows_l1_history.sv": "472beed7ee3bc41742a7265b49dae3e43134e62ffb0db77e47f28334ea5c0665",
+              "bellows_l4_reference/rtl/bellows_l1_output.sv": "d251df299be378096b4522fca92ba76907a015b2712c2410d65a0aa7963f4197",
+              "bellows_l4_reference/rtl/bellows_l1_top.sv": "0534344bd7b1cb6555d411efa08bbf2bc12d2ab49631e43662617392b2217a22",
+              "bellows_l4_reference/rtl/bellows_l2_compressor.sv": "bde7ef6043b402c99b55d01c1428060d7fceca0a2ce18a723ee3e752c7fdbe19",
+              "bellows_l4_reference/rtl/bellows_l2_emitter.sv": "d0454778016569d1d641d96b8defe2a96b1181798944370c3269ac9a4fba5326",
+              "bellows_l4_reference/rtl/bellows_l2_hash_match.sv": "3fc8cbad7e12de5b98c2ba9b1632fd14645e3dd23e621bd6611ea9af8e90e312",
+              "bellows_l4_reference/rtl/bellows_l2_literal_buffer.sv": "02fb500f52c6f35f68c445f95c8fb5af2933e54786982ee47a8bfe847dae72af",
+              "bellows_l4_reference/rtl/bellows_l2_top.sv": "c1007fc6c58e929d9d1cef79697948ad2a7331647548892e081aa0f09b75790b",
+              "bellows_l4_reference/rtl/bellows_l3_checksum.sv": "321fb9e2588c88506c8c8749b10a6718af992a2b93675a9b14d9d5cb42010394",
+              "bellows_l4_reference/rtl/bellows_l3_context.sv": "63f83d094f2be58c54165cf57e6043debc79df89c53f85fd9b3e8c831b9aa4cd",
+              "bellows_l4_reference/rtl/bellows_l3_scheduler.sv": "5a021220d4b493202718161923483239a0a18c9097ef3fb87115e70baa86f946",
+              "bellows_l4_reference/rtl/bellows_l3_sg_dma.sv": "fc00af60812742a0c0914f55fc58535047299e2ef24bea2ce5e3452fca85a830",
+              "bellows_l4_reference/rtl/bellows_l3_top.sv": "7808a3856e168edd8f07f22f3c91c85ccaf979db67bdd9b8e7a127c4025a6255",
+              "bellows_l4_reference/rtl/bellows_l4_context.sv": "cb83bfaa594b45bce72cace4c081df76b4b0ef557703f6f4a9e92b756d2ada9b",
+              "bellows_l4_reference/rtl/bellows_l4_copy_engine.sv": "657cddec9ee78a9ed768e3f357820856ca1f6216cbfda1311cb6941b09f25e73",
+              "bellows_l4_reference/rtl/bellows_l4_entropy.sv": "aca40b5c5d3e18886c993cb0100ae87292447e9de70f3bafbbca387516b462ef",
+              "bellows_l4_reference/rtl/bellows_l4_huffman_table.sv": "3356aad5499b3f1235de4eac18ca54bc96220bdc4c31d0506764726dd920c036",
+              "bellows_l4_reference/rtl/bellows_l4_intermediate.sv": "b8766878531e9297419ed35cd5637da5d4e18d00df0208f9f1537044a789c002",
+              "bellows_l4_reference/rtl/bellows_l4_lz4_decoder.sv": "0bbeb8d40edc21bff4d398b79d780b9f210446c0e1a6e764b18788c06860c106",
+              "bellows_l4_reference/rtl/bellows_l4_scheduler.sv": "a31d8b3668f5a8649b31e66f48d1cbd4360c5502197bb049046dbae4834951d0",
+              "bellows_l4_reference/rtl/bellows_l4_sg_dma.sv": "d18eb22e37022de753f9337bd5f0172e81964d34e9b51d3f51ec8741b79d6a8d",
+              "bellows_l4_reference/rtl/bellows_l4_top.sv": "e069e4fc025002ccef4936068cb9220e95f2cc8683a7719bf826ec9a08fdc9bf"
+            },
+            "python_version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+            "libraries": {
+              "libzstd": "1.5.5",
+              "liblz4": "1.9.4",
+              "libxxhash": 802
+            },
+            "tools": {
+              "g++": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+              "make": "GNU Make 4.3"
+            },
+            "complete_byte_comparisons": 2524,
+            "end": "2026-11-03T06:10:40.860655+00:00",
+            "duration_s": 370.0240241449792,
+            "timeout_s": 2700,
+            "exit_code": 0,
+            "timed_out": false
+          }
+        }
+      ]
+    }
+  }
+}
