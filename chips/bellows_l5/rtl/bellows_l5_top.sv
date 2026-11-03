@@ -73,7 +73,8 @@ module bellows_l5_top #(
     wire [115:0] completion_payload;
     wire [3:0] dictionary_read, dictionary_valid, index_read, index_valid, index_found;
     wire [55:0] dictionary_address, index_position;
-    wire [39:0] index_address;
+    wire [55:0] index_address;
+    wire [3:0] index_chain;
     wire [31:0] dictionary_data;
     wire globally_idle=(&lane_idle) && read_available && write_available &&
         !read_valid && !write_valid && !status_valid;
@@ -108,7 +109,8 @@ module bellows_l5_top #(
                 .dict_rd_valid(dictionary_valid[INDEX]),
                 .dict_rd_data(dictionary_data[INDEX*8 +: 8]),
                 .dict_index_en(index_read[INDEX]),
-                .dict_index_addr(index_address[INDEX*10 +: 10]),
+                .dict_index_chain(index_chain[INDEX]),
+                .dict_index_addr(index_address[INDEX*14 +: 14]),
                 .dict_index_valid(index_valid[INDEX]), .dict_index_found(index_found[INDEX]),
                 .dict_index_position(index_position[INDEX*14 +: 14]),
                 .sg_valid(sg_valid && LEGAL && sg_channel==INDEX),
@@ -137,7 +139,7 @@ module bellows_l5_top #(
         .dict_loaded(dict_loaded), .dict_id(dict_id), .dict_size(dict_size),
         .rd_en(dictionary_read), .rd_addr(dictionary_address),
         .rd_valid(dictionary_valid), .rd_data(dictionary_data),
-        .index_en(index_read), .index_addr(index_address),
+        .index_en(index_read), .index_chain(index_chain), .index_addr(index_address),
         .index_valid(index_valid), .index_found(index_found), .index_position(index_position)
     );
     bellows_l4_scheduler scheduler (

@@ -6,7 +6,7 @@ module bellows_l5_matcher #(
     input wire start_valid, output wire start_ready,
     input wire [16:0] block_bytes,
     input wire use_dictionary, input wire [14:0] dictionary_bytes,
-    output wire seed_en, output wire [9:0] seed_addr,
+    output wire seed_en, output wire seed_chain, output wire [13:0] seed_addr,
     input wire seed_valid, input wire seed_found, input wire [13:0] seed_position,
     output wire a_en, output wire [15:0] a_addr,
     input wire a_valid, input wire [7:0] a_data,
@@ -24,7 +24,8 @@ module bellows_l5_matcher #(
     localparam [4:0] IDLE=0, SEED_REQ=1, SEED_WAIT=2, SEED_STORE=3,
         CHECK=4, KEY_REQ=5, KEY_WAIT=6, HASH=7, LOOKUP=8, CANDIDATE=9,
         COMPARE_REQ=10, COMPARE_WAIT=11, COMPARE=12, RESULT=13,
-        INSERT=14, DONE=15, CANDIDATE_DONE=16, DICT_LOOKUP=17, SELECT_RESULT=18;
+        INSERT=14, DONE=15, CANDIDATE_DONE=16, DICT_LOOKUP=17, SELECT_RESULT=18,
+        CHAIN_REQ=19, CHAIN_WAIT=20;
     reg [4:0] phase;
     reg awake, dict_q, seed_present, old_valid, updating, a_seen, b_seen;
     reg checking_dictionary;
@@ -61,8 +62,10 @@ module bellows_l5_matcher #(
     wire better_match=length>=4 &&
         (length>best_length || (length==best_length && offset<best_offset));
     assign start_ready=rst_n && awake && LEGAL && !clear && phase==IDLE;
-    assign seed_en=rst_n && !clear && phase==SEED_REQ;
-    assign seed_addr=seed_en ? seed_cursor : 10'd0;
+    assign seed_en=rst_n && !clear && (phase==SEED_REQ || phase==CHAIN_REQ);
+    assign seed_chain=seed_en && phase==CHAIN_REQ;
+    assign seed_addr=!seed_en ? 14'd0 : seed_chain ?
+        dictionary_position_q : {4'd0,seed_cursor};
     assign a_en=rst_n && !clear && (phase==KEY_REQ || phase==COMPARE_REQ);
     assign a_addr=!a_en ? 16'd0 : phase==KEY_REQ ?
         position[15:0]+{14'd0,key_index} : source_address[15:0];
@@ -97,6 +100,8 @@ module bellows_l5_matcher #(
             local_position_q<={index_hi[hash_q],index_mid[hash_q],index_lo[hash_q]};
         if (rst_n && !clear && phase==DICT_LOOKUP)
             dictionary_position_q<={dictionary_hi[hash_q][5:0],dictionary_lo[hash_q]};
+        if (rst_n && !clear && phase==CHAIN_WAIT && seed_valid && seed_found)
+            dictionary_position_q<=seed_position;
     end
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -194,8 +199,22 @@ module bellows_l5_matcher #(
                 end
                 CANDIDATE_DONE: begin
                     if (better_match) begin best_length<=length; best_offset<=offset; end
-                    if (dict_q && !checking_dictionary) phase<=DICT_LOOKUP;
+                    // Candidates are visited nearest first; a full-tail match cannot improve.
+                    if (length>=4 && {1'b0,position}+{1'b0,length}=={1'b0,size})
+                        phase<=SELECT_RESULT;
+                    else if (dict_q && !checking_dictionary) phase<=DICT_LOOKUP;
+                    else if (checking_dictionary && old_valid) phase<=CHAIN_REQ;
                     else phase<=SELECT_RESULT;
+                end
+                CHAIN_REQ: phase<=CHAIN_WAIT;
+                CHAIN_WAIT: if (seed_valid) begin
+                    if (!seed_found) phase<=SELECT_RESULT;
+                    else if (seed_position>=dictionary_position_q ||
+                        {1'b0,seed_position}+15'd4>dictionary_size) begin
+                        error_code<=8; phase<=DONE;
+                    end else begin
+                        old_valid<=1; phase<=CANDIDATE;
+                    end
                 end
                 SELECT_RESULT: begin
                     length<=best_length>=4 ? best_length : 17'd1;

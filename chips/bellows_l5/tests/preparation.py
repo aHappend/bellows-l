@@ -241,9 +241,12 @@ def main():
     parser.add_argument("--simulator", choices=("icarus", "verilator"), default="icarus")
     parser.add_argument("--suite", choices=("transport", "dictionary"), default="transport")
     parser.add_argument("--seed", type=int, choices=(17, 89, 2026), default=17)
+    parser.add_argument("--repair-of", help="Project-relative retained failure receipt")
     args = parser.parse_args()
     experiment = Experiment(f"l5-{args.suite}-{args.configuration}-{args.simulator}",
                             ["python3", "tests/preparation.py", *sys.argv[1:]])
+    if args.repair_of:
+        experiment.receipt["repair_of"] = args.repair_of
     try:
         libraries = Libraries()
         experiment.receipt["libraries"] = libraries.versions()

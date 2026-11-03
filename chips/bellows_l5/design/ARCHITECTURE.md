@@ -29,7 +29,7 @@ shared runtime.
 | bellows_l5_bit_writer.sv | Forward little-endian bit packing, RFC terminal marker and byte padding |
 | bellows_l5_reverse_reader.sv | Synchronous reverse byte fetching and non-reversed bit-field extraction |
 | bellows_l5_entropy.sv | Three owned table banks, three named dependent decoders, shared inverse encoder |
-| bellows_l5_dictionary.sv | Atomic dictionary loading, four byte/index views, ordered collision seeding |
+| bellows_l5_dictionary.sv | Atomic dictionary loading, four byte/index views, ordered collision heads and predecessor links |
 | bellows_l5_matcher.sv | Per-block dictionary index initialization, verified greedy matching and local updates |
 | bellows_l5_mul64.sv | Low-64-bit serial product with two registered 32-bit carry stages per bit |
 | bellows_l5_xxh64.sv | Streaming seed-zero XXH64 using registered rounds, merges, tails and avalanche |
@@ -214,12 +214,28 @@ upload/preparation/status lifetime. The dictionary itself does not arbitrate
 commands or inspect DMA state.
 
 Four image replicas use byte arrays. Four synchronous seed views contain
-1024 direct-mapped positions each, with shared resettable validity metadata.
+1024 direct-mapped head positions each, with shared resettable validity metadata.
+Each view also contains two byte-lane predecessor arrays, one entry per
+dictionary byte. Every entry stores a 14-bit prior position and its valid bit;
+unused bits are zero. At default geometry the image replicas total 65536 bytes,
+the predecessor replicas total 131072 bytes, and the head positions total
+7168 logical bytes, excluding validity/control and physical RAM allocation.
 Upload maintains a rolling little-endian four-byte prefix and seeds in strictly
-increasing start address order. HASH and INDEX are separate states; backpressure
-prevents another byte changing the key before insertion. After the last byte,
+increasing start address order. At HASH, register the key and synchronously read
+the old head. At INDEX, save that head and its validity as the new position's
+predecessor, then replace the head. Backpressure prevents another byte changing
+the key before insertion. The newest collision remains the direct-mapped head,
+but no earlier four-byte dictionary prefix is discarded. After the last byte,
 finish any insertion, atomically pin ID/size, then offer the held status.
 Length-one images have no four-byte seeds and still pin correctly.
+
+The private index request has per-lane enable, chain-select and 14-bit address.
+With chain-select zero, address[9:0] selects a hash head; with it one, the address
+selects a predecessor entry. The response is registered valid/found/position,
+with the same one-edge timing as a byte read. No request overlaps configuration.
+Only initialized entries with address+4 <= pinned_size may be read. Invalid
+head ownership or a terminal predecessor returns found=0. The externally frozen
+dictionary byte-read interface and all top-level ports are unchanged.
 
 The common ten-bit prefix hash is defined explicitly:
 
@@ -233,7 +249,7 @@ block and copies the valid positions into a private, dictionary-only 1024-entry
 bank. A separate 1024-entry local bank starts unowned for every block. Both
 banks use synchronous reads and unreset storage; their ownership metadata is
 invalidated on reset, clear and command start. Dictionary preparation preserves
-the most recent dictionary position per hash. Local updates replace only local
+the most recent dictionary position per hash as its chain head. Local updates replace only local
 positions, including insertions at skipped positions after a match: they cannot
 evict a dictionary candidate. No preceding page becomes local history.
 A virtual position addresses dictionary||current-input.
@@ -245,10 +261,18 @@ that candidate, a separate DICT_LOOKUP edge synchronously captures the pinned
 candidate and ownership for the same hash; codec 5 skips this step entirely.
 Each candidate is extended through registered byte requests/comparisons. A
 candidate-completion stage retains the longer verified match, choosing the
-smaller positive offset on equal lengths. A separate result-selection stage
-then publishes the winning token, or one literal if neither length reaches
-four. A rejected local hash collision therefore never suppresses a pinned
-dictionary search. No new requests occur while the final token is stalled.
+smaller positive offset on equal lengths. After each dictionary candidate,
+CHAIN_REQ/CHAIN_WAIT retrieve its predecessor; traversal continues until the
+chain ends or a verified match covers the complete remaining input. Local
+candidates precede dictionary candidates, and dictionary positions strictly
+decrease, so no later candidate can improve the offset of a full-tail match.
+The controller rejects a non-decreasing or out-of-range predecessor with error
+8 instead of following a corrupted internal index. A separate result-selection
+stage publishes the winning token, or one literal if no length reaches four.
+A rejected hash collision therefore never suppresses an earlier pinned
+dictionary candidate. No new requests occur while the final token is stalled.
+Reset/replacement invalidates head ownership; unreset predecessor RAM is
+reachable only through the new image's initialized, strictly descending chains.
 
 Every candidate byte is compared, including all four prefix bytes. The local
 input image is fully available before matching. Comparing an overlapping
@@ -355,16 +379,19 @@ latencies or wall-clock acceptance thresholds:
 | Component | Bound excluding external stalls |
 |---|---|
 | Dictionary preparation | <=3*D+8 clocks after begin through offered status |
-| Matcher per block | <=32*(B+1)*(B+1)+4096 clocks with synchronous one-edge byte/index responses |
+| Matcher per block | <=32*(D+2)*(B+1)*(B+1)+4096 clocks with synchronous one-edge byte/index responses |
 | Table build | <=64+64+2*L+L*(tableLog+4)+1024 clocks after count stream |
 | Inverse transition | <=L+4 clocks |
 | Bit writer | One input field plus up to five byte handshakes per <=32-bit field |
 | Reverse reader | <=32 clocks per <=32-bit field with one-edge memory service |
 | XXH64 | <=2048*(B+1)+8192 clocks from start to result, excluding input gaps |
-| Frame controller | <=64*(B+1)*(B+1)+8192*(B+1)+65536 internal clocks for a valid supported block, including matching, tables and hashes |
+| Frame controller | <=64*(D+2)*(B+1)*(B+1)+8192*(B+1)+65536 internal clocks for a valid supported block, including matching, tables and hashes |
 
-The quadratic matcher bound permits repeated long comparisons on adversarial
-hash collisions. Typical greedy operation is much smaller but unmeasured.
+Here B is the block size and D is the selected dictionary size (zero for codec
+5). Each dictionary chain has at most max(0,D-3) entries. The conservative matcher
+bound permits repeated long comparisons for every collision at every input
+position; all searches are sequential, not a combinational priority chain.
+Typical greedy operation is much smaller but unmeasured.
 Use compiled Verilator for page/multi-seed/defect workloads; Icarus only for the
 admitted compact startup/leaf/frame cases.
 

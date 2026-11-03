@@ -12,7 +12,8 @@ module bellows_l5_dictionary #(
     output wire [14:0] dict_size,
     input wire [3:0] rd_en, input wire [55:0] rd_addr,
     output wire [3:0] rd_valid, output wire [31:0] rd_data,
-    input wire [3:0] index_en, input wire [39:0] index_addr,
+    input wire [3:0] index_en, input wire [3:0] index_chain,
+    input wire [55:0] index_addr,
     output wire [3:0] index_valid, output wire [3:0] index_found,
     output wire [55:0] index_position
 );
@@ -51,34 +52,55 @@ module bellows_l5_dictionary #(
         for (lane=0;lane<4;lane=lane+1) begin : views
             (* ramstyle="M20K", nomem2reg *) reg [7:0] image [0:DEPTH-1];
             (* ramstyle="MLAB", nomem2reg *) reg [13:0] seeds [0:1023];
+            (* ramstyle="M20K", nomem2reg *) reg [7:0] previous_lo [0:DEPTH-1];
+            (* ramstyle="M20K", nomem2reg *) reg [7:0] previous_hi [0:DEPTH-1];
             reg [7:0] byte_q;
             reg [13:0] seed_q;
-            reg byte_valid_q, index_valid_q, found_q;
+            reg [7:0] previous_lo_q, previous_hi_q;
+            reg byte_valid_q, index_valid_q, found_q, chain_q, chain_address_valid_q;
             wire [13:0] byte_addr=rd_addr[lane*14 +: 14];
-            wire [9:0] seed_addr=index_addr[lane*10 +: 10];
+            wire [13:0] lookup_addr=index_addr[lane*14 +: 14];
+            wire [9:0] seed_addr=lookup_addr[9:0];
             wire read_image=rd_en[lane] && loaded && phase==IDLE &&
                 !take_begin && {1'b0,byte_addr}<pinned_size;
             wire read_index=index_en[lane] && loaded && phase==IDLE && !take_begin;
+            wire chain_address_valid={2'd0,lookup_addr}+16'd4<={1'b0,pinned_size};
             always @(posedge clk) begin
                 if (take_byte) image[received]<=dict_s_data;
-                if (rst_n && phase==INDEX) seeds[hash_value]<=seed_position;
+                if (rst_n && phase==HASH) seed_q<=seeds[prefix_hash];
+                if (rst_n && phase==INDEX) begin
+                    previous_lo[seed_position]<=seed_q[7:0];
+                    previous_hi[seed_position]<={1'b0,seed_valid[hash_value],seed_q[13:8]};
+                    seeds[hash_value]<=seed_position;
+                end
                 if (rst_n && read_image) byte_q<=image[byte_addr];
-                if (rst_n && read_index) seed_q<=seeds[seed_addr];
+                if (rst_n && read_index) begin
+                    if (!index_chain[lane]) seed_q<=seeds[seed_addr];
+                    else if (chain_address_valid) begin
+                        previous_lo_q<=previous_lo[lookup_addr];
+                        previous_hi_q<=previous_hi[lookup_addr];
+                    end
+                end
             end
             always @(posedge clk or negedge rst_n) begin
                 if (!rst_n) begin
                     byte_valid_q<=0; index_valid_q<=0; found_q<=0;
+                    chain_q<=0; chain_address_valid_q<=0;
                 end else begin
                     byte_valid_q<=read_image;
                     index_valid_q<=read_index;
                     found_q<=read_index && seed_valid[seed_addr];
+                    chain_q<=read_index && index_chain[lane];
+                    chain_address_valid_q<=read_index && chain_address_valid;
                 end
             end
             assign rd_valid[lane]=rst_n && byte_valid_q;
             assign rd_data[lane*8 +: 8]=rd_valid[lane] ? byte_q : 8'd0;
             assign index_valid[lane]=rst_n && index_valid_q;
-            assign index_found[lane]=index_valid[lane] && found_q;
-            assign index_position[lane*14 +: 14]=index_found[lane] ? seed_q : 14'd0;
+            assign index_found[lane]=index_valid[lane] &&
+                (chain_q ? chain_address_valid_q && previous_hi_q[6] : found_q);
+            assign index_position[lane*14 +: 14]=!index_found[lane] ? 14'd0 :
+                chain_q ? {previous_hi_q[5:0],previous_lo_q} : seed_q;
         end
     endgenerate
     always @(posedge clk or negedge rst_n) begin

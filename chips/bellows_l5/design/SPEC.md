@@ -97,9 +97,12 @@ dictionary-ID field. Software receives the same raw dictionary out of band.
 Raw bytes never initialize entropy tables.
 
 Use a registered 1024-entry direct-mapped four-byte-prefix index. Seed dictionary
-positions in increasing order; retain most recent collision. Update local
-positions as parsing advances. Compare and extend every candidate; a hash is not
-proof of equality. Prefer nearest offset on dictionary/local tie. Permit
+positions in increasing order; retain the most recent collision as the head.
+Synchronous predecessor links retain earlier dictionary candidates for each
+hash; local updates cannot evict them. Traverse candidates nearest first,
+retaining the longest verified match (stop when it covers the complete remaining
+input). Update local positions as parsing advances. Compare and extend every
+candidate; a hash is not proof of equality. Prefer nearest offset on dictionary/local tie. Permit
 dictionary-to-output crossing. Greedy encoding minimum match=4; decoding accepts
 match=3 and incremental overlap, including distances 1 and 2.
 
