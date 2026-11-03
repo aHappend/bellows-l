@@ -1,17 +1,17 @@
-Fitter Status : Successful - Mon Nov  2 18:18:53 2026
+Fitter Status : Successful - Mon Nov  2 19:50:36 2026
 Quartus Prime Version : 17.1.0 Build 590 10/25/2017 SJ Standard Edition
 Revision Name : top
 Top-level Entity Name : bellows_l4_top
 Family : Arria 10
 Device : 10AX115N2F45E1SG
 Timing Models : Final
-Logic utilization (in ALMs) : 57,677 / 427,200 ( 14 % )
-Total registers : 53922
+Logic utilization (in ALMs) : 56,718 / 427,200 ( 13 % )
+Total registers : 54936
 Total pins : 0 / 992 ( 0 % )
 Total virtual pins : 765
 Total block memory bits : 19,924,480 / 55,562,240 ( 36 % )
 Total RAM Blocks : 1,256 / 2,713 ( 46 % )
-Total DSP Blocks : 67 / 1,518 ( 4 % )
+Total DSP Blocks : 64 / 1,518 ( 4 % )
 Total HSSI RX channels : 0 / 48 ( 0 % )
 Total HSSI TX channels : 0 / 48 ( 0 % )
 Total PLLs : 0 / 112 ( 0 % )
