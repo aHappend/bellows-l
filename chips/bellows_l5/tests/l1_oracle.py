@@ -6,6 +6,26 @@ import struct
 import zlib
 
 
+def _crc_table():
+    rows = []
+    for byte in range(256):
+        state = byte
+        for _ in range(8):
+            state = (state >> 1) ^ (0xEDB88320 if state & 1 else 0)
+        rows.append(state)
+    return tuple(rows)
+
+
+CRC_TABLE = _crc_table()
+
+
+def crc32(data):
+    state = 0xFFFFFFFF
+    for byte in data:
+        state = (state >> 8) ^ CRC_TABLE[(state ^ byte) & 255]
+    return state ^ 0xFFFFFFFF
+
+
 def rotl(x, n, width):
     mask = (1 << width) - 1
     return ((x << n) | (x >> (width - n))) & mask
@@ -76,7 +96,7 @@ def private_checksum(data, mode):
     if mode == 1:
         return xxhash(data, 32)
     if mode == 2:
-        return zlib.crc32(data)
+        return crc32(data)
     raise ValueError(mode)
 
 
@@ -145,6 +165,7 @@ class Libraries:
                 "libxxhash": self.xx.XXH_versionNumber()}
 
     def check_hash(self, raw):
+        assert crc32(raw) == zlib.crc32(raw), ("CRC32", len(raw))
         for width in (32, 64):
             observed = getattr(self.xx, f"XXH{width}")(raw, len(raw), 0)
             expected = xxhash(raw, width)

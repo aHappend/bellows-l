@@ -73,6 +73,7 @@ class Experiment:
         timeout = min(timeout, self.deadline - time.monotonic())
         if timeout <= 0:
             raise TimeoutError("complete check exceeded its 2700-second execution budget")
+        print(f"Verification step: {name}", flush=True)
         cwd = self.directory if cwd is None else cwd
         out = self.directory / f"{name}.stdout.txt"
         err = self.directory / f"{name}.stderr.txt"
@@ -312,6 +313,28 @@ def interop_cases(libraries, dictionary=b""):
     """Public-pin predefined/RLE/compressed combinations and repeat rejection."""
     from itertools import product
     result = []
+    fresh = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], dictionary=dictionary)
+    for mask in range(1, 8):
+        changed = bytearray(fresh)
+        for alphabet, shift in enumerate((6, 4, 2)):
+            if mask & (1 << alphabet):
+                changed[17] |= 3 << shift
+        malformed = bytes(changed)
+        try:
+            decode_frame(malformed, dictionary)
+        except FrameError as error:
+            assert error.code == 11
+        else:
+            raise AssertionError("independent parser accepted fresh repeat selector")
+        try:
+            libraries.decompress_zstd(malformed, 4096, dictionary)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("libzstd accepted fresh repeat selector")
+        result.append(Case(f"fresh-repeat-mask{mask}", malformed,
+                           codec=6 if dictionary else 5, decompress=1, error=11,
+                           dictionary_id=0x12345678 if dictionary else 0, reset_before=True))
     for modes in product(range(3), repeat=3):
         source = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], modes, dictionary)
         expected = decode_frame(source, dictionary)
@@ -419,7 +442,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="nonpower")
     parser.add_argument("--simulator", choices=("icarus", "verilator"), default="icarus")
-    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis", "errors", "matrix", "boundaries", "protocol"), default="transport")
+    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis", "errors", "matrix", "boundaries", "protocol", "parameters", "parent", "defects", "portable", "smoke", "tables", "sequence-boundaries"), default="transport")
     parser.add_argument("--pinned-dictionary", action="store_true")
     parser.add_argument("--seed", type=int, choices=(17, 89, 2026), default=17)
     parser.add_argument("--repair-of", help="Project-relative retained failure receipt")
@@ -439,6 +462,26 @@ def main():
             libraries.check_hash(data)
         assert libraries.decompress_zstd(rle_sequence_frame(), 8) == b"a"*8
         geometry = CONFIGURATIONS[args.configuration]
+        if args.suite in ("parameters", "parent", "defects", "portable", "smoke"):
+            from l1_runner import Simulation
+            from verify import parameters, portable, smoke
+            if args.suite == "parameters":
+                parameters(experiment)
+            elif args.suite == "portable":
+                portable(experiment)
+            elif args.suite == "smoke":
+                smoke(experiment, libraries)
+            elif args.suite == "defects":
+                from l1_defects import defects
+                defects(experiment, libraries)
+            else:
+                simulation = Simulation(experiment, geometry, libraries, parent=True)
+                try:
+                    simulation.run("parent", legacy_cases(geometry))
+                finally:
+                    simulation.close()
+            experiment.finish(0)
+            return 0
         dictionary, manifest = b"", []
         if args.pinned_dictionary:
             if geometry[3] < 1024:
@@ -471,13 +514,15 @@ def main():
                               simulator=args.simulator)
             experiment.finish(0)
             return 0
-        elif args.suite in ("errors", "matrix", "boundaries"):
-            from l1_matrix import boundaries, codec_matrix, errors
+        elif args.suite in ("errors", "matrix", "boundaries", "tables", "sequence-boundaries"):
+            from l1_matrix import boundaries, codec_matrix, errors, malformed_tables, sequence_boundaries
             from l1_runner import Simulation
             dictionary = random.Random(args.seed).randbytes(min(geometry[3], 1024))
             builder = {"errors": lambda: errors(geometry, dictionary),
                        "matrix": lambda: codec_matrix(geometry, args.seed, dictionary),
-                       "boundaries": lambda: boundaries(geometry, args.seed)}[args.suite]
+                       "boundaries": lambda: boundaries(geometry, args.seed),
+                       "tables": lambda: malformed_tables(libraries, dictionary),
+                       "sequence-boundaries": lambda: sequence_boundaries(geometry, libraries)}[args.suite]
             simulation = Simulation(experiment, geometry, libraries)
             try:
                 simulation.run(args.suite, builder(), args.seed, dictionary)

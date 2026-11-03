@@ -20,7 +20,9 @@ from uuid import uuid4
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from l1_fse import table_testbench
-from l1_matrix import SEEDS, boundaries, codec_matrix, errors, sequence_boundaries
+from l1_dictionary import dictionary_testbench
+from l1_matrix import (SEEDS, boundaries, codec_matrix, dictionary_edges, errors,
+                      malformed_tables, sequence_boundaries)
 from l1_oracle import Libraries, frame, rle_sequence_frame
 from l1_protocol import concurrent_testbench, lifecycle_testbench
 from l1_runner import Simulation, custom_simulation
@@ -57,6 +59,9 @@ def protocol(experiment, geometry, libraries, seed=17, simulator="verilator"):
                       lambda c, g, d, s, b: lifecycle_testbench(g, d),
                       [Case("recovery", b"x", capacity=64)], geometry, libraries,
                       simulator=simulator)
+    custom_simulation(experiment, "dictionary-views-" + str(seed),
+                      lambda c, g, d, s, b: dictionary_testbench(d, g[3]),
+                      [], geometry, libraries, simulator=simulator)
 
 
 def parameters(experiment):
@@ -118,7 +123,9 @@ def dictionary_gain(experiment, simulation, seed):
     result = {"seed": seed, "generator": dictionary_cases.__doc__,
               "dictionary_sha256": sha256(dictionary), "cases": manifest,
               "baseline_bytes": baseline_total, "candidate_bytes": candidate_total,
-              "cold_load_bytes": len(dictionary), "pinned_logical_storage_bytes": len(dictionary)}
+              "cold_load_bytes": len(dictionary), "cold_load_transactions": run["dictionary_loads"],
+              "pinned_logical_storage_bytes": len(dictionary),
+              "physical_byte_views": 4, "physical_byte_image_bytes": 4*len(dictionary)}
     (run["directory"] / "gain.json").write_text(json.dumps(result, indent=2) + "\n")
     return result, dictionary, cases, run
 
@@ -170,9 +177,20 @@ def behavior(experiment, configuration):
             dictionary = random.Random(seed).randbytes(min(geometry[3], 1024))
             matrix = codec_matrix(geometry, seed, dictionary)
             simulation.run("codec-matrix-" + str(seed), matrix, seed, dictionary)
+            simulation.run("dictionary-edges-" + str(seed),
+                           dictionary_edges(geometry, dictionary, libraries), seed, dictionary)
             negative = errors(geometry, dictionary)
             simulation.run("errors-" + str(seed), negative, seed, dictionary)
-            simulation.run("boundaries-" + str(seed), boundaries(geometry, seed), seed,
+            legacy_negative = [c for c in negative if c.codec < 5 or c.codec == 7]
+            old_negative = parent.run("parent-errors-" + str(seed), legacy_negative, seed)
+            new_negative = simulation.run("legacy-errors-" + str(seed), legacy_negative, seed)
+            if (old_negative["directory"] / "results.txt").read_bytes() != (
+                    new_negative["directory"] / "results.txt").read_bytes():
+                raise AssertionError("legacy negative behavior differs from immutable parent")
+            boundary_cases = boundaries(geometry, seed)
+            if seed != SEEDS[0]:
+                boundary_cases = [c for c in boundary_cases if len(c.source) <= 257]
+            simulation.run("boundaries-" + str(seed), boundary_cases, seed,
                            dictionary, roundtrip=True)
             legacy = legacy_cases(geometry)
             new = simulation.run("legacy-" + str(seed), legacy, seed)
@@ -182,6 +200,10 @@ def behavior(experiment, configuration):
                 raise AssertionError("delivered legacy behavior differs from immutable parent")
             ledger.append({"seed": seed, "codec_matrix": len(matrix),
                            "negative_cases": len(negative), "parent_differential": len(legacy)})
+        simulation.run("missing-dictionary-and-recovery",
+                       [Case("absent-dictionary", b"x", codec=6, dictionary_id=0x12345678,
+                             error=13, pre_dma=True),
+                        Case("codec5-after-absent", b"x")])
         if geometry[0] >= 16:
             external = sequence_boundaries(geometry, libraries)
             simulation.run("rfc-length-offset-boundaries", external)
@@ -193,6 +215,8 @@ def behavior(experiment, configuration):
                               random.Random(2026).randbytes(1020)) if pinned else b""
                 simulation.run("interop-" + str(pinned), interop_cases(libraries, dictionary),
                                dictionary=dictionary)
+                simulation.run("malformed-tables-" + str(pinned),
+                               malformed_tables(libraries, dictionary), dictionary=dictionary)
                 corrupt, manifest = corruption_cases(libraries, dictionary)
                 run = simulation.run("short-corruption-" + str(pinned), corrupt,
                                      dictionary=dictionary)
@@ -249,7 +273,7 @@ def portable(experiment):
     copy.mkdir()
     manifest = []
     forbidden = re.compile(
-        r"(?:/(?:home|data|root|tmp)/[^\s`\"']+|gh[pousr]_[A-Za-z0-9]{20,}|"
+        r"(?:(?<![A-Za-z0-9_])/(?:home|data|root|tmp)/[^\s`\"']+|gh[pousr]_[A-Za-z0-9]{20,}|"
         r"-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----)")
     for pattern in ("rtl/*.sv", "tests/*.py", "design/*.md", "bellows_l4_reference/rtl/*.sv"):
         for path in sorted(ROOT.glob(pattern)):

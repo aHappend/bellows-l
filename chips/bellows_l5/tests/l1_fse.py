@@ -7,6 +7,7 @@ def fixtures():
     result = []
     for alphabet, counts in enumerate(DEFAULT_COUNTS):
         result.append((alphabet, 0, 5 if alphabet == 1 else 6, counts))
+        result.append((alphabet, 1, 0, (0,)))
     for alphabet in range(3):
         for log in (5, 6, 9):
             if alphabet == 1 and log == 9:
@@ -19,16 +20,18 @@ def fixtures():
 
 def table_testbench(directory):
     scenarios = fixtures()
-    for index, (_, _, log, counts) in enumerate(scenarios):
+    for index, (_, mode, log, counts) in enumerate(scenarios):
         padded = list(counts) + [0] * (64 - len(counts))
         (directory / f"counts-{index}.hex").write_text(
             "".join(f"{c & 2047:03x}\n" for c in padded))
+        rows = ((0, 0, 0),) if mode == 1 else build_table(counts, log)
         (directory / f"rows-{index}.hex").write_text("".join(
-            f"{(s << 13) | (k << 9) | b:05x}\n" for s, k, b in build_table(counts, log)))
+            f"{(s << 13) | (k << 9) | b:05x}\n" for s, k, b in rows))
     (directory / "tables.txt").write_text("".join(
         f"{i} {a} {m} {log}\n" for i, (a, m, log, _) in enumerate(scenarios)))
     return r"""`timescale 1ns/1ps
 module tb;
+parameter integer CYCLE_LIMIT=450000;
 reg clk=0, rst_n=0, clear=0;
 reg start_valid=0, count_valid=0, count_last=0, done_ready=0;
 reg [1:0] alphabet=0, mode=0;
@@ -75,7 +78,7 @@ always @(posedge clk or negedge clk) begin
 end
 always @(posedge clk) begin
  cycles=cycles+1;
- if(cycles>450000) $fatal(1,"compact FSE operation bound");
+ if(cycles>CYCLE_LIMIT) $fatal(1,"compact FSE operation bound");
 end
 task edge_step;
 begin @(posedge clk); #1; @(negedge clk); #1; end
@@ -106,6 +109,14 @@ initial begin
   $fatal(1,"FSE time-zero reset leakage");
  #11.999; rst_n=1;
  @(negedge clk); #1; edge_step();
+ // Reset while a compressed table has accepted only a partial count stream.
+ alphabet=0; mode=2; requested_log=5; start_valid=1; #1;
+ if(start_ready!==1) $fatal(1,"reset table fixture did not start");
+ edge_step(); start_valid=0;
+ if(count_ready!==1) $fatal(1,"reset table fixture did not request counts");
+ count_valid=1; count_value=1; count_last=0; edge_step(); count_valid=0;
+ rst_n=0; #1; edge_step(); rst_n=1; edge_step();
+ if(table_valid!==0 || done_valid!==0) $fatal(1,"partial table survived reset");
  fd=$fopen("tables.txt","r");
  if(!fd) $fatal(1,"FSE missing fixture");
  for(ti=0;ti<TABLES;ti=ti+1) begin

@@ -49,6 +49,7 @@ class Case:
     segments: int = 1
     descriptor_error: int = 0
     dma_error: int = 0
+    reset_before: bool = False
 
 
 def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
@@ -78,16 +79,17 @@ def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
         [f"{len(cases)}\n"] + [
         f"{i} {len(c.source)} {c.codec} {c.decompress} {c.mode} {c.wide} "
         f"{c.channel} {c.capacity} {c.dictionary_id} {int(c.pre_dma)} "
-        f"{c.segments} {c.descriptor_error} {c.dma_error}\n" for i, c in enumerate(cases)]))
+        f"{c.segments} {c.descriptor_error} {c.dma_error} {int(c.reset_before)}\n"
+        for i, c in enumerate(cases)]))
     calls.append(r"""
  input_fd=$fopen("cases.txt","r");
  if(!input_fd) $fatal(1,"cannot open case metadata");
  tokens=$fscanf(input_fd,"%d",total_cases);
  if(tokens!=1) $fatal(1,"missing case count");
  for(tc=0;tc<total_cases;tc=tc+1) begin
-  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d %d %d %d %d",
-                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid,tp,tsegments,tbad,tfault);
-  if(tokens!=13 || tn!=tc) $fatal(1,"malformed case metadata");
+  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid,tp,tsegments,tbad,tfault,treset);
+  if(tokens!=14 || tn!=tc) $fatal(1,"malformed case metadata");
   run_case(tn,ts,tcodec,td,tm,tw,tch,tcap,tid);
  end
  $fclose(input_fd);
@@ -100,6 +102,7 @@ bellows_l5_top #(.MAX_BLOCK_BYTES({block}), .SG_DEPTH({depth}),
  .COPY_BYTES({copy}), .DICT_BYTES({dict_bytes})) dut (
 {connection});
 localparam integer MEM={memory};
+localparam integer BLOCK_BOUND={block};
 """ + r"""
 reg [7:0] source [0:MEM-1], destination [0:MEM-1], dictionary_image [0:16383];
 integer cycles=0, command_edge=-1, descriptor_edge=-1;
@@ -110,6 +113,8 @@ integer expected_source=0, expected_capacity=0, expected_channel=0, case_active=
 integer i, j, fd, age;
 integer input_fd,tc,tokens,tn,ts,tcodec,td,tm,tw,tch,tcap,total_cases;
 integer tp,tsegments,tbad,tfault,read_fault=0,write_fault=0;
+integer treset=0,pinned_size=0;
+integer first_fault=0;
 integer source_ends[0:15], destination_ends[0:15], ns, nd;
 reg [31:0] tid;
 reg [63:0] held_read, held_write;
@@ -133,6 +138,8 @@ always @(negedge clk) begin
   rd_req_ready=0; wr_req_ready=0; w_rd_req_ready=0; w_wr_req_ready=0;
   rd_rsp_valid=0; wr_rsp_valid=0; w_rd_rsp_valid=0; w_wr_rsp_valid=0;
  end else begin
+  if(err_checksum_mismatch !== (status_valid && status_error==7))
+    $fatal(1,"checksum flag outside matching valid completion");
   random_state = (random_state >> 1) ^ ((0-(random_state&1)) & 32'hd0000001);
   rd_req_ready=|random_state[2:0]; w_rd_req_ready=|random_state[2:0];
   wr_req_ready=|random_state[5:3]; w_wr_req_ready=|random_state[5:3];
@@ -175,16 +182,19 @@ always @(posedge clk) begin
              w_wr_req_data|{56'd0,wr_req_data},w_wr_req_strb};
   if ((rd_rsp_valid && rd_rsp_ready)||(w_rd_rsp_valid && w_rd_rsp_ready)) begin
     if (!r_pending) $fatal(1,"unowned read response");
+    if(read_fault) first_fault=1;
     read_bytes=read_bytes+r_count; r_pending=0;
   end
   if ((wr_rsp_valid && wr_rsp_ready)||(w_wr_rsp_valid && w_wr_rsp_ready)) begin
     if (!w_pending) $fatal(1,"unowned write response");
+    if(write_fault) first_fault=1;
     if(!write_fault) write_bytes=write_bytes+w_count;
     w_pending=0;
   end
   if (r_pending && r_delay>0) r_delay=r_delay-1;
   if (w_pending && w_delay>0) w_delay=w_delay-1;
   if ((rd_req_valid && rd_req_ready)||(w_rd_req_valid && w_rd_req_ready)) begin
+    if(first_fault) $fatal(1,"read issued after DMA error");
     if (r_pending || !case_active) $fatal(1,"unexpected/duplicate read");
     if (cycles<descriptor_edge+2) $fatal(1,"early DMA before D+2");
     r_wide=w_rd_req_valid; r_count=r_wide ? w_rd_req_bytes : 1;
@@ -202,6 +212,7 @@ always @(posedge clk) begin
     read_fault=(tfault==1 && read_bytes==0);
   end
   if ((wr_req_valid && wr_req_ready)||(w_wr_req_valid && w_wr_req_ready)) begin
+    if(first_fault) $fatal(1,"write issued after DMA error");
     if (w_pending || !case_active) $fatal(1,"unexpected/duplicate write");
     w_wide=w_wr_req_valid; held_strobe=w_wide ? w_wr_req_strb : 8'd1;
     held_write=w_wide ? w_wr_req_data : {56'd0,wr_req_data};
@@ -229,6 +240,7 @@ always @(posedge clk) begin
       $fatal(1,"completion byte accounting");
     if (err_checksum_mismatch !== (status_error==7))
       $fatal(1,"checksum flag");
+    if(cmd_ready!==0) $fatal(1,"same-edge speculative lane reuse");
     completions=completions+1;
     $fdisplay(fd,"RESULT %0d %0d %0d %0d %08x",case_index,status_error,
               status_src_bytes,status_dst_bytes,status_checksum);
@@ -273,18 +285,29 @@ begin
  repeat(4) step();
  dict_status_ready=1; step(); dict_status_ready=0;
  $display("DICTIONARY_COLD_LOAD bytes=%0d cycles=%0d",size,cycles-begin_cycle);
+ pinned_size=size;
 end
 endtask
 task run_case(input integer number, input integer size, input integer codec,
  input integer decoding, input integer mode, input integer wide,
  input integer channel, input integer capacity, input reg [31:0] dictionary_id);
-integer n,old_completions,k,offset,count;
+reg [63:0] n,operation_limit;
+integer old_completions,k,offset,count;
 reg [255:0] filename;
 begin
+ if(treset) begin
+  rst_n=0; #1; reset_outputs(); repeat(3) step(); rst_n=1; #1;
+  if(cmd_ready!==0 || dict_begin_ready!==0) $fatal(1,"early post-reset admission");
+  repeat(3) step();
+  if(pinned_size>0) load_dictionary(pinned_size,32'h12345678);
+ end
  case_index=number; expected_source=size; expected_capacity=capacity;
  expected_channel=channel; case_active=1; read_bytes=0; write_bytes=0;
  old_completions=completions;
- read_fault=0; write_fault=0;
+ // Architecture's conservative operation bounds, plus fair DMA service.
+ operation_limit=64'd64*((codec==6 ? pinned_size : 0)+2)*(BLOCK_BOUND+1)*(BLOCK_BOUND+1)
+                 +64'd8192*(BLOCK_BOUND+1)+65536+64'd32*(size+capacity+1);
+ read_fault=0; write_fault=0; first_fault=0;
  ns=size==0 ? 0 : (size<tsegments ? size:tsegments);
  nd=capacity<tsegments ? capacity:tsegments;
  for(i=0;i<MEM;i=i+1) begin source[i]=0; destination[i]=8'hcd; end
@@ -302,14 +325,14 @@ begin
  if(!tp) begin
   offset=0;
   for(k=0;k<ns;k=k+1) begin
-   count=(size-offset)/(ns-k);
+   count=k==ns-1 ? size-offset : 1+((random_state>>5)%(size-offset-(ns-k)+1));
    source_ends[k]=offset+count;
    send_descriptor(0,count+(tbad==1 && k==ns-1),64'h10000+offset);
    offset=offset+count;
   end
   offset=0;
   for(k=0;k<nd;k=k+1) begin
-   count=(capacity-offset)/(nd-k);
+   count=k==nd-1 ? capacity-offset : 1+((random_state>>7)%(capacity-offset-(nd-k)+1));
    destination_ends[k]=offset+count;
    send_descriptor(1,count+(tbad==2 && k==nd-1),64'h100000+offset);
    offset=offset+count;
@@ -318,7 +341,7 @@ begin
  n=0;
  while(!status_valid) begin
   step(); n=n+1;
-  if(n>2000000) $fatal(1,"operation bound case=%0d",number);
+  if(n>operation_limit) $fatal(1,"operation bound case=%0d",number);
  end
  repeat(7) step();
  status_ready=1; step(); status_ready=0;

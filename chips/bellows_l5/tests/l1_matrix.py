@@ -72,7 +72,7 @@ def errors(geometry, dictionary):
                       capacity=1024)
         result.append(Case(f"invalid-mode-c{codec}", data, mode=3, error=8,
                            pre_dma=True, **common))
-        if n:
+        if data:
             result.append(Case(f"source-sum-c{codec}", data, descriptor_error=1,
                                error=8, **common))
             result.append(Case(f"destination-sum-c{codec}", data, descriptor_error=2,
@@ -83,6 +83,19 @@ def errors(geometry, dictionary):
                                    dma_error=1, error=10, **common))
             result.append(Case(f"write-fault-c{codec}-w{wide}", data, wide=wide,
                                dma_error=2, error=10, **common))
+            for mode in (1, 2):
+                encoded = (literal_lz4(data) if codec == 0 else
+                           encode_huffman(data, codec) if codec < 5 else frame(data))
+                corrupted = (private_checksum(data, mode) ^ 1).to_bytes(4, "little")
+                result.append(Case(f"private-checksum-c{codec}-w{wide}-m{mode}",
+                                   encoded+corrupted, decompress=1, mode=mode, wide=wide,
+                                   error=7, **common))
+        result.append(Case(f"zero-capacity-c{codec}", data, error=8, pre_dma=True,
+                           **{**common, "capacity": 0}))
+        result.append(Case(f"excess-segments-c{codec}", data, segments=depth+1,
+                           error=8, pre_dma=True, **common))
+        if codec == 2:
+            result.append(Case("odd-bf16", b"x", error=8, pre_dma=True, **common))
         result.append(Case(f"recovery-c{codec}", data, **common))
     result.append(Case("invalid-codec", raw, codec=7, capacity=1024, error=8, pre_dma=True))
     for codec in (5, 6):
@@ -109,7 +122,16 @@ def errors(geometry, dictionary):
         result.append(Case(f"recovery-final-c{codec}", source, **common))
     result.append(Case("wrong-dictionary-id", raw, codec=6, dictionary_id=1,
                        capacity=1024, error=13, pre_dma=True))
-    return result
+    expanded = []
+    for case in result:
+        expanded.append(case)
+        if case.error:
+            codec = 5 if case.codec == 7 else case.codec
+            expanded.append(Case("recovery-" + case.name,
+                                 raw[:len(raw)&~1] if codec == 2 else raw,
+                                 codec=codec, capacity=1024,
+                                 dictionary_id=0x12345678 if codec == 6 else 0))
+    return expanded
 
 
 def sequence_boundaries(geometry, libraries):
@@ -140,6 +162,11 @@ def sequence_boundaries(geometry, libraries):
             [(2, 9, 5), (0, 9, 1)],
         ):
             vectors.append((f"reps-{seq}", sequence_frame(b"abcdefgh"[:sum(s[0] for s in seq)], seq)))
+    if block >= 4:
+        literals = bytes(i & 255 for i in range(block-3))
+        vectors.append(("maximum-ll", sequence_frame(literals, [(block-3, 3, 4)])))
+        vectors.append(("maximum-ml", sequence_frame(b"a", [(1, block-1, 4)])))
+        vectors.append(("maximum-of", sequence_frame(literals, [(block-3, 3, block)])))
     result, seen = [], set()
     for label, encoded in vectors:
         if encoded in seen:
@@ -149,4 +176,61 @@ def sequence_boundaries(geometry, libraries):
         if libraries.decompress_zstd(encoded, block) != expected:
             raise AssertionError(f"boundary oracle/library disagreement: {label}")
         result.append(Case(label, encoded, decompress=1, capacity=max(1, len(expected)), wide=1))
+    return result
+
+
+def dictionary_edges(geometry, dictionary, libraries):
+    block = geometry[0]
+    if block < 3 or not dictionary:
+        return []
+    result = []
+    for distance in sorted({1, min(2, len(dictionary)), min(7, len(dictionary)), len(dictionary)}):
+        length = min(block, distance + 8)
+        if length < 3:
+            continue
+        source = sequence_frame(b"", [(0, length, distance+3)], dictionary=dictionary)
+        expected = decode_frame(source, dictionary, block)
+        if not expected.dictionary_matches or libraries.decompress_zstd(
+                source, block, dictionary) != expected.data:
+            raise AssertionError("dictionary crossing fixture lacks verified reference")
+        result.append(Case(f"dictionary-distance{distance}", source, codec=6,
+                           decompress=1, capacity=length, dictionary_id=0x12345678, wide=1))
+    return result
+
+
+def malformed_tables(libraries, dictionary=b""):
+    from l1_zstd import FrameError
+    valid = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], (1, 1, 1), dictionary)
+    vectors = []
+    for alphabet, symbol in enumerate((36, 32, 53)):
+        source = bytearray(valid)
+        source[18+alphabet] = symbol
+        vectors.append((f"forbidden-rle-symbol-{alphabet}", bytes(source)))
+    compressed = sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)], (2, 2, 2), dictionary)
+    changed = bytearray(compressed)
+    changed[18] |= 15
+    vectors.append(("excessive-log", bytes(changed)))
+    changed = bytearray(compressed)
+    changed[18:21] = b"\xf0\xff\xff"
+    vectors.append(("normalized-mass-overflow", bytes(changed)))
+    # A complete frame around a deliberately truncated table section.
+    vectors.append(("truncated-count-table", frame(b"a"*16, b"\x10aa\x02\xa8\x00", 2)))
+    result = []
+    for label, source in vectors:
+        try:
+            decode_frame(source, dictionary)
+        except FrameError:
+            pass
+        else:
+            raise AssertionError(f"malformed table fixture accepted by parser: {label}")
+        try:
+            libraries.decompress_zstd(source, 4096, dictionary)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"malformed table fixture accepted by libzstd: {label}")
+        result.append(Case(label, source, codec=6 if dictionary else 5, decompress=1,
+                           error=11, dictionary_id=0x12345678 if dictionary else 0))
+        result.append(Case("recover-" + label, valid, codec=6 if dictionary else 5,
+                           decompress=1, dictionary_id=0x12345678 if dictionary else 0))
     return result

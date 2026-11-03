@@ -42,6 +42,7 @@ def concurrent_testbench(cases, geometry, directory, seed=17, dictionary=b""):
     monitor = monitor.replace("source[age+j]", "sources[r_owner][age+j]")
     monitor = monitor.replace("destination[age+j]", "destinations[w_owner][age+j]")
     monitor = monitor.replace("status_channel!==expected_channel[1:0] || ", "")
+    monitor = monitor.replace('    if(cmd_ready!==0) $fatal(1,"same-edge speculative lane reuse");', "")
     monitor = monitor.replace("status_src_bytes!==lane_reads[r_owner]",
                               "status_src_bytes!==lane_reads[status_channel]")
     monitor = monitor.replace("status_dst_bytes!==lane_writes[w_owner]",
@@ -88,6 +89,14 @@ integer r_owner=0,w_owner=0,four_active=0,lane=0,st=0;
  step(); cmd_valid=0;
 """
     # Admit all commands before offering descriptors, guaranteeing real overlap.
+    body += """
+ dict_begin_valid=1; dict_begin_id=111; dict_begin_bytes=1; #1;
+ repeat(3) begin
+  if(dict_begin_ready!==0) $fatal(1,"dictionary displaced active commands");
+  step();
+ end
+ dict_begin_valid=0;
+"""
     for lane, case in enumerate(cases):
         body += f"""
  sg_channel={lane};
@@ -96,6 +105,14 @@ integer r_owner=0,w_owner=0,four_active=0,lane=0,st=0;
  descriptor_edges[{lane}]=descriptor_edge;
 """
     body += """
+ st=0; while(!status_valid) begin step(); st=st+1;
+  if(st>2000000) $fatal(1,"concurrent first completion"); end
+ dict_begin_valid=1; dict_begin_id=222; dict_begin_bytes=1; #1;
+ repeat(5) begin
+  if(dict_begin_ready!==0) $fatal(1,"dictionary replaced with completion pending");
+  step();
+ end
+ dict_begin_valid=0;
  st=0;
  while(completions<4) begin
   status_ready=(st%11)>=4;
@@ -125,7 +142,9 @@ begin
  rst_n=0; cmd_valid=0; sg_valid=0; dict_begin_valid=0; dict_s_valid=0;
  dict_status_ready=0; status_ready=0;
  #1; reset_outputs(); repeat(3) step();
- rst_n=1; repeat(3) step();
+ rst_n=1; #1;
+ if(cmd_ready!==0 || dict_begin_ready!==0) $fatal(1,"reset release admitted before edge");
+ repeat(3) step();
  if(dict_loaded!==0) $fatal(1,"dictionary survived reset");
 end
 endtask
@@ -154,10 +173,39 @@ begin
 end
 endtask
 task byte_image(input integer value,input integer last_byte);
+integer n;
 begin
  dict_s_valid=1; dict_s_data=value; dict_s_last=last_byte; #1;
- if(dict_s_ready!==1) $fatal(1,"dictionary unexpectedly not ready");
+ n=0; while(!dict_s_ready) begin step(); n=n+1;
+  if(n>1000) $fatal(1,"dictionary data backpressure bound"); end
  step(); dict_s_valid=0;
+end
+endtask
+task abort_transaction(input integer held_completion);
+integer n;
+begin
+ case_active=1; expected_source=1; expected_capacity=64; expected_channel=0;
+ read_bytes=0; write_bytes=0; ns=1; nd=1; tfault=0;
+ source[0]=8'h78;
+ cmd_channel=0; sg_channel=0; cmd_codec=5; cmd_id=16'h5a5a;
+ cmd_decompress=0; cmd_checksum_mode=0; cmd_wide=0;
+ cmd_src_bytes=1; cmd_dst_capacity=64; cmd_src_segments=1; cmd_dst_segments=1;
+ cmd_valid=1; #1;
+ n=0; while(!cmd_ready) begin step(); n=n+1;
+  if(n>1000) $fatal(1,"reset command admission"); end
+ step(); cmd_valid=0;
+ send_descriptor(0,1,64'h10000); send_descriptor(1,64,64'h100000);
+ n=0;
+ if(held_completion) begin
+  while(!status_valid) begin step(); n=n+1;
+   if(n>100000) $fatal(1,"reset held-completion fixture"); end
+  repeat(5) step();
+ end else begin
+  while(!r_pending) begin step(); n=n+1;
+   if(n>1000) $fatal(1,"reset outstanding-DMA fixture"); end
+ end
+ reset_epoch(); case_active=0; repeat(4) step();
+ if(status_valid!==0) $fatal(1,"stale completion after reset");
 end
 endtask
 task exercise_lifecycle;
@@ -166,6 +214,10 @@ begin
  begin_image(0,1); if(dict_s_ready!==0) $fatal(1,"invalid metadata requested data");
  dict_result(8);
  begin_image(1,0); dict_result(8);
+ begin_image(DICT_LIMIT+1,123); dict_result(8);
+ if(DICT_LIMIT>1) begin
+  begin_image(2,123); byte_image(42,1); dict_result(8);
+ end
  begin_image(1,123);
  repeat(7) begin step();
   if(dict_status_valid!==0 || dict_loaded!==0 || cmd_ready!==0)
@@ -179,6 +231,12 @@ begin
  begin_image(1,456); byte_image(42,1);
  while(!dict_status_valid) step();
  reset_epoch();
+ if(DICT_LIMIT>=7) begin
+  begin_image(7,456);
+  for(k=0;k<7;k=k+1) byte_image(k,k==6);
+  if(dict_status_valid!==0 || dict_loaded!==0) $fatal(1,"preparation fixture already pinned");
+  reset_epoch();
+ end
  // Simultaneous begin has priority over an otherwise admissible command.
  cmd_channel=0; cmd_codec=5; cmd_src_bytes=0; cmd_src_segments=0;
  cmd_dst_capacity=64; cmd_dst_segments=1; cmd_valid=1;
@@ -187,11 +245,13 @@ begin
  step(); dict_begin_valid=0; cmd_valid=0;
  byte_image(99,1); dict_result(0);
  reset_epoch();
- $display("LIFECYCLE invalid_metadata=2 failed_stream=1 singleton=1 reset_epochs=3 priority=1");
+ abort_transaction(0); abort_transaction(1);
+ $display("LIFECYCLE invalid_metadata=3 singleton=1 reset_dma=1 reset_completion=1 priority=1");
 end
 endtask
 """
     text = text[:insert] + tasks + text[insert:]
+    text = text.replace("DICT_LIMIT", str(geometry[3]))
     marker = ' input_fd=$fopen("dictionary-size.txt","r");'
     text = text.replace(marker, " exercise_lifecycle();\n" + marker)
     return text

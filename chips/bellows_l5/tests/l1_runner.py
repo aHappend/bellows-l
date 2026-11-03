@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import re
 import shutil
 from uuid import uuid4
 
@@ -9,13 +10,23 @@ from l1_transport import top_testbench
 from preparation import check_results, sha256
 
 
+def compiler_versions(experiment):
+    tools = experiment.receipt.setdefault("tools", {})
+    for tool in ("g++", "make"):
+        if tool not in tools:
+            output = experiment.command("version-" + tool, [tool, "--version"])
+            tools[tool] = output.splitlines()[0]
+
+
 class Simulation:
-    def __init__(self, experiment, geometry, libraries, simulator="verilator", parent=False):
+    def __init__(self, experiment, geometry, libraries, simulator="verilator", parent=False,
+                 source_directory=None):
         self.experiment = experiment
         self.geometry = geometry
         self.libraries = libraries
         self.simulator = simulator
         self.parent = parent
+        self.source_directory = source_directory
         self.directory = experiment.directory / ("simulation-" + uuid4().hex[:8])
         self.directory.mkdir()
         self.template = None
@@ -41,7 +52,7 @@ class Simulation:
         if self.template is None:
             self.template = tb
             (self.directory / "tb.sv").write_text(tb)
-            source_directory = e.directory / "source" / (
+            source_directory = self.source_directory or e.directory / "source" / (
                 "bellows_l4_reference/rtl" if self.parent else "rtl")
             import os
             sources = [os.path.relpath(p, self.directory) for p in sorted(source_directory.glob("*.sv"))]
@@ -54,6 +65,7 @@ class Simulation:
                            "-Ptb.CYCLE_LIMIT=500000", "-o", "sim.vvp", "tb.sv", *sources],
                           cwd=self.directory)
             else:
+                compiler_versions(e)
                 e.command("verilator-version-" + self.directory.name, ["verilator", "--version"])
                 e.command("compile-" + self.directory.name,
                           ["verilator", "--binary", "--timing", "-Wno-fatal",
@@ -64,12 +76,15 @@ class Simulation:
             raise AssertionError("vector change requires a different transactor geometry")
         argv = (["vvp", "../sim.vvp"] if self.simulator == "icarus"
                 else ["../compile-obj/Vtb"])
-        e.command("execute-" + run.name, argv, timeout=600 if self.simulator == "icarus" else 2400,
-                  cwd=run)
+        stdout = e.command("execute-" + run.name, argv,
+                           timeout=600 if self.simulator == "icarus" else 2400, cwd=run)
+        load_cost = re.findall(r"DICTIONARY_COLD_LOAD bytes=(\d+) cycles=(\d+)", stdout)
+        dictionary_loads = [{"bytes": int(n), "cycles": int(c)} for n, c in load_cost]
         check_results(e, cases, self.libraries, dictionary, run)
         records = json.loads((run / "comparisons.json").read_text())
         self.runs.append({"name": name, "seed": seed, "cases": len(cases),
-                          "directory": e.relative(run), "comparisons": records})
+                          "directory": e.relative(run), "comparisons": records,
+                          "dictionary_loads": dictionary_loads})
         (self.directory / "runs.json").write_text(json.dumps(self.runs, indent=2) + "\n")
         if roundtrip:
             from l1_transport import Case
@@ -84,7 +99,8 @@ class Simulation:
             for i, c in enumerate(cases):
                 if bytes.fromhex(output[2*i+1]) != c.source:
                     raise AssertionError(f"{c.name}: complete RTL round-trip mismatch")
-        return {"records": records, "directory_name": run.name, "directory": run}
+        return {"records": records, "directory_name": run.name, "directory": run,
+                "dictionary_loads": dictionary_loads}
 
     def close(self):
         build = self.directory / "compile-obj"
@@ -114,6 +130,7 @@ def custom_simulation(experiment, name, generator, cases, geometry, libraries,
                                cwd=directory)
             experiment.command(name + "-simulation", ["vvp", "sim.vvp"], timeout=600, cwd=directory)
         else:
+            compiler_versions(experiment)
             experiment.command(name + "-version", ["verilator", "--version"])
             experiment.command(name + "-compile",
                                ["verilator", "--binary", "--timing", "-Wno-fatal",
