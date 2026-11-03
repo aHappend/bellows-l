@@ -6,8 +6,6 @@ library. Library interoperability is checked separately by the experiment driver
 """
 
 from dataclasses import dataclass, field
-import struct
-
 from l1_oracle import frame, xxhash
 
 
@@ -235,12 +233,18 @@ def execute_sequences(literals, sequences, dictionary=b"", capacity=65536):
 def decode_frame(encoded, dictionary=b"", max_block=65536):
     if len(encoded) > 2 * max_block + 1024:
         raise FrameError("source frame exceeds input limit", 8)
-    if len(encoded) < 17:
+    if len(encoded) < 4:
         raise FrameError("truncated frame")
     if encoded[:4] != bytes.fromhex("28b52ffd"):
         if int.from_bytes(encoded[:4], "little") & 0xFFFFFFF0 == 0x184D2A50:
+            if len(encoded) < 8 or int.from_bytes(encoded[4:8], "little") > len(encoded) - 8:
+                raise FrameError("truncated skippable frame")
             raise FrameError("skippable frame unsupported", 12)
         raise FrameError("invalid magic")
+    if len(encoded) < 17:
+        raise FrameError("truncated frame")
+    if encoded[4] & 0x18:
+        raise FrameError("reserved frame descriptor bits")
     if encoded[4:6] != bytes.fromhex("8438"):
         raise FrameError("unsupported frame header", 12)
     content_size = int.from_bytes(encoded[6:10], "little")
@@ -250,11 +254,16 @@ def decode_frame(encoded, dictionary=b"", max_block=65536):
     if not block_header & 1:
         raise FrameError("multi-block frame unsupported", 12)
     block_type, block_size = (block_header >> 1) & 3, block_header >> 3
-    if block_type == 3:
+    if block_type == 3 or block_size > 131072:
         raise FrameError("reserved block type")
     body_bytes = 1 if block_type == 1 else block_size
     end = 13 + body_bytes
     if len(encoded) != end + 4:
+        extra_magic = encoded[end + 4:end + 8]
+        if extra_magic == bytes.fromhex("28b52ffd") or (
+                len(extra_magic) == 4 and
+                int.from_bytes(extra_magic, "little") & 0xFFFFFFF0 == 0x184D2A50):
+            raise FrameError("concatenated frames unsupported", 12)
         raise FrameError("truncated or trailing frame bytes")
     body = encoded[13:end]
     if block_type == 0:

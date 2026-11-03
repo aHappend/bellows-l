@@ -24,6 +24,7 @@ from l1_transport import Case, top_testbench
 from l1_zstd import FrameError, decode_frame, sequence_frame
 from l1_fse import table_testbench
 from l1_synthesis import synthesis
+from l1_legacy import decode_huffman, encode_huffman, literal_lz4
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -64,16 +65,17 @@ class Experiment:
     def relative(self, path):
         return path.relative_to(ROOT).as_posix()
 
-    def command(self, name, argv, timeout=3600):
+    def command(self, name, argv, timeout=3600, cwd=None):
+        cwd = self.directory if cwd is None else cwd
         out = self.directory / f"{name}.stdout.txt"
         err = self.directory / f"{name}.stderr.txt"
-        record = {"argv": argv, "cwd": self.relative(self.directory), "start": timestamp(),
+        record = {"argv": argv, "cwd": self.relative(cwd), "start": timestamp(),
                   "timeout_s": timeout, "timed_out": False,
                   "stdout": self.relative(out), "stderr": self.relative(err)}
         self.receipt["children"].append(record)
         started = time.monotonic()
         with out.open("xb") as stdout, err.open("xb") as stderr:
-            process = subprocess.Popen(argv, cwd=self.directory, stdout=stdout, stderr=stderr)
+            process = subprocess.Popen(argv, cwd=cwd, stdout=stdout, stderr=stderr)
             try:
                 while True:
                     try:
@@ -135,8 +137,9 @@ def cases_for(geometry):
     return result
 
 
-def check_results(experiment, cases, libraries, dictionary=b""):
-    lines = (experiment.directory / "results.txt").read_text().splitlines()
+def check_results(experiment, cases, libraries, dictionary=b"", directory=None):
+    directory = experiment.directory if directory is None else directory
+    lines = (directory / "results.txt").read_text().splitlines()
     if len(lines) != 2 * len(cases):
         raise AssertionError(f"expected {len(cases)} complete results, observed {len(lines)//2}")
     compared = []
@@ -147,7 +150,7 @@ def check_results(experiment, cases, libraries, dictionary=b""):
         error, read, written = map(int, words[2:5])
         checksum = int(words[5], 16)
         actual = bytes.fromhex(lines[index*2+1])
-        if error != case.error:
+        if (case.error == -1 and error == 0) or (case.error != -1 and error != case.error):
             raise AssertionError(f"{case.name}: completion error {error}, expected {case.error}")
         if read != len(case.source) or written != len(actual):
             raise AssertionError(f"{case.name}: incorrect exact byte counts")
@@ -159,11 +162,18 @@ def check_results(experiment, cases, libraries, dictionary=b""):
         decoded = None
         if case.decompress:
             standard = case.source[:-4] if case.mode else case.source
-            decoded = decode_frame(standard, dictionary if case.codec == 6 else b"")
-            raw = libraries.decompress_zstd(
-                standard, case.capacity,
-                dictionary if case.codec == 6 else b"")
-            if actual != raw or actual != decoded.data:
+            if case.codec == 0:
+                raw = decode_lz4(standard)
+                libraries.decompress_lz4(standard, raw)
+            elif case.codec in (1, 2, 3, 4):
+                raw = decode_huffman(standard, case.codec)
+            else:
+                decoded = decode_frame(standard, dictionary if case.codec == 6 else b"")
+                raw = libraries.decompress_zstd(
+                    standard, case.capacity, dictionary if case.codec == 6 else b"")
+                if raw != decoded.data:
+                    raise AssertionError(f"{case.name}: independent decoder disagreement")
+            if actual != raw:
                 raise AssertionError(f"{case.name}: full decoded output mismatch")
         else:
             raw = case.source
@@ -182,6 +192,9 @@ def check_results(experiment, cases, libraries, dictionary=b""):
                 if decode_lz4(standard) != raw:
                     raise AssertionError(f"{case.name}: Python LZ4 full output mismatch")
                 libraries.decompress_lz4(standard, raw)
+            elif case.codec in (1, 2, 3, 4):
+                if decode_huffman(standard, case.codec) != raw:
+                    raise AssertionError(f"{case.name}: inherited canonical-code mismatch")
             else:
                 raise AssertionError(f"unimplemented probe oracle: codec {case.codec}")
         expected_checksum = private_checksum(raw, case.mode)
@@ -197,8 +210,9 @@ def check_results(experiment, cases, libraries, dictionary=b""):
                          "fse_sequences": len(decoded.sequences) if decoded else 0,
                          "fse_transitions": decoded.transitions if decoded else 0,
                          "dictionary_matches": decoded.dictionary_matches if decoded else 0})
-    (experiment.directory / "comparisons.json").write_text(json.dumps(compared, indent=2)+"\n")
-    experiment.receipt["complete_byte_comparisons"] = len(compared)
+    (directory / "comparisons.json").write_text(json.dumps(compared, indent=2)+"\n")
+    experiment.receipt["complete_byte_comparisons"] = (
+        experiment.receipt.get("complete_byte_comparisons", 0) + len(compared))
 
 
 def dictionary_cases(seed):
@@ -229,15 +243,21 @@ def dictionary_cases(seed):
 
 def check_gain(experiment, manifest):
     lines = (experiment.directory / "results.txt").read_text().splitlines()
+    comparisons = json.loads((experiment.directory / "comparisons.json").read_text())
     baseline_total = candidate_total = 0
     failed = []
     for i, record in enumerate(manifest):
         baseline = bytes.fromhex(lines[i*4+1])
         candidate = bytes.fromhex(lines[i*4+3])
+        parsed = comparisons[i*2+1]
+        if parsed["dictionary_matches"] == 0 or parsed["fse_transitions"] == 0:
+            raise AssertionError("dictionary gain fixture did not execute dictionary/FSE processing")
         baseline_total += len(baseline)
         candidate_total += len(candidate)
         record.update(baseline_bytes=len(baseline), candidate_bytes=len(candidate),
                       threshold_numerator=3, threshold_denominator=4,
+                      dictionary_matches=parsed["dictionary_matches"],
+                      fse_transitions=parsed["fse_transitions"],
                       passed=4*len(candidate) <= 3*len(baseline))
         if not record["passed"]:
             failed.append(record["page_bytes"])
@@ -249,6 +269,29 @@ def check_gain(experiment, manifest):
     if failed or not result["aggregate_passed"]:
         raise AssertionError(f"dictionary gain: failed pages={failed}, "
                              f"aggregate={candidate_total}/{baseline_total}, required <=1/2")
+
+
+def roundtrip(experiment, cases, geometry, seed, dictionary, libraries):
+    """Re-use the compiled public transactor with fresh input vectors and reset."""
+    lines = (experiment.directory / "results.txt").read_text().splitlines()
+    decodes = [Case("roundtrip-" + c.name, bytes.fromhex(lines[2*i+1]), codec=c.codec,
+                    decompress=1, mode=c.mode, wide=c.wide, channel=c.channel,
+                    capacity=max(1, len(c.source)), dictionary_id=c.dictionary_id)
+               for i, c in enumerate(cases)]
+    directory = experiment.directory / "roundtrip"
+    directory.mkdir(exist_ok=False)
+    tb = top_testbench(decodes, geometry, directory, seed, dictionary)
+    if tb != (experiment.directory / "tb.sv").read_text():
+        raise AssertionError("round-trip vectors changed compiled transactor geometry")
+    experiment.command("roundtrip-simulation", ["../compile-obj/Vtb"], timeout=2400,
+                       cwd=directory)
+    check_results(experiment, decodes, libraries, dictionary, directory)
+    decoded_lines = (directory / "results.txt").read_text().splitlines()
+    for index, original in enumerate(cases):
+        recovered = bytes.fromhex(decoded_lines[2*index+1])
+        if recovered != original.source:
+            raise AssertionError(f"{original.name}: complete RTL round-trip mismatch")
+    experiment.receipt["rtl_roundtrips"] = len(cases)
 
 
 def interop_cases(libraries, dictionary=b""):
@@ -298,11 +341,72 @@ def interop_cases(libraries, dictionary=b""):
     return result
 
 
+def legacy_cases(geometry):
+    block = geometry[0]
+    cases = []
+    for codec in range(5):
+        for mode in range(3):
+            for wide in range(2):
+                for size in sorted({0, min(block, 1), min(block, 2), min(block, 3),
+                                    min(block, 257)}):
+                    if codec == 2 and size & 1:
+                        continue
+                    raw = bytes((i * 73 + 17) & 255 for i in range(size))
+                    tag = f"legacy-c{codec}-m{mode}-w{wide}-n{size}"
+                    cases.append(Case(tag + "-encode", raw, codec=codec, mode=mode,
+                                      wide=wide, capacity=4*block+1024))
+                    encoded = literal_lz4(raw) if codec == 0 else encode_huffman(raw, codec)
+                    if mode:
+                        encoded += private_checksum(raw, mode).to_bytes(4, "little")
+                    cases.append(Case(tag + "-external-decode", encoded, codec=codec,
+                                      mode=mode, wide=wide, decompress=1,
+                                      capacity=max(1, size)))
+    return cases
+
+
+def corruption_cases(libraries, dictionary=b""):
+    source = (sequence_frame(b"", [(0, 7, 33), (0, 7, 33)], dictionary=dictionary)
+              if dictionary else sequence_frame(b"aa", [(1, 7, 4), (1, 7, 4)]))
+    parsed = decode_frame(source, dictionary)
+    if libraries.decompress_zstd(source, 4096, dictionary) != parsed.data:
+        raise AssertionError("corruption control frame differs between independent models")
+    vectors = [("control", source)]
+    for bit in range(8 * len(source)):
+        changed = bytearray(source)
+        changed[bit // 8] ^= 1 << (bit % 8)
+        vectors.append((f"bit-{bit}", bytes(changed)))
+    vectors.extend((f"truncate-{length}", source[:length]) for length in range(len(source)))
+    for position in range(len(source) + 1):
+        vectors.append((f"insert-{position}", source[:position] + b"\x00" + source[position:]))
+    vectors.append(("trailing", source + b"\x7f"))
+    cases, manifest = [], []
+    for label, changed in vectors:
+        try:
+            model = decode_frame(changed, dictionary)
+        except FrameError:
+            model = None
+        try:
+            library = libraries.decompress_zstd(changed, 4096, dictionary)
+        except ValueError:
+            library = None
+        if model is not None and library is not None and model.data != library:
+            raise AssertionError(f"independent corruption-oracle disagreement: {label}")
+        expected_error = 0 if model is not None and library is not None else -1
+        manifest.append({"case": label, "input_sha256": sha256(changed),
+                         "parser_accepts": model is not None, "libzstd_accepts": library is not None,
+                         "semantically_equivalent": model is not None and model.data == parsed.data})
+        cases.append(Case(label, changed, codec=6 if dictionary else 5, decompress=1,
+                          error=expected_error, capacity=4096,
+                          dictionary_id=0x12345678 if dictionary else 0))
+    return cases, manifest
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="nonpower")
     parser.add_argument("--simulator", choices=("icarus", "verilator"), default="icarus")
-    parser.add_argument("--suite", choices=("transport", "dictionary", "interop", "fse", "synthesis"), default="transport")
+    parser.add_argument("--suite", choices=("transport", "legacy", "dictionary", "interop", "corruption", "fse", "synthesis"), default="transport")
+    parser.add_argument("--pinned-dictionary", action="store_true")
     parser.add_argument("--seed", type=int, choices=(17, 89, 2026), default=17)
     parser.add_argument("--repair-of", help="Project-relative retained failure receipt")
     args = parser.parse_args()
@@ -322,6 +426,10 @@ def main():
         assert libraries.decompress_zstd(rle_sequence_frame(), 8) == b"a"*8
         geometry = CONFIGURATIONS[args.configuration]
         dictionary, manifest = b"", []
+        if args.pinned_dictionary:
+            if geometry[3] < 1024:
+                raise ValueError("pinned diagnostic requires at least 1024 dictionary bytes")
+            dictionary = bytes.fromhex("37a430ec") + random.Random(2026).randbytes(1020)
         if args.suite == "dictionary":
             if args.simulator != "verilator" or geometry[0] < 16384 or geometry[3] < 16384:
                 raise ValueError("dictionary page diagnostic requires compiled page16k/default geometry")
@@ -331,8 +439,14 @@ def main():
                  "dictionary_sha256": sha256(dictionary)}, indent=2)+"\n")
         elif args.suite == "fse":
             cases = []
+        elif args.suite == "legacy":
+            cases = legacy_cases(geometry)
         elif args.suite == "interop":
-            cases = interop_cases(libraries)
+            cases = interop_cases(libraries, dictionary)
+        elif args.suite == "corruption":
+            cases, manifest = corruption_cases(libraries, dictionary)
+            (experiment.directory / "corruption-manifest.json").write_text(
+                json.dumps(manifest, indent=2) + "\n")
         else:
             cases = cases_for(geometry)
         experiment.receipt.update(configuration=args.configuration, geometry=geometry,
@@ -363,6 +477,7 @@ def main():
             check_results(experiment, cases, libraries, dictionary)
         if args.suite == "dictionary":
             check_gain(experiment, manifest)
+            roundtrip(experiment, cases, geometry, args.seed, dictionary, libraries)
         experiment.finish(0)
         return 0
     except Exception as error:

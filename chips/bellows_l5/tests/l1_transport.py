@@ -50,7 +50,7 @@ class Case:
 def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
     """Generate vectors, not expected DUT values or hierarchical observations."""
     block, depth, copy, dict_bytes = geometry
-    memory = max(2048, 2 * block + 2048, *(len(c.source) + 16 for c in cases),
+    memory = max(2048, 4 * block + 4096, *(len(c.source) + 16 for c in cases),
                  *(c.capacity + 16 for c in cases))
     for i, case in enumerate(cases):
         (directory / f"source-{i}.hex").write_text(

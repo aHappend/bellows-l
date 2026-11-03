@@ -110,6 +110,13 @@ class Libraries:
             ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_void_p,
             ctypes.c_size_t, ctypes.c_void_p, ctypes.c_size_t]
         self.zstd.ZSTD_decompress_usingDict.restype = ctypes.c_size_t
+        self.zstd.ZSTD_DCtx_loadDictionary_advanced.argtypes = [
+            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int, ctypes.c_int]
+        self.zstd.ZSTD_DCtx_loadDictionary_advanced.restype = ctypes.c_size_t
+        self.zstd.ZSTD_decompressDCtx.argtypes = [
+            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t,
+            ctypes.c_void_p, ctypes.c_size_t]
+        self.zstd.ZSTD_decompressDCtx.restype = ctypes.c_size_t
         self.zstd.ZSTD_isError.argtypes = [ctypes.c_size_t]
         self.zstd.ZSTD_isError.restype = ctypes.c_uint
         self.zstd.ZSTD_getErrorName.argtypes = [ctypes.c_size_t]
@@ -149,8 +156,13 @@ class Libraries:
             raise MemoryError("ZSTD_createDCtx")
         try:
             output = ctypes.create_string_buffer(max(1, capacity))
-            n = self.zstd.ZSTD_decompress_usingDict(
-                context, output, capacity, encoded, len(encoded), dictionary, len(dictionary))
+            # ZSTD_dct_rawContent=1: dictionary magic-looking bytes are still
+            # raw history, never a trained entropy dictionary.
+            loaded = self.zstd.ZSTD_DCtx_loadDictionary_advanced(
+                context, dictionary, len(dictionary), 0, 1)
+            if self.zstd.ZSTD_isError(loaded):
+                raise ValueError(self.zstd.ZSTD_getErrorName(loaded).decode())
+            n = self.zstd.ZSTD_decompressDCtx(context, output, capacity, encoded, len(encoded))
             if self.zstd.ZSTD_isError(n):
                 raise ValueError(self.zstd.ZSTD_getErrorName(n).decode())
             return output.raw[:n]
