@@ -1,6 +1,6 @@
 {
   "gate": "quartus-sta",
-  "timestamp_utc": "2026-11-03T10:05:29.402062+00:00",
+  "timestamp_utc": "2026-11-03T13:04:09.203535+00:00",
   "project_dir": "/data/sufeng/bellows-l5-line/workspace/project/.vulcan/engineering/run-0001/quartus_sta_work",
   "revision": "top",
   "clock_filter": "clk_main",
@@ -33,13 +33,13 @@
       "",
       "    while executing",
       "\"create_timing_netlist -post_map\"",
-      "    (file \"vulcan_sta_9surw3be.tcl\" line 2)",
+      "    (file \"vulcan_sta_7g9stlzu.tcl\" line 2)",
       "------------------------------------------------"
     ]
   },
-  "detail": "quartus_map aborted early on >30MB uninferred-RAM netlist explosion (check for uninferred large RAM arrays; split byte-enabled 1D RAMs into byte-lane arrays in a single always @(posedge clk) block).",
+  "detail": "quartus_map timed out after 3600s (check for uninferred large RAM arrays; split byte-enabled 1D RAMs into byte-lane arrays in a single always @(posedge clk) block).",
   "quartus_slot_telemetry": {
-    "slot_index": 2,
+    "slot_index": 4,
     "max_slots": 6,
     "slot_wait_s": 0.002
   },
@@ -48,6 +48,6 @@
   "clock_period_ns": 10.0,
   "target_frequency_mhz": 100.0,
   "parameters": {},
-  "source_sha256": "df08ccf1b5ea40745a33ff22d7837cf6780b4329306246f9891d5e66932f09ae",
+  "source_sha256": "79e5b911fc008af643c39ce9ef22ac71163724f80cd2d2558754f733a5747bd1",
   "applicable": true
 }
