@@ -293,7 +293,7 @@ def roundtrip(experiment, cases, geometry, seed, dictionary, libraries):
                     decompress=1, mode=c.mode, wide=c.wide, channel=c.channel,
                     capacity=max(1, len(c.source)), dictionary_id=c.dictionary_id)
                for i, c in enumerate(cases)]
-    directory = experiment.directory / "roundtrip"
+    directory = experiment.directory / ("roundtrip-" + uuid4().hex[:8])
     directory.mkdir(exist_ok=False)
     tb = top_testbench(decodes, geometry, directory, seed, dictionary)
     if tb != (experiment.directory / "tb.sv").read_text():

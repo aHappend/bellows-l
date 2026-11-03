@@ -142,7 +142,7 @@ initial begin
   while(!done_valid) begin edge_step(); n=n+1;
    if(n>20000) $fatal(1,"FSE table-build bound"); end
   if(done_error!==0 || table_valid!==1 || table_log!==lg[3:0])
-   $fatal(1,"FSE valid table rejected");
+   $fatal(1,"FSE valid table rejected table=%0d mode=%0d log=%0d error=%0d",idx,md,lg,done_error);
   repeat(3) begin edge_step();
    if(done_valid!==1 || done_error!==0) $fatal(1,"FSE table completion stall"); end
   done_ready=1; edge_step(); done_ready=0;

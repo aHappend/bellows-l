@@ -157,7 +157,7 @@ module bellows_l5_fse_table (
                     end
                 end
                 CHECK: begin
-                    if (total!={2'd0,table_size} || nonzero<2) begin
+                    if (total!={2'd0,table_size} || nonzero==0) begin
                         error_code<=11; phase<=DONE;
                     end else begin
                         symbol_index<=0; high_threshold<=table_size-10'd1;

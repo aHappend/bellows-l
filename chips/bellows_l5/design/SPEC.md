@@ -159,6 +159,9 @@ L=1<<tableLog; LL/ML maximum log=9, OF maximum=8, compressed minimum=5.
 Normalized -1 has mass 1; zero absent; positive counts have their stated mass;
 sum exactly L. Spread step=(L>>1)+(L>>3)+3 with power-of-two masking and reserved
 low-probability cells. Rows contain symbol, bit count and next-state base.
+Compressed tables may assign the entire mass L to one legal symbol; these
+retain tableLog and L states, with zero-bit rows and next-state base equal to
+the row address. They are not RLE-mode tables.
 RLE has constant symbol/zero bits. Reverse sequence encoding uses inverse
 transforms and the RFC stop marker; table preparation may be multicycle.
 

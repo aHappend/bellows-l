@@ -42,6 +42,13 @@ implemented. Repeat-table selectors are rejected before any sequence transition
 or match output, including after a prior command; no successful table-reuse
 mode is claimed.
 
+The normalized-count builder accepts a single legal symbol with full mass L
+without changing compressed mode or tableLog. Its ordinary row construction
+starts symbol-next at L and increments through 2L-1: the computed bit count
+is zero and base is row address for every row. The 10-bit working state holds
+all used values through 1023 at tableLog=9; the final increment is unused.
+Exact mass, count range, alphabet/log limits and ownership checks still apply.
+
 ## Production hierarchy
 
 ```text

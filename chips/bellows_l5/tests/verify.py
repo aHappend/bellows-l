@@ -1,8 +1,11 @@
 """Portable BELLOWS-L5 L1 verification.
 
-Prerequisites: Python 3, Icarus, Verilator, make, C++, Yosys, and shared
-libzstd/liblz4/libxxhash. Run the admitted commands from the project root.
+Prerequisites: Python 3.10+, Icarus, Verilator 5.x with a compatible C++
+compiler and make, Yosys, and shared libzstd/liblz4/libxxhash (including
+ZSTD_DCtx_loadDictionary_advanced). Run admitted commands from the project root.
 Native timing and hardware gates are owned and recorded by the shared runtime.
+The low-32-bit XXH64 content checksum detects corruption, not authentication;
+valid semantic-equivalent mutations are recorded explicitly.
 """
 
 import argparse

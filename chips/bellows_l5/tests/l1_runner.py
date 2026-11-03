@@ -68,7 +68,7 @@ class Simulation:
                 compiler_versions(e)
                 e.command("verilator-version-" + self.directory.name, ["verilator", "--version"])
                 e.command("compile-" + self.directory.name,
-                          ["verilator", "--binary", "--timing", "-Wno-fatal",
+                          ["verilator", "--binary", "--timing", "-Wno-fatal", "-CFLAGS", "-O3",
                            "--top-module", "tb", "-j", "2", "--Mdir", "compile-obj",
                            "tb.sv", *sources], cwd=self.directory)
             (self.directory / "transactor-sha256.txt").write_text(sha256(tb.encode()) + "\n")
@@ -133,7 +133,7 @@ def custom_simulation(experiment, name, generator, cases, geometry, libraries,
             compiler_versions(experiment)
             experiment.command(name + "-version", ["verilator", "--version"])
             experiment.command(name + "-compile",
-                               ["verilator", "--binary", "--timing", "-Wno-fatal",
+                               ["verilator", "--binary", "--timing", "-Wno-fatal", "-CFLAGS", "-O3",
                                 "--top-module", "tb", "-j", "2", "--Mdir", "compile-obj",
                                 "tb.sv", *sources], cwd=directory)
             experiment.command(name + "-simulation", ["./compile-obj/Vtb"], cwd=directory)
