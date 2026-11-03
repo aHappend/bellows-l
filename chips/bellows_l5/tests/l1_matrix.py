@@ -113,11 +113,22 @@ def errors(geometry, dictionary):
             result.append(Case(f"capacity-c{codec}", source, error=9,
                                **{**common, "capacity": n-1}))
         result.append(Case(f"exact-capacity-c{codec}", source, **common))
+        result.append(Case(f"source-address-overflow-c{codec}", source,
+                           descriptor_error=3, error=8, **common))
+        result.append(Case(f"destination-address-overflow-c{codec}", frame(b"x"),
+                           descriptor_error=4, error=8, **{**common, "capacity": 2}))
+        result.append(Case(f"zero-source-descriptor-c{codec}", source,
+                           descriptor_error=5, error=8, **common))
         too_big = bytearray(source)
         too_big[6:10] = (block+1).to_bytes(4, "little")
         result.append(Case(f"decoded-limit-c{codec}", bytes(too_big), error=5, **common))
         result.append(Case(f"source-limit-c{codec}", bytes(2*block+1025), error=8,
                            pre_dma=True, **common))
+        for declared in (0xFFFFFFFC, 0xFFFFFFFF):
+            for mode in (0, 1, 2):
+                result.append(Case(f"source-overflow-c{codec}-m{mode}-{declared}",
+                                   b"x", mode=mode, command_source_bytes=declared,
+                                   error=8, pre_dma=True, **common))
         result.append(Case(f"block-limit-c{codec}", bytes(block+1), codec=codec,
                            capacity=1024, error=8, pre_dma=True,
                            dictionary_id=common["dictionary_id"]))

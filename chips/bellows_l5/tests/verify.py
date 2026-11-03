@@ -192,7 +192,7 @@ def behavior(experiment, configuration):
                 boundary_cases = [c for c in boundary_cases if len(c.source) <= 257]
             simulation.run("boundaries-" + str(seed), boundary_cases, seed,
                            dictionary, roundtrip=True)
-            legacy = legacy_cases(geometry)
+            legacy = legacy_cases(geometry, include_max=seed == SEEDS[0])
             new = simulation.run("legacy-" + str(seed), legacy, seed)
             old = parent.run("parent-legacy-" + str(seed), legacy, seed)
             if (new["directory"] / "results.txt").read_bytes() != (

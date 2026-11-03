@@ -378,14 +378,16 @@ def interop_cases(libraries, dictionary=b""):
     return result
 
 
-def legacy_cases(geometry):
+def legacy_cases(geometry, include_max=False):
     block = geometry[0]
     cases = []
     for codec in range(5):
         for mode in range(3):
             for wide in range(2):
-                for size in sorted({0, min(block, 1), min(block, 2), min(block, 3),
-                                    min(block, 257)}):
+                sizes = {0, min(block, 1), min(block, 2), min(block, 3), min(block, 257)}
+                if include_max and mode == 0 and wide == 1:
+                    sizes.add(block & ~1 if codec == 2 else block)
+                for size in sorted(sizes):
                     if codec == 2 and size & 1:
                         continue
                     raw = bytes((i * 73 + 17) & 255 for i in range(size))

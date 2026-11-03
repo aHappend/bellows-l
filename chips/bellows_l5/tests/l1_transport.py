@@ -50,6 +50,7 @@ class Case:
     descriptor_error: int = 0
     dma_error: int = 0
     reset_before: bool = False
+    command_source_bytes: int | None = None
 
 
 def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
@@ -79,7 +80,8 @@ def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
         [f"{len(cases)}\n"] + [
         f"{i} {len(c.source)} {c.codec} {c.decompress} {c.mode} {c.wide} "
         f"{c.channel} {c.capacity} {c.dictionary_id} {int(c.pre_dma)} "
-        f"{c.segments} {c.descriptor_error} {c.dma_error} {int(c.reset_before)}\n"
+        f"{c.segments} {c.descriptor_error} {c.dma_error} {int(c.reset_before)} "
+        f"{len(c.source) if c.command_source_bytes is None else c.command_source_bytes}\n"
         for i, c in enumerate(cases)]))
     calls.append(r"""
  input_fd=$fopen("cases.txt","r");
@@ -87,9 +89,9 @@ def top_testbench(cases, geometry, directory, seed=17, dictionary=b""):
  tokens=$fscanf(input_fd,"%d",total_cases);
  if(tokens!=1) $fatal(1,"missing case count");
  for(tc=0;tc<total_cases;tc=tc+1) begin
-  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d",
-                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid,tp,tsegments,tbad,tfault,treset);
-  if(tokens!=14 || tn!=tc) $fatal(1,"malformed case metadata");
+  tokens=$fscanf(input_fd,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                 tn,ts,tcodec,td,tm,tw,tch,tcap,tid,tp,tsegments,tbad,tfault,treset,tdeclared);
+  if(tokens!=15 || tn!=tc) $fatal(1,"malformed case metadata");
   run_case(tn,ts,tcodec,td,tm,tw,tch,tcap,tid);
  end
  $fclose(input_fd);
@@ -118,11 +120,12 @@ integer first_fault=0;
 integer descriptors_complete=0;
 integer source_ends[0:15], destination_ends[0:15], ns, nd;
 reg [31:0] tid;
+reg [31:0] tdeclared;
 reg [63:0] held_read, held_write;
 reg [7:0] held_strobe;
 reg [127:0] old_status;
 reg [127:0] old_read;
-reg [137:0] old_write;
+reg [141:0] old_write;
 reg stalled_status=0, stalled_read=0, stalled_write=0;
 reg [31:0] random_state;
 always #5 clk=~clk;
@@ -175,11 +178,11 @@ always @(posedge clk) begin
   old_read={w_rd_req_valid,rd_req_valid,w_rd_req_channel,rd_req_channel,
             w_rd_req_addr|rd_req_addr,w_rd_req_bytes};
   if (stalled_write &&
-      {w_wr_req_valid,wr_req_valid,w_wr_req_addr|wr_req_addr,
+      {w_wr_req_valid,wr_req_valid,w_wr_req_channel,wr_req_channel,w_wr_req_addr|wr_req_addr,
        w_wr_req_data|{56'd0,wr_req_data},w_wr_req_strb} !== old_write)
     $fatal(1,"write request changed under stall");
   stalled_write=(wr_req_valid && !wr_req_ready)||(w_wr_req_valid && !w_wr_req_ready);
-  old_write={w_wr_req_valid,wr_req_valid,w_wr_req_addr|wr_req_addr,
+  old_write={w_wr_req_valid,wr_req_valid,w_wr_req_channel,wr_req_channel,w_wr_req_addr|wr_req_addr,
              w_wr_req_data|{56'd0,wr_req_data},w_wr_req_strb};
   if ((rd_rsp_valid && rd_rsp_ready)||(w_rd_rsp_valid && w_rd_rsp_ready)) begin
     if (!r_pending) $fatal(1,"unowned read response");
@@ -319,7 +322,7 @@ begin
  end
  cmd_channel=channel; sg_channel=channel; cmd_id=16'h5a5a;
  cmd_codec=codec; cmd_decompress=decoding; cmd_checksum_mode=mode; cmd_wide=wide;
- cmd_src_bytes=size; cmd_dst_capacity=capacity; cmd_src_segments=ns;
+ cmd_src_bytes=tdeclared; cmd_dst_capacity=capacity; cmd_src_segments=ns;
  cmd_dst_segments=nd; cmd_dict_id=dictionary_id; cmd_valid=1; #1;
  n=0;
  while(!cmd_ready) begin step(); n=n+1; if(n>1000) $fatal(1,"command timeout"); end
@@ -330,14 +333,16 @@ begin
   for(k=0;k<ns;k=k+1) begin
    count=k==ns-1 ? size-offset : 1+((random_state>>5)%(size-offset-(ns-k)+1));
    source_ends[k]=offset+count;
-   send_descriptor(0,count+(tbad==1 && k==ns-1),64'h10000+offset);
+   send_descriptor(0,tbad==5 ? 0 : count+(tbad==1 && k==ns-1),
+                   tbad==3 && k==0 ? 64'hffffffffffffffff : 64'h10000+offset);
    offset=offset+count;
   end
   offset=0;
   for(k=0;k<nd;k=k+1) begin
    count=k==nd-1 ? capacity-offset : 1+((random_state>>7)%(capacity-offset-(nd-k)+1));
    destination_ends[k]=offset+count;
-   send_descriptor(1,count+(tbad==2 && k==nd-1),64'h100000+offset);
+   send_descriptor(1,count+(tbad==2 && k==nd-1),
+                   tbad==4 && k==0 ? 64'hffffffffffffffff : 64'h100000+offset);
    offset=offset+count;
   end
   descriptors_complete=1;
