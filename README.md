@@ -1,57 +1,52 @@
-<div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="brand/logo-dark.svg">
-    <img src="brand/logo.svg" width="420" alt="Vulcan">
-  </picture>
-  <h1>Bellows-L · Streaming Data Compression & Decompression Silicon Series</h1>
-  <p><strong>Synthesizable 100 MHz+ Streaming LZ4 Block Decompressor, Hash-Table Compressor & Multi-Channel XXH32 Framing Engine · Intel Arria 10 GX</strong></p>
-  <p>
-    <img src="https://img.shields.io/badge/Platform-Intel_Arria_10_GX-0f766e?style=flat-square" alt="Platform">
-    <img src="https://img.shields.io/badge/Quartus_17.1_STA-100_MHz%2B_Closed-0f766e?style=flat-square" alt="STA">
-    <img src="https://img.shields.io/badge/PCIe_Gen3x8_HIL-100%25_Passed-1d4ed8?style=flat-square" alt="HIL">
-    <img src="https://img.shields.io/badge/Author-Sufeng_Guo_(MSRA)-334155?style=flat-square" alt="Author">
-    <img src="https://img.shields.io/badge/License-MIT-64748b?style=flat-square" alt="License">
-  </p>
-  <p>
-    <a href="https://ahappend.github.io/vulcan/">Website</a> ·
-    <a href="https://github.com/aHappend/vulcan-showcase">Vulcan Showcase</a> ·
-    <a href="https://github.com/aHappend/anvil-q">Anvil-Q (LLM)</a> ·
-    <a href="https://github.com/aHappend/anvil-e">Anvil-E (Embedding)</a> ·
-    <a href="https://github.com/aHappend/billet-t">Billet-T (FFT/DSP)</a> ·
-    <a href="https://github.com/aHappend/billet-f">Billet-F (FIR/IIR)</a> ·
-    <a href="https://github.com/aHappend/rivet-a">Rivet-A (AES-GCM)</a> ·
-    <a href="https://github.com/aHappend/rivet-h">Rivet-H (SHA/HMAC)</a> ·
-    <a href="https://github.com/aHappend/swage-s">Swage-S (ISP)</a> ·
-    <a href="https://github.com/aHappend/bellows-l">Bellows-L (LZ4)</a> ·
-    <a href="https://github.com/aHappend/crucible-g">Crucible-G (3D)</a> ·
-    <a href="https://github.com/aHappend/furnace-x">Furnace-X (SoC)</a> ·
-    <a href="README.zh-CN.md"><strong>中文文档</strong></a>
-  </p>
-</div>
+# Bellows-L — Streaming compression and decompression RTL
 
----
+[English](README.md) · [简体中文](README.zh-CN.md) · [Repository guide / 文件导航](REPOSITORY_GUIDE.md)
 
-**Bellows-L** is the lossless streaming data compression series within Vulcan's **Bellows** silicon family, delivering high-throughput LZ4 decompression (`BELLOWS-L1`), single-pass hash-table compression (`BELLOWS-L2`), and multi-stream XXH32 integrity-checked framing (`BELLOWS-L3`) for high-bandwidth weight and telemetry streaming.
+Documentation updated: 2026-11-17. This page describes a repository snapshot, not a live job dashboard.
 
-## Silicon Signoff Matrix & Dual-Track Publications (`100 MHz+` Baseline)
+## Overview
 
-| Gen | Accelerator | Architecture & Numerical Scope | Quartus 17.1 STA (`10.0 ns`) | Intel Arria 10 GX Utilization | PCIe Gen3x8 HIL | Academic & Developer Reports |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Gen-1** | **BELLOWS-L1** | Streaming LZ4 Block Decompressor with 64KB Circular History SRAM & Overlapping RLE Match Copy Engine | Target `>= 100 MHz` | — | Scheduled | *Queued in Vulcan Daemon* |
-| **Gen-2** | **BELLOWS-L2** | Full-Duplex LZ4 Compressor + Decompressor with 4096-Entry On-Chip Hash Table & Longest-Match Finder | Target `>= 100 MHz` | — | Scheduled | *Queued in Vulcan Daemon* |
-| **Gen-3** | **BELLOWS-L3** | 4-Channel Framed LZ4 Streaming Engine with Hardware XXH32 Checksum Verification & Scatter-Gather DMA | Target `>= 100 MHz` | — | Scheduled | *Queued in Vulcan Daemon* |
+**Bellows-L** publishes chip RTL, technical reports and verification artifacts. LZ4 decoding/encoding, multichannel framing, integrity checks and later weight/KV data-codec research across L1–L5.
 
-## Vulcan Seven-Family Workshop Silicon Matrix
+The chip project is public; Vulcan itself remains private and closed-source. Future public releases must be limited to chip technology and public reproducibility materials, excluding Vulcan internal architecture and operating materials. This refresh organizes documentation only; it is not a comprehensive disclosure audit of historical material and does not claim that the existing repository tree has undergone such clearance.
 
-| Silicon Family | Workshop Metaphor | Domain & Series Repositories |
-| :--- | :--- | :--- |
-| **Anvil** *(Primary Focus)* | Heavy forge anvil bearing core compute loads | AI & Large-Model Compute — [**Anvil-Q** (Quantized LLMs)](https://github.com/aHappend/anvil-q) · [**Anvil-E** (Multimodal Embeddings)](https://github.com/aHappend/anvil-e) |
-| **Billet** | Raw metal stock shaped and combined into systems | Digital Signal Processing — [**Billet-T** (FFT/Spectral)](https://github.com/aHappend/billet-t) · [**Billet-F** (FIR/SOS-IIR Filters)](https://github.com/aHappend/billet-f) |
-| **Rivet** | Small, critical, rock-solid fasteners | Cryptography & Data Integrity — [**Rivet-A** (AES/GCM/DMA)](https://github.com/aHappend/rivet-a) · [**Rivet-H** (SHA-256/512/HMAC)](https://github.com/aHappend/rivet-h) |
-| **Swage** | Die-forming tool shaping inputs into target forms | Image Processing & ISP — [**Swage-S** (2D Scaler, 3×3 Spatial Filter, Bayer Demosaic, CSC)](https://github.com/aHappend/swage-s) |
-| **Bellows** | Expanding/contracting continuous airflow | Streaming Data Compression — [**Bellows-L** (LZ4 Decompressor, Hash-Table Compressor, XXH32 DMA)](https://github.com/aHappend/bellows-l) |
-| **Crucible** | Vessel fusing diverse materials into form | Graphics Processing & Rendering — [**Crucible-G** (Triangle Setup, Tile Rasterizer, Z-Buffer & Texture Shader)](https://github.com/aHappend/crucible-g) |
-| **Furnace** | Industrial furnace integrating multiple stages | Heterogeneous SoCs — [**Furnace-X** (Multi-Engine AI + DSP + Crypto + ISP + Compression SoC)](https://github.com/aHappend/furnace-x) |
+## Scope and evidence
 
----
-<p align="center"><sub>Author: <strong>Sufeng Guo</strong> · Microsoft Research Asia · <a href="mailto:sufeng_guo@smail.nju.edu.cn">sufeng_guo@smail.nju.edu.cn</a> · <a href="LICENSE">MIT License</a></sub></p>
+Use the [exact-directory result index](REPOSITORY_GUIDE.md). Functional simulation, synthesis, standalone/virtual-pin timing, board-bridge probing, workload readback and system-software execution are different evidence scopes. A pass at one scope does not establish another. Existing historical results are retained; this documentation refresh neither upgrades nor invalidates them.
+
+Read timing, utilization and performance values from their specific records and applicability conditions; results from differently located copies are not merged. This page makes no fleet-wide claim of physical-board completion, full-model inference, physical Linux boot or measured power/energy efficiency.
+
+## Repository guide
+
+The [repository guide](REPOSITORY_GUIDE.md) lists existing source, constraints, tests, reports and result paths. Hyphenated, underscored and `chips/` directories can be different publication copies; none is silently designated authoritative, moved or deleted.
+
+Start reproduction from the selected chip’s public specification, test instructions and scripts. Tool, input and board requirements belong to that directory. Chip experiments were not rerun as part of this documentation update.
+
+## Existing chip directories
+
+| Chip / variant | Existing root paths | Public artifacts |
+| --- | --- | --- |
+| BELLOWS-L1 | [`bellows-l1/`](bellows-l1/) · [`bellows_l1/`](bellows_l1/) | [REPORT.md](bellows-l1/REPORT.md) · [REPORT.pdf](bellows-l1/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l1/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l1/SHOWCASE_REPORT.zh-CN.pdf) |
+| BELLOWS-L2 | [`bellows-l2/`](bellows-l2/) · [`bellows_l2/`](bellows_l2/) | [REPORT.md](bellows-l2/REPORT.md) · [REPORT.pdf](bellows-l2/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l2/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l2/SHOWCASE_REPORT.zh-CN.pdf) |
+| BELLOWS-L3 | [`bellows-l3/`](bellows-l3/) · [`bellows_l3/`](bellows_l3/) | [REPORT.md](bellows-l3/REPORT.md) · [REPORT.pdf](bellows-l3/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l3/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l3/SHOWCASE_REPORT.zh-CN.pdf) |
+| BELLOWS-L4 | [`bellows-l4/`](bellows-l4/) · [`bellows_l4/`](bellows_l4/) | [REPORT.md](bellows-l4/REPORT.md) · [REPORT.pdf](bellows-l4/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l4/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l4/SHOWCASE_REPORT.zh-CN.pdf) |
+| BELLOWS-L5 | [`bellows-l5/`](bellows-l5/) · [`bellows_l5/`](bellows_l5/) | [Source and test inventory](REPOSITORY_GUIDE.md) |
+
+## Architecture catalog and publications
+
+| Generation | Chip | Architecture / research scope | Record navigation | Reports |
+| --- | --- | --- | --- | --- |
+| **Gen-1** | **BELLOWS-L1** | Streaming LZ4 Block Decompressor with 64KB Circular History SRAM & Overlapping RLE Match Copy Engine | [Exact-directory records](REPOSITORY_GUIDE.md) | [Repository artifacts](REPOSITORY_GUIDE.md) |
+| **Gen-2** | **BELLOWS-L2** | Full-Duplex LZ4 Compressor + Decompressor with 4096-Entry On-Chip Hash Table & Longest-Match Finder | [Exact-directory records](REPOSITORY_GUIDE.md) | [Repository artifacts](REPOSITORY_GUIDE.md) |
+| **Gen-3** | **BELLOWS-L3** | 4-Channel Framed LZ4 Streaming Engine with Hardware XXH32 Checksum Verification & Scatter-Gather DMA | [Exact-directory records](REPOSITORY_GUIDE.md) | [Repository artifacts](REPOSITORY_GUIDE.md) |
+
+Later generation directories are listed above; their technical scope and records remain directory-specific.
+
+## Related projects
+
+- AI / embeddings: [Anvil-Q](https://github.com/aHappend/anvil-q), [Anvil-E](https://github.com/aHappend/anvil-e), [Anvil-QN](https://github.com/aHappend/anvil-qn), [Anvil-EN](https://github.com/aHappend/anvil-en), [Anvil-D](https://github.com/aHappend/anvil-d).
+- Systems: [Hammer-V](https://github.com/aHappend/hammer-v), [Furnace-X](https://github.com/aHappend/furnace-x).
+- DSP / vision: [Billet-F](https://github.com/aHappend/billet-f), [Billet-T](https://github.com/aHappend/billet-t), [Swage-S](https://github.com/aHappend/swage-s).
+- Data / security / graphics: [Bellows-L](https://github.com/aHappend/bellows-l), [Bellows-N](https://github.com/aHappend/bellows-n), [Rivet-A](https://github.com/aHappend/rivet-a), [Rivet-H](https://github.com/aHappend/rivet-h), [Crucible-G](https://github.com/aHappend/crucible-g), [SABLE](https://github.com/aHappend/sable).
+- [Public fleet catalog](https://github.com/aHappend/vulcan-showcase). Related independent research: [ACE-2](https://github.com/aHappend/ace-2), [ACE-3](https://github.com/aHappend/ace-3); these retain their own provenance and acceptance boundaries.
+- DSpark is a research direction, not a published chip delivery in this repository; no implementation or repository link is asserted here.
