@@ -1,0 +1,36 @@
+{
+  "chip": "BELLOWS-L1",
+  "generation": "Gen-1 (v3.0)",
+  "gate": "quartus_sta",
+  "status": "passed",
+  "device": "10AX115N3F40E2SG",
+  "toolchain": "Quartus Prime Standard 17.1.0 Build 590",
+  "integration_scope": "Full PCIe Gen3x8 + DDR4-2133 Platform Shell (4-Corner Post-Fit STA)",
+  "clock_domains": {
+    "core_100mhz": {
+      "fmax_mhz": 133.71,
+      "wns_ns": 2.521,
+      "whs_ns": 0.015,
+      "target_period_ns": 10.0
+    },
+    "pcie_gen3x8_250mhz": {
+      "fmax_mhz": 279.02,
+      "wns_ns": 0.416,
+      "whs_ns": 0.013,
+      "target_period_ns": 4.0
+    },
+    "ddr4_2133_266mhz": {
+      "fmax_mhz": 301.93,
+      "wns_ns": 0.44,
+      "whs_ns": 0.012,
+      "target_period_ns": 3.752
+    }
+  },
+  "whole_shell_utilization": {
+    "alm": "43,780 / 427,200 ( 10 % )",
+    "dsp_blocks": "1 / 1,518 ( < 1 % )",
+    "m20k_ram_blocks": "206 / 2,713 ( 8 % )",
+    "registers": "94078"
+  },
+  "programmed_image_sha256": "a2ae14636f86610b3fbde783a70c3102f4e51587583ae6fe39e83bea7c1371dc"
+}

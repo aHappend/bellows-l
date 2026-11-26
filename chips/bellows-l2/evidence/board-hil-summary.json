@@ -1,0 +1,12 @@
+{
+  "chip": "BELLOWS-L2",
+  "generation": "Gen-2 (v3.0)",
+  "gate": "board_hil",
+  "status": "passed",
+  "device": "10AX115N3F40E2SG",
+  "interface": "PCIe Gen3x8 MMIO + 8 GiB DDR4-2133 DMA",
+  "programmed_image_sha256": "7f206f642921ecb6b912172761d433fee777285189a741d31db3f1ab919ccf4b",
+  "deterministic_across_runs": true,
+  "physical_runs_verified": 3,
+  "timestamp_utc": "2026-11-25T23:28:54.799171+00:00"
+}

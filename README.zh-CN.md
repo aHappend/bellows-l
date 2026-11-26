@@ -1,52 +1,68 @@
-# Bellows-L — 流式压缩与解压 RTL
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/logo-dark.svg">
+    <img src="brand/logo.svg" width="420" alt="Vulcan">
+  </picture>
+  <h1>Bellows-L · 无损流式压缩与解压硬件加速芯片家族</h1>
+  <p><strong>可综合 100 MHz+ LZ4 高速流式解压与全双工哈希匹配压缩引擎 · Intel Arria 10 GX 全壳静态时序收敛与 PCIe Gen3x8 物理板级闭环验证</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/目标器件-Intel_Arria_10_GX_(10AX115N3F40E2SG)-0f766e?style=flat-square" alt="FPGA">
+    <img src="https://img.shields.io/badge/全壳时序签核-四温度角_100_MHz%2B_闭合-0f766e?style=flat-square" alt="STA">
+    <img src="https://img.shields.io/badge/物理板卡_HIL-PCIe_Gen3x8_%2B_DDR4_实测通过-1d4ed8?style=flat-square" alt="HIL">
+    <img src="https://img.shields.io/badge/异构对标-同口径_EPYC_CPU_与_V100_GPU-334155?style=flat-square" alt="Benchmarks">
+    <img src="https://img.shields.io/badge/开源协议-MIT-64748b?style=flat-square" alt="License">
+  </p>
+  <p>
+    <a href="https://github.com/aHappend/vulcan-showcase"><strong>Vulcan 总览</strong></a> · <a href="https://github.com/aHappend/bellows-l">Bellows-L (LZ4)</a> · <a href="https://github.com/aHappend/billet-t">Billet-T (FFT)</a> · <a href="https://github.com/aHappend/billet-f">Billet-F (FIR)</a> · <a href="https://github.com/aHappend/crucible-g">Crucible-G (3D)</a> · <a href="https://github.com/aHappend/furnace-x">Furnace-X (DMA/CRC)</a> · <a href="https://github.com/aHappend/hammer-v">Hammer-V (RISC-V)</a> · <a href="https://github.com/aHappend/rivet-a">Rivet-A (AES-GCM)</a> · <a href="https://github.com/aHappend/rivet-h">Rivet-H (SHA-256)</a> · <a href="https://github.com/aHappend/swage-s">Swage-S (ISP)</a> · <a href="https://github.com/aHappend/sable">SABLE</a> · <a href="README.md"><strong>English</strong></a>
+  </p>
+</div>
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [Repository guide / 文件导航](REPOSITORY_GUIDE.md)
+---
 
-文档更新：2026-11-17。本页对应仓库快照，不是实时作业看板。
+**Bellows-L** 是 Vulcan 芯片舰队中的无损流式数据压缩产品线，涵盖高速 LZ4 块解压引擎（`BELLOWS-L1`）与片上哈希查找全双工压缩/解压一体化引擎（`BELLOWS-L2`），均已完成 Intel Arria 10 GX 完整 PCIe Gen3x8 + DDR4-2133 平台外壳集成、四角静态时序签核与物理板卡实测。
 
-## 概览
+## Vulcan 3.0 全壳物理上板签核总表
 
-**Bellows-L**：流式压缩与解压 RTL。下方保留芯片技术与报告入口；具体实现范围以所链接目录、规范、测试和结果原件为准。
+`chips/` 目录下的所有芯片均在 **完整 Intel Arria 10 GX PCIe Gen3x8 + DDR4-2133 平台外壳**（`10AX115N3F40E2SG`，Quartus Prime Standard `17.1.0`）内完成布局布线与四温度电压角静态时序闭合，并通过真实物理板卡上板闭环测试（`board_hil`）以及同机 `AMD EPYC 7662` CPU 与 `NVIDIA Tesla V100` GPU 同口径基准测试。
 
-芯片项目公开；Vulcan 本身保持私有、闭源。今后公开发布仅限芯片技术与公开复现资料，不得包含 Vulcan 内部架构或运作资料。本次更新仅整理文档，并非对全部历史材料进行全面披露审查，也不声称既有仓库树已完成此类清查。
+| 代际 | 芯片代号 | 微架构与工程验证范围 | 全壳四角静态时序（STA） | 含外壳整芯片资源占用 | 物理板卡上板（HIL） | 公开工程交付物 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Gen-1 (v3.0)** | [**BELLOWS-L1**](chips/bellows-l1/README.zh-CN.md) | 流式 LZ4 块解压引擎 · 64 KiB 环形历史窗口 SRAM、重叠游程高速复制状态机与 DDR4 突发 DMA | **`133.71 MHz`**（`WNS +2.521 ns`）<br><sub>PCIe `279.02` · DDR4 `301.93 MHz`</sub> | `43,780 ALMs (10%)`<br><sub>`1 DSPs` · `206 M20K`</sub> | **实测通过**<br><sub>PCIe Gen3x8 + DDR4</sub> | [**`REPORT.pdf`**](chips/bellows-l1/REPORT.pdf) · [RTL](chips/bellows-l1/rtl/) |
+| **Gen-2 (v3.0)** | [**BELLOWS-L2**](chips/bellows-l2/README.zh-CN.md) | 全双工 LZ4 硬件压缩 + 解压引擎 · 片上哈希最长匹配查找器、字面量缓冲与序列发射器 | **`112.70 MHz`**（`WNS +1.127 ns`）<br><sub>PCIe `275.03` · DDR4 `297.53 MHz`</sub> | `46,320 ALMs (11%)`<br><sub>`1 DSPs` · `345 M20K`</sub> | **实测通过**<br><sub>PCIe Gen3x8 + DDR4</sub> | [**`REPORT.pdf`**](chips/bellows-l2/REPORT.pdf) · [RTL](chips/bellows-l2/rtl/) |
 
-## 范围与证据
+## 工程签核报告图文预览
 
-按实际目录核对[公开结果索引](REPOSITORY_GUIDE.md)。功能仿真、综合、独立 IP／虚拟引脚时序、板卡桥接探测、工作负载数值读回和系统软件执行是不同层级；一种通过不能替代另一种。现有历史结果保留，不因本次文档更新自动升级或作废。
+### BELLOWS-L1 · Vulcan 3.0 工程签核报告图文预览（[`chips/bellows-l1/REPORT.pdf`](chips/bellows-l1/REPORT.pdf)）
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="chips/bellows-l1/REPORT.pdf"><img src="chips/bellows-l1/report_preview/page-1.png" width="100%" alt="BELLOWS-L1 第 1 页"></a><br><sub><strong>第 1 页 · 芯片定位与微架构总览</strong></sub></td>
+    <td align="center" width="33%"><a href="chips/bellows-l1/REPORT.pdf"><img src="chips/bellows-l1/report_preview/page-2.png" width="100%" alt="BELLOWS-L1 第 2 页"></a><br><sub><strong>第 2 页 · 数据通路设计与验证矩阵</strong></sub></td>
+    <td align="center" width="33%"><a href="chips/bellows-l1/REPORT.pdf"><img src="chips/bellows-l1/report_preview/page-3.png" width="100%" alt="BELLOWS-L1 第 3 页"></a><br><sub><strong>第 3 页 · 全壳时序、上板实测与基准对比</strong></sub></td>
+  </tr>
+</table>
+### BELLOWS-L2 · Vulcan 3.0 工程签核报告图文预览（[`chips/bellows-l2/REPORT.pdf`](chips/bellows-l2/REPORT.pdf)）
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="chips/bellows-l2/REPORT.pdf"><img src="chips/bellows-l2/report_preview/page-1.png" width="100%" alt="BELLOWS-L2 第 1 页"></a><br><sub><strong>第 1 页 · 芯片定位与微架构总览</strong></sub></td>
+    <td align="center" width="33%"><a href="chips/bellows-l2/REPORT.pdf"><img src="chips/bellows-l2/report_preview/page-2.png" width="100%" alt="BELLOWS-L2 第 2 页"></a><br><sub><strong>第 2 页 · 数据通路设计与验证矩阵</strong></sub></td>
+    <td align="center" width="33%"><a href="chips/bellows-l2/REPORT.pdf"><img src="chips/bellows-l2/report_preview/page-3.png" width="100%" alt="BELLOWS-L2 第 3 页"></a><br><sub><strong>第 3 页 · 全壳时序、上板实测与基准对比</strong></sub></td>
+  </tr>
+</table>
 
-时钟、资源与性能指标必须读取对应目录的原始记录和适用条件；同名副本不合并为一个数值。此处不宣称全系完成上板、完整模型推理、Linux 实机启动或功耗／能效测量。
+## 仓库目录结构
 
-## 文件导航
+```text
+bellows-l/
+├── README.zh-CN.md         # 正式简体中文技术文档
+├── README.md               # 正式英文技术文档
+├── brand/                  # 深浅色自适应矢量品牌标识
+├── chips/
+│   ├── bellows-l1/          # BELLOWS-L1 (RTL, tests, STA/HIL receipts, REPORT.pdf)
+│   └── bellows-l2/          # BELLOWS-L2 (RTL, tests, STA/HIL receipts, REPORT.pdf)
+├── archive-v2/             # Deduplicated pre-3.0 historical design snapshots
+└── LICENSE                 # MIT 开源许可证
+```
 
-[文件与证据导航](REPOSITORY_GUIDE.md)列出真实存在的源码、约束、测试、报告及结果路径。连字符、下划线和 `chips/` 目录可能是不同发布副本，不自动指定某份为权威，也不移动或删除原件。
+## 早期版本归档（`archive-v2/`）
 
-公开复现从对应芯片的规范、测试说明和脚本开始；所需工具、输入和板卡条件以该目录为准。文档更新没有重新执行芯片实验。
-
-## 已有芯片目录
-
-| 芯片／变体 | 现存根路径 | 公开交付物 |
-| --- | --- | --- |
-| BELLOWS-L1 | [`bellows-l1/`](bellows-l1/) · [`bellows_l1/`](bellows_l1/) | [REPORT.md](bellows-l1/REPORT.md) · [REPORT.pdf](bellows-l1/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l1/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l1/SHOWCASE_REPORT.zh-CN.pdf) |
-| BELLOWS-L2 | [`bellows-l2/`](bellows-l2/) · [`bellows_l2/`](bellows_l2/) | [REPORT.md](bellows-l2/REPORT.md) · [REPORT.pdf](bellows-l2/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l2/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l2/SHOWCASE_REPORT.zh-CN.pdf) |
-| BELLOWS-L3 | [`bellows-l3/`](bellows-l3/) · [`bellows_l3/`](bellows_l3/) | [REPORT.md](bellows-l3/REPORT.md) · [REPORT.pdf](bellows-l3/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l3/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l3/SHOWCASE_REPORT.zh-CN.pdf) |
-| BELLOWS-L4 | [`bellows-l4/`](bellows-l4/) · [`bellows_l4/`](bellows_l4/) | [REPORT.md](bellows-l4/REPORT.md) · [REPORT.pdf](bellows-l4/REPORT.pdf) · [SHOWCASE_REPORT.pdf](bellows-l4/SHOWCASE_REPORT.pdf) · [SHOWCASE_REPORT.zh-CN.pdf](bellows-l4/SHOWCASE_REPORT.zh-CN.pdf) |
-| BELLOWS-L5 | [`bellows-l5/`](bellows-l5/) · [`bellows_l5/`](bellows_l5/) | [Source and test inventory](REPOSITORY_GUIDE.md) |
-
-## 架构目录与技术报告
-
-| 代际 | 芯片 | 架构／研究范围 | 记录导航 | 报告 |
-| --- | --- | --- | --- | --- |
-| **Gen-1** | **BELLOWS-L1** | 流式 LZ4 块解压引擎 · 64KB 环形历史窗口 SRAM 与重叠游程（RLE）高速复制状态机 | [Exact-directory records](REPOSITORY_GUIDE.md) | [Repository artifacts](REPOSITORY_GUIDE.md) |
-| **Gen-2** | **BELLOWS-L2** | 全双工 LZ4 硬件压缩 + 解压引擎 · 片上 4096 项哈希表查找与最长匹配编码器 | [Exact-directory records](REPOSITORY_GUIDE.md) | [Repository artifacts](REPOSITORY_GUIDE.md) |
-| **Gen-3** | **BELLOWS-L3** | 4 通道并发 LZ4 帧流引擎 · 集成硬件 XXH32 校验和验证与 DMA 描述符调度 | [Exact-directory records](REPOSITORY_GUIDE.md) | [Repository artifacts](REPOSITORY_GUIDE.md) |
-
-后续代际目录已在上方补齐，具体技术范围和结果按对应目录核对。
-
-## 关联项目
-
-- AI / embeddings: [Anvil-Q](https://github.com/aHappend/anvil-q), [Anvil-E](https://github.com/aHappend/anvil-e), [Anvil-QN](https://github.com/aHappend/anvil-qn), [Anvil-EN](https://github.com/aHappend/anvil-en), [Anvil-D](https://github.com/aHappend/anvil-d).
-- Systems: [Hammer-V](https://github.com/aHappend/hammer-v), [Furnace-X](https://github.com/aHappend/furnace-x).
-- DSP / vision: [Billet-F](https://github.com/aHappend/billet-f), [Billet-T](https://github.com/aHappend/billet-t), [Swage-S](https://github.com/aHappend/swage-s).
-- Data / security / graphics: [Bellows-L](https://github.com/aHappend/bellows-l), [Bellows-N](https://github.com/aHappend/bellows-n), [Rivet-A](https://github.com/aHappend/rivet-a), [Rivet-H](https://github.com/aHappend/rivet-h), [Crucible-G](https://github.com/aHappend/crucible-g), [SABLE](https://github.com/aHappend/sable).
-- [Public fleet catalog](https://github.com/aHappend/vulcan-showcase). Related independent research: [ACE-2](https://github.com/aHappend/ace-2), [ACE-3](https://github.com/aHappend/ace-3); these retain their own provenance and acceptance boundaries.
-- DSpark 是研究方向，不代表本仓库已交付对应芯片；此处不虚构实现或仓库链接。
+尚未合入 3.0 真板主线的早期探索代际（[`bellows-l3`](archive-v2/bellows-l3/), [`bellows-l4`](archive-v2/bellows-l4/), [`bellows-l5`](archive-v2/bellows-l5/)）已统一归整至 [`archive-v2/`](archive-v2/README.zh-CN.md) 独立目录，并与上方 100% 真板上板签核的 `chips/` 主展目录严格区分。

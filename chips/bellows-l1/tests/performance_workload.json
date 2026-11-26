@@ -1,0 +1,62 @@
+{
+  "batch_copies": 256,
+  "measurement_repetitions": 30,
+  "rows": [
+    {
+      "comparison": {
+        "format": "bytes"
+      },
+      "expected": {
+        "path": "tests/board_vectors/compressible_256.bin",
+        "sha256": "3dc7c883775ecb0ed33c6d58f6eb2c165dccad2fd5148230939266672085bd87"
+      },
+      "id": "compressible_256",
+      "input": {
+        "path": "tests/board_vectors/compressible_256.json",
+        "sha256": "33d2b069f9a99b15c9b2a6e1dbc418459403c6e737f1deb643b4d48de57872c8"
+      },
+      "oracle_source": {
+        "path": "tests/lz4_reference.py",
+        "sha256": "556121ddfed4b6fdc9984a967e1b3c418ad44894573aebf7ec60e275f98b81c0"
+      }
+    },
+    {
+      "comparison": {
+        "format": "bytes"
+      },
+      "expected": {
+        "path": "tests/board_vectors/entropy_4096.bin",
+        "sha256": "cbdbcde347274320d83d01daac5824c7bf67f1455c8f5e1bd945d59480e65821"
+      },
+      "id": "entropy_4096",
+      "input": {
+        "path": "tests/board_vectors/entropy_4096.json",
+        "sha256": "db54e39c4ae3253d1acc1d6e36efb043f2f2fc59eb1f0d7477f1106bbe7e1da8"
+      },
+      "oracle_source": {
+        "path": "tests/lz4_reference.py",
+        "sha256": "556121ddfed4b6fdc9984a967e1b3c418ad44894573aebf7ec60e275f98b81c0"
+      }
+    },
+    {
+      "comparison": {
+        "format": "bytes"
+      },
+      "expected": {
+        "path": "tests/board_vectors/compressible_65536.bin",
+        "sha256": "ae17d15484f7cc24888a7661454b8ac4db7de2174cf1f8c6c880f87f236a4f7d"
+      },
+      "id": "compressible_65536",
+      "input": {
+        "path": "tests/board_vectors/compressible_65536.json",
+        "sha256": "e3f4438666a5da574b925d4eda77d4e33e71b0ba432287cc876cbd904e51b0af"
+      },
+      "oracle_source": {
+        "path": "tests/lz4_reference.py",
+        "sha256": "556121ddfed4b6fdc9984a967e1b3c418ad44894573aebf7ec60e275f98b81c0"
+      }
+    }
+  ],
+  "schema": "bellows-matched-workload/v1",
+  "warmup_repetitions": 5
+}

@@ -1,0 +1,33 @@
+module vulcan_role (
+    input  wire         clk, reset,
+    input  wire         reg_read, reg_write,
+    input  wire [17:0]  reg_addr,
+    input  wire [63:0]  reg_wdata,
+    output wire [63:0]  reg_rdata,
+    output wire         reg_rvalid,
+    output wire [31:0]  role_id, role_version, role_status,
+    input  wire         ddr_clk, ddr_reset, amm_ready,
+    output wire         amm_read, amm_write,
+    output wire [25:0]  amm_address,
+    input  wire [511:0] amm_readdata,
+    output wire [511:0] amm_writedata,
+    output wire [6:0]   amm_burstcount,
+    output wire [63:0]  amm_byteenable,
+    input  wire         amm_readdatavalid,
+    output wire         dma_cmd_valid, dma_cmd_write,
+    input  wire         dma_cmd_ready,
+    output wire [63:0]  dma_cmd_addr,
+    output wire [25:0]  dma_cmd_bytes,
+    input  wire         dma_cpl_valid, dma_cpl_error, dma_abort,
+    output wire         dma_cpl_ready,
+    output wire         dma_tx_valid, dma_tx_last,
+    input  wire         dma_tx_ready,
+    output wire [127:0] dma_tx_data,
+    output wire [15:0]  dma_tx_keep,
+    input  wire         dma_rx_valid, dma_rx_last,
+    output wire         dma_rx_ready,
+    input  wire [127:0] dma_rx_data,
+    input  wire [15:0]  dma_rx_keep
+);
+    Role_BellowsL1 bellows (.*);
+endmodule

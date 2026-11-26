@@ -1,0 +1,43 @@
+{
+  "platform_id": "netsys17",
+  "execution_policy": "existing_bridge_native",
+  "original_app1_magic": "0x4655524e41435831",
+  "sdk_tools": "C:\\Users\\author\\Catapult\\BoardTestPackages\\5.25.5.1\\retail-amd64\\Tools",
+  "sdk_hashes": {
+    "FPGACoreLib.dll": "41b2781d04a2864d59c8c772acd4098c52dabc2c5a822f4fcd51aff858cd9acb",
+    "FpgaDiagnostics.exe": "cae0d6d2c4815b072ae538910641da30b58668252f0c783c4ad5c07b1ce8d4be",
+    "FpgaJtagReconfig.dll": "f6c8dddfeb82c3ff7d3fa021fa4577ffe416f28c8f110d03e21a6734b0c9816d"
+  },
+  "powershell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "windows_python": "C:\\Users\\author\\AppData\\Local\\Vulcan\\BridgeRuntime\\python-3.14.10-vulcan-1.0.17-d826436224af\\python.exe",
+  "windows_python_binding": {
+    "path": "C:\\Users\\author\\AppData\\Local\\Vulcan\\BridgeRuntime\\python-3.14.10-vulcan-1.0.17-d826436224af\\python.exe",
+    "sha256": "d718435b892db4ad5b547d12fec61be7baa7faf7a58d857ea58053be24c7a000",
+    "bytes": 106208
+  },
+  "runtime_modules": {
+    "persistence": "8e7658314a6b25ac976bf44d8050e3aeb9c6615e84b9b19c9fc5ce961e1a3c41",
+    "windows_capture": "3b2f540f058a908d94677c4ae38932b74d5862a14365ac650645bf9a550858af",
+    "windows_deadline": "b5f8effcae5a571e75f0159f4032140efb25a26594788a339c9121825a945ad0",
+    "windows_job": "5461ab53a6df408cb4cfb14d651a970561f3cffbc0b1922c67df036860d428ea",
+    "windows_process": "c314d12f70e8e9354de7716e30f4af75c339d33848b671753114ee406eeab58a",
+    "execution_budget": "a80bd956a15f3968618c33a9fbe313d14b8356d3eeae9e705f322089ffb4288b",
+    "board_campaign_owner": "e31c053f0c47ac0399923722421744c408a40fddc5290764cb95de5dd7c705b7"
+  },
+  "business_script": "tests/business-test.ps1",
+  "companion": "tests/Workload.cs",
+  "business_timeout_seconds": 180,
+  "campaign_timeout_seconds": 3000,
+  "staging_reserve_seconds": 240,
+  "collector_timeout_seconds": 4800,
+  "campaign_budget": {
+    "initial_s": 500,
+    "idle_s": 1100,
+    "extension_s": 1100
+  },
+  "prior_campaign": "platform-inputs/netsys17/prior-request.json",
+  "prior_campaign_sha256": "a7810bcdbfac3915ad03ca24d24b90d41491a88335ac0f6754020ac9c9d7d72c",
+  "prior_campaign_result": "platform-inputs/netsys17/prior-result.json",
+  "prior_campaign_result_sha256": "65acd6172c888d654b6527567c0d3a0a71571c3ce0d9fa786d33056a36d978de",
+  "prior_image": "platform-inputs/netsys17/prior-image.rpd"
+}
